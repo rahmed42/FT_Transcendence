@@ -1,5 +1,30 @@
-- Documentation NestJS :
-https://docs.nestjs.com/
+******* NestJS *******
+- Site officiel de NestJS : 
+https://docs.nestjs.com/ 
+- Getting started :
+https://www.digitalocean.com/community/tutorials/getting-started-with-nestjs
 - Cours NestJS :
 https://www.youtube.com/watch?v=GHTA143_b-s&ab_channel=freeCodeCamp.org
+- NestJS Crash Course de Academind : 
+https://www.youtube.com/watch?v=F_oOtaxb0L8
 
+******* TypeScript *******
+- Site officiel :
+https://www.typescriptlang.org/docs/
+- Bases sur Openclassroom :
+https://openclassrooms.com/fr/courses/8039116-decouvrez-typescript
+-> Bases JavaScript : https://openclassrooms.com/fr/courses/6175841-apprenez-a-programmer-avec-javascript
+
+******* Svelte *******
+- Site Officiel :
+https://svelte.dev/
+- Svelte Mastery (vidéos de cours par thèmes)
+https://www.youtube.com/@SvelteMastery/videos
+- Svelte Tutorial de Net Ninja (cours complet) :
+https://www.youtube.com/watch?v=ujbE0mzX-CU&list=PL4cUxeGkcC9hlbrVO_2QFVqVPhlZmz7tO
+
+******* PostgreSQL *******
+- Site officiel de PostgreSQL :
+https://www.postgresql.org/docs/current/
+- PostgreSQL Tutorial de Tutorialspoint :
+https://www.tutorialspoint.com/postgresql/index.htm
