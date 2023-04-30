@@ -1,21 +1,66 @@
 ******* NestJS *******
-- Site officiel de NestJS : 
-https://docs.nestjs.com/ 
+- Site officiel de NestJS :
+https://docs.nestjs.com/
 - Getting started :
 https://www.digitalocean.com/community/tutorials/getting-started-with-nestjs
 - Cours NestJS :
 https://www.youtube.com/watch?v=GHTA143_b-s&ab_channel=freeCodeCamp.org
-- NestJS Crash Course de Academind : 
+- NestJS Crash Course de Academind :
 https://www.youtube.com/watch?v=F_oOtaxb0L8
 
 ******* TypeScript *******
 - Site officiel :
 https://www.typescriptlang.org/docs/
+Infos : https://www.typescriptlang.org/fr/docs/handbook/typescript-in-5-minutes.html
+Compiler options : https://www.typescriptlang.org/docs/handbook/compiler-options.html
+Set target option : https://www.typescriptlang.org/tsconfig#target
+
+- Formation Typescript en FR : https://grafikart.fr/formations/typescript
+
+- TypeScript REFERENCE :
+https://www.typescriptlang.org/docs/handbook/utility-types.html
+
+- NPM packages info : https://www.npmjs.com
+
 - Bases sur Openclassroom :
 https://openclassrooms.com/fr/courses/8039116-decouvrez-typescript
 -> Bases JavaScript : https://openclassrooms.com/fr/courses/6175841-apprenez-a-programmer-avec-javascript
 
 Cheetsheet : https://doabledanny.gumroad.com/l/typescript-cheat-sheet-pdf
+
+- Utilisation :
+Installation NodeJS : https://nodejs.org/en
+verifier son installation : node -v
+A la racine du projet : npm init -y
+
+Install Typescript :
+npm install typescript --save-dev
+(--save-dev > installe en tant que devDependencies en local au projet )
+Pour l'installer globallement : npm install -g typescript
+tsc --init > créer un fichier tsconfig.json de base
+
+Compiler un fichier TS : npx tsc src/my-file.ts --outDir dist
+(ou directement tsc my-file.ts si en global)
+npx > utilitaire NodeJS pour lancer les outils
+tsc > compilateur TS
+--outDir > dossier de sortie des fichiers compilés JS
+
+definir les fichiers dans tscconfig.json :
+"compilerOptions": {
+	"outDir": "./dist",
+	"rootDir": "./src",
+	"target": "es2016",
+	"noEmitOnError": true,
+	"strict": true,
+  },
+
+Compiler tous les fichiers TS en mode watch : npx tsc --watch
+
+TS error translator : https://ts-error-translator.vercel.app
+TS online editor : https://www.typescriptlang.org/fr/play
+
+- S'il n’y a pas de fichier .d.ts dans le projet de librairie JS, il faut installer une déclaration de type on peut les importer des librairies @types/... ou les créer soi-même (dans ce cas, il faut les placer dans un dossier 'types' à la racine du projet) :
+npm install @types/NOM_DE_LA_LIBRAIRIE
 
 ******* Svelte *******
 - Site Officiel :
