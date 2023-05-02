@@ -1,2 +1,3 @@
-pour tester le front se mettre dans le dossier front et lancer
-npm run dev -- --open
+- Front se mettre dans le dossier front et lancer
+si pas de node_modules : npm install
+puis : npm run dev -- --open
