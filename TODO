@@ -1,1 +1,2 @@
-Aloura
+pour tester le front se mettre dans le dossier front et lancer
+npm run dev -- --open
