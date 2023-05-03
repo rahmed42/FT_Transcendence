@@ -6,7 +6,7 @@
   </script>
 
   <svelte:head>
-	<title>About</title>
+	<title>Chat</title>
 	<meta name="description" content="Chat Page" />
   </svelte:head>
 

@@ -12,7 +12,7 @@
   </script>
 
   <svelte:head>
-	<title>About</title>
+	<title>Login</title>
 	<meta name="description" content="Login Page" />
   </svelte:head>
 

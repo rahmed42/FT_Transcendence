@@ -6,7 +6,7 @@
   </script>
 
   <svelte:head>
-	<title>About</title>
+	<title>Profile</title>
 	<meta name="description" content="User profile" />
   </svelte:head>
 

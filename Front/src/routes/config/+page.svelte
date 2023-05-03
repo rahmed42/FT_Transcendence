@@ -6,7 +6,7 @@
   </script>
 
   <svelte:head>
-	<title>About</title>
+	<title>Config</title>
 	<meta name="description" content="Game CONFIG" />
   </svelte:head>
 

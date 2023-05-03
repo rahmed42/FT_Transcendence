@@ -6,7 +6,7 @@
   </script>
 
   <svelte:head>
-	<title>About</title>
+	<title>Game</title>
 	<meta name="description" content="Game Page" />
   </svelte:head>
 
