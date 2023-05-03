@@ -1,3 +1,5 @@
+<!-- Home  "/" page content -->
+
 <script>
 	import welcome from '$lib/images/pongAnim.png';
 </script>

@@ -1,3 +1,5 @@
+<!-- Chat page content  -->
+
 <script>
 	import Header from '../Header.svelte';
 	import { isUserLoggedIn, userName } from '../stores.js';

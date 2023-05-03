@@ -1,12 +1,13 @@
+<!-- Shared Header config file with navigation links -->
+
 <script>
 	import { writable } from 'svelte/store';
 	import { page } from '$app/stores';
-	import logo from '$lib/images/Game_Logo.png';
+	import logo from '$lib/images/42PongLogo.png';
 	import { isUserLoggedIn, userName} from './stores.js';
 
-	// $: name = $userName; // use the latest value of the userName store
+	$: name = $userName; // use the latest value of the userName store
 	//get the last value of the userName store
-	$: name = $userName;
 
 	function handleLogOut() {
 		userName.set('-Login-');
