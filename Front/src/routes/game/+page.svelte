@@ -2,7 +2,7 @@
 
 <script>
 	import Header from '../Header.svelte';
-	import { isUserLoggedIn, userName } from '../stores.js';
+	// import { isUserLoggedIn, userName } from '../stores.js';
   </script>
 
   <svelte:head>

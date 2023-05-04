@@ -1,17 +1,21 @@
 <!-- Shared Header config file with navigation links -->
 
 <script>
-	import { writable } from 'svelte/store';
+	// import { writable } from 'svelte/store';
+	import { isUserLoggedIn, userName} from './stores.js';
 	import { page } from '$app/stores';
 	import logo from '$lib/images/42PongLogo.png';
-	import { isUserLoggedIn, userName} from './stores.js';
 
 	$: name = $userName; // use the latest value of the userName store
-	//get the last value of the userName store
+	$: logged = $isUserLoggedIn; // use the latest value of the isUserLoggedIn store
 
 	function handleLogOut() {
-		userName.set('-Login-');
+console.log('Before LOGOUT = ' + $userName.toString()); // ! Debug
+console.log('Before LOGOUT = ' + $isUserLoggedIn.toString());// ! Debug
+		userName.set('-NotLog-');
 		isUserLoggedIn.set(false);
+console.log('After LOGOUT = ' + $userName.toString());// ! Debug
+console.log('After LOGOUT = ' + $isUserLoggedIn.toString());// ! Debug
 	}
 </script>
 
@@ -23,36 +27,36 @@
 			<path d="M0,0 L1,2 C1.5,3 1.5,3 2,3 L2,0 Z" />
 		</svg>
 		<ul>
-			{#if isUserLoggedIn}
+			<!-- {#if logged} -->
 				<!-- Header links -->
 				<li aria-current={$page.url.pathname === '/' ? 'page' : undefined}>
-					<a href="/">Home</a>
+					<a href="/">~Home~</a>
 				</li>
 
 				<li aria-current={$page.url.pathname === '/chat' ? 'page' : undefined}>
-					<a href="/chat">Chat</a>
+					<a href="/chat">~Chat~</a>
 				</li>
 
 				<li aria-current={$page.url.pathname === '/game' ? 'page' : undefined}>
-					<a href="/game">Game</a>
+					<a href="/game">~Game~</a>
 				</li>
 
 				<li aria-current={$page.url.pathname === '/config' ? 'page' : undefined}>
-					<a href="/config">Config</a>
+					<a href="/config">~Config~</a>
 				</li>
-			{:else}
+			<!-- {:else} -->
 				<!-- {isUserLoggedIn.set(false)} -->
 				<li aria-current={$page.url.pathname === '/login' ? 'page' : undefined}>
-					<a href="/login">-Login Page-</a>
+					<a href="/login">~User~</a>
 				</li>
-			{/if}
+			<!-- {/if} -->
 		</ul>
 		<!-- End of Header Box -->
 		<svg viewBox="0 0 2 3" aria-hidden="true">
 			<path d="M0,0 L0,3 C0.5,3 0.5,3 1,2 L2,0 Z" />
 		</svg>
 
-		{#if isUserLoggedIn}
+		<!-- {#if logged} -->
 			<!-- Name Header Box -->
 			<svg viewBox="0 0 2 3" aria-hidden="true">
 				<path d="M0,0 L1,2 C1.5,3 1.5,3 2,3 L2,0 Z" />
@@ -62,13 +66,13 @@
 					<a href="/profile">{name}</a>
 				</li>
 				<li aria-current={$page.url.pathname === '/login' ? 'page' : undefined}>
-					<a href="/login" on:click={handleLogOut}>Logout</a>
+					<a href="/login" on:click={handleLogOut}>~Logout~</a>
 				</li>
 			</ul>
 			<svg viewBox="0 0 2 3" aria-hidden="true">
 				<path d="M0,0 L0,3 C0.5,3 0.5,3 1,2 L2,0 Z" />
 			</svg>
-		{/if}
+		<!-- {/if} -->
 	</nav>
 </header>
 

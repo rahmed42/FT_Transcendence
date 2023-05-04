@@ -5,8 +5,12 @@
 	import { isUserLoggedIn, userName } from '../stores.js';
 
 	function handleLogIn() {
+console.log('Before LOGIN = ' + $userName.toString()); // ! Debug
+console.log('Before LOGIN = ' + $isUserLoggedIn.toString());// ! Debug
 	  isUserLoggedIn.set(true);
 	  userName.set('John Doe'); // replace 'John Doe' with the user's name to get from API
+console.log('After LOGIN  = ' + $userName.toString());// ! Debug
+console.log('After LOGIN  = ' + $isUserLoggedIn.toString());// ! Debug
 	  window.location.href = "/";
 	}
   </script>
@@ -16,6 +20,7 @@
 	<meta name="description" content="Login Page" />
   </svelte:head>
 
+<main>
   <div class="center">
 	<div class="text-column">
 	  <button on:click={handleLogIn}>LOGIN</button>
@@ -23,6 +28,7 @@
 	</div>
 	<div class="background-image"></div>
   </div>
+</main>
 
 <style>
 	.center {
