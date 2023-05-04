@@ -8,7 +8,7 @@
 console.log('Before LOGIN = ' + $userName.toString()); // ! Debug
 console.log('Before LOGIN = ' + $isUserLoggedIn.toString());// ! Debug
 	  isUserLoggedIn.set(true);
-	  userName.set('John Doe'); // replace 'John Doe' with the user's name to get from API
+	  userName.set('Fake Login'); // replace with the user's name to get from API
 console.log('After LOGIN  = ' + $userName.toString());// ! Debug
 console.log('After LOGIN  = ' + $isUserLoggedIn.toString());// ! Debug
 	  window.location.href = "/";
@@ -42,9 +42,7 @@ console.log('After LOGIN  = ' + $isUserLoggedIn.toString());// ! Debug
 	  background-position: center;
 	  background-size: cover;
 	  height: 50vh;
-	  /* max-height: 500px; */
 	  width: 50%;
-	  /* max-width: 500px; */
 	}
 
 	button {

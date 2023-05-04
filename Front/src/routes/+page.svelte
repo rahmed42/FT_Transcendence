@@ -2,6 +2,11 @@
 
 <script>
 	import welcome from '$lib/images/pongAnim.png';
+	import { isUserLoggedIn, userName} from './stores.js';
+
+	$: name = $userName; // use the latest value of the userName store
+	$: logged = $isUserLoggedIn; // use the latest value of the isUserLoggedIn store
+
 </script>
 
 <svelte:head>
@@ -11,7 +16,7 @@
 
 <section>
 	<h1>
-		Welcome to<br>Ft_Trancendance<br><br>
+		Welcome <strong>{name}</strong> to<br>Ft_Trancendance<br><br>
 		<span class="welcome">
 			<picture>
 				<img src={welcome} alt="Welcome" />
