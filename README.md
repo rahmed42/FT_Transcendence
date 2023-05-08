@@ -24,7 +24,7 @@ npx prisma migrate dev
 - Explore the database to the browser
 npx prisma studio
 
-**** INSOMNIA **** 
+**** INSOMNIA ****
 Intall it with the Managed Software Center
 This application is used to build POST, GET... requests to the server (Postman do the same stuff)
 
@@ -33,3 +33,9 @@ yarn add class-validator class-transformer
 (allow to use decorator @IsEmail(), @IsString(), @IsNotEmpty()... in the DTO class that stores User variables)
 
 yarn add @nestjs/config
+
+
+****
+Install packages : npm install
+Update all packages : npm update --all
+fix vulnerabilities : npm audit fix

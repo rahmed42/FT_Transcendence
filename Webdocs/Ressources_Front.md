@@ -1,14 +1,4 @@
-******* NestJS *******
-- Site officiel de NestJS :
-https://docs.nestjs.com/
-- Getting started :
-https://www.digitalocean.com/community/tutorials/getting-started-with-nestjs
-- Cours NestJS :
-https://www.youtube.com/watch?v=GHTA143_b-s&ab_channel=freeCodeCamp.org
-- NestJS Crash Course de Academind :
-https://www.youtube.com/watch?v=F_oOtaxb0L8
-
-******* TypeScript *******
+******* Learning TypeScript *******
 - Site officiel :
 https://www.typescriptlang.org/docs/
 Infos : https://www.typescriptlang.org/fr/docs/handbook/typescript-in-5-minutes.html
@@ -63,6 +53,24 @@ TS online editor : https://www.typescriptlang.org/fr/play
 npm install @types/NOM_DE_LA_LIBRAIRIE
 
 ******* Svelte *******
+## Creating
+npm create svelte@latest Front
+cd Front
+
+## Developing
+`npm install`
+
+#### start a development server ####
+`npm run dev`
+
+# or start the server and open the app in a new browser tab
+`npm run dev -- --open`
+
+## Building
+To create a production version of your app:
+`npm run build`
+You can preview the production build with `npm run preview`.
+
 - Site Officiel :
 https://svelte.dev/
 - Tutorial :
@@ -74,14 +82,6 @@ https://www.youtube.com/watch?v=ujbE0mzX-CU&list=PL4cUxeGkcC9hlbrVO_2QFVqVPhlZmz
 
 - Manipulate svelte component :
 https://www.twilio.com/blog/svelte-stores-share-data-between-components
-
-******* PostgreSQL *******
-- Site officiel de PostgreSQL :
-https://www.postgresql.org/docs/current/
-- PostgreSQL Tutorial de Tutorialspoint :
-https://www.tutorialspoint.com/postgresql/index.htm
-- tuto :
-https://www.youtube.com/watch?v=5ygAoXD9msA
 
 
 **** Front tips ****
@@ -100,4 +100,6 @@ Pong Game in JS tutorial :
 For beginners > https://www.youtube.com/watch?v=nl0KXCa5pJk&ab_channel=freeCodeCamp.org
 Other tips : https://www.youtube.com/watch?v=AiFqApeurqI
 
+Phaser - HTML5 Game Framework :
+https://www.npmjs.com/package/phaser
 

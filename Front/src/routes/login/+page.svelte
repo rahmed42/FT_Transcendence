@@ -6,7 +6,7 @@
 	import { onMount } from 'svelte';
 
 	async function fetchData() {
-      const response = await fetch('http://localhost:3333/login');
+      const response = await fetch('http://localhost:3333');
       console.log(response);
   }
 
