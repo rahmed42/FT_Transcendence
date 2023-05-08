@@ -16,8 +16,10 @@ console.log('Before LOGOUT = ' + $isUserLoggedIn.toString());// ! Debug
 		isUserLoggedIn.set(false);
 console.log('After LOGOUT = ' + $userName.toString());// ! Debug
 console.log('After LOGOUT = ' + $isUserLoggedIn.toString());// ! Debug
+console.log("COUCOU");
 	}
 </script>
+
 
 <header>
 	<nav>
