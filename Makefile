@@ -6,7 +6,7 @@
 #    By: rahmed <rahmed@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/05/09 12:57:06 by rahmed            #+#    #+#              #
-#    Updated: 2023/05/09 17:24:49 by rahmed           ###   ########.fr        #
+#    Updated: 2023/05/09 17:59:39 by rahmed           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -30,7 +30,6 @@ back :
 	@printf "Launching ${name} BACKEND...\n"
 	@echo "${FANCY_RESET}"
 	cd Backend && npm run start:dev
-
 
 all	: | $(data) $(db)
 	@make up

@@ -5,13 +5,20 @@ export class AuthService {
 	login() {
 		const credentials = {
 			client : {
-				id: 'u-s4t2ud-2f818a332a9a2006b00174a76ce71efe9e374cc942b996040f79806509ce968d',
-				secret: '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',
+				id: 'u-s4t2ud-3c2796a2403e6bb0730f6aaad079b397f30f1351f98a0843a96609c201728d58',
+				secret: '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',
 			},
 			auth: {
 				tokenHost : 'https://api.intra.42.fr',
 			},
 		}
+
+		//redirect URI :
+		// http://localhost:5173/profile
+		
+		// URL :
+		// https://api.intra.42.fr/oauth/authorize?client_id=u-s4t2ud-3c2796a2403e6bb0730f6aaad079b397f30f1351f98a0843a96609c201728d58&redirect_uri=http%3A%2F%2Flocalhost%3A5173%2Fprofile&response_type=code
+
 		// const oauth2 = require('simple-oauth2').create(credentials);
 
 	}
