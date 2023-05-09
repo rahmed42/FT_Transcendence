@@ -39,3 +39,9 @@ yarn add @nestjs/config
 Install packages : npm install
 Update all packages : npm update --all
 fix vulnerabilities : npm audit fix
+
+**** AUTH ****
+1) Redirect the user to the OAuth2 authentification(link in the application), then extract the code in the redirect URL : http://localhost:5173/?code=256f06e77617cd800901ee0543def6ca5def615b23da5fc9e561140e96
+2) Make a POST request to https://api.intra.42.fr/oauth/token with the above code to get a JWT Token
+3) Make API request with the token, API should answer all your informations (id, img...)
+4) Check if the ID is already in the DB, if not, add it.
