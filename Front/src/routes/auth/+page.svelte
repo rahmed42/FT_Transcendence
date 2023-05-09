@@ -6,7 +6,7 @@
 	import { onMount } from 'svelte';
 
 	async function fetchData() {
-      const response = await fetch('http://localhost:3333');
+      const response = await fetch('http://localhost:3333/auth'); //Callback to controller auth
       console.log(response);
   }
 

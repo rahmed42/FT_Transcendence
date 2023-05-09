@@ -10,13 +10,13 @@
 	$: logged = $isUserLoggedIn; // use the latest value of the isUserLoggedIn store
 
 	function handleLogOut() {
-console.log('Before LOGOUT = ' + $userName.toString()); // ! Debug
-console.log('Before LOGOUT = ' + $isUserLoggedIn.toString());// ! Debug
+// console.log('Before LOGOUT = ' + $userName.toString()); // ! Debug
+// console.log('Before LOGOUT = ' + $isUserLoggedIn.toString());// ! Debug
 		userName.set('-NotLog-');
 		isUserLoggedIn.set(false);
-console.log('After LOGOUT = ' + $userName.toString());// ! Debug
-console.log('After LOGOUT = ' + $isUserLoggedIn.toString());// ! Debug
-console.log("COUCOU");
+// console.log('After LOGOUT = ' + $userName.toString());// ! Debug
+// console.log('After LOGOUT = ' + $isUserLoggedIn.toString());// ! Debug
+// console.log("COUCOU");
 	}
 </script>
 
@@ -48,8 +48,8 @@ console.log("COUCOU");
 				</li>
 			<!-- {:else} -->
 				<!-- {isUserLoggedIn.set(false)} -->
-				<li aria-current={$page.url.pathname === '/login' ? 'page' : undefined}>
-					<a href="/login">~User~</a>
+				<li aria-current={$page.url.pathname === '/auth' ? 'page' : undefined}>
+					<a href="/auth">~User~</a>
 				</li>
 			<!-- {/if} -->
 		</ul>
@@ -67,8 +67,8 @@ console.log("COUCOU");
 				<li aria-current={$page.url.pathname === '/profile' ? 'page' : undefined}>
 					<a href="/profile">{name}</a>
 				</li>
-				<li aria-current={$page.url.pathname === '/login' ? 'page' : undefined}>
-					<a href="/login" on:click={handleLogOut}>~Logout~</a>
+				<li aria-current={$page.url.pathname === '/auth' ? 'page' : undefined}>
+					<a href="/auth" on:click={handleLogOut}>~Logout~</a>
 				</li>
 			</ul>
 			<svg viewBox="0 0 2 3" aria-hidden="true">
