@@ -13,9 +13,12 @@ export class AuthService {
 			},
 		}
 
+		const isUserLoggedIn = false;
+		const userName = '*Default*';
+
 		//redirect URI :
 		// http://localhost:5173/profile
-		
+
 		// URL :
 		// https://api.intra.42.fr/oauth/authorize?client_id=u-s4t2ud-3c2796a2403e6bb0730f6aaad079b397f30f1351f98a0843a96609c201728d58&redirect_uri=http%3A%2F%2Flocalhost%3A5173%2Fprofile&response_type=code
 

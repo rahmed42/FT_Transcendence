@@ -102,4 +102,9 @@ Other tips : https://www.youtube.com/watch?v=AiFqApeurqI
 
 Phaser - HTML5 Game Framework :
 https://www.npmjs.com/package/phaser
+https://makeyourgame.fun/tutoriel/jeux-videos/phaser/phaser-mise-en-place
 
+
+## Cookies
+https://www.npmjs.com/package/cookie
+https://blog.logrocket.com/authentication-svelte-using-cookies/

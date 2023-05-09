@@ -6,14 +6,14 @@
 #    By: rahmed <rahmed@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/05/09 12:57:06 by rahmed            #+#    #+#              #
-#    Updated: 2023/05/09 17:59:39 by rahmed           ###   ########.fr        #
+#    Updated: 2023/05/09 19:27:47 by rahmed           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 name = FT_Transcendance
 
-data = ~/data
-db = ~/data/postgreSQL
+# data = ~/data
+# db = ~/data/postgreSQL
 
 front :
 	@echo "${TXT_YELLOW}"
@@ -21,7 +21,7 @@ front :
 	@echo "${TXT_GREEN}"
 	@printf "Launching ${name} Front...\n"
 	@echo "${FANCY_RESET}"
-	cd Frontend && npm run dev -- --open
+	cd Frontend && npm install && npm run dev -- --open
 
 back :
 	@echo "${TXT_YELLOW}"
@@ -29,69 +29,74 @@ back :
 	@echo "${TXT_GREEN}"
 	@printf "Launching ${name} BACKEND...\n"
 	@echo "${FANCY_RESET}"
-	cd Backend && npm run start:dev
+	cd Backend && npm install && npm run start:dev
 
-all	: | $(data) $(db)
-	@make up
+all	:
+	docker-compose up dev-db -d
+	@make back
+	@make front
 
-$(data)	:
-	@echo "Folder $(data) does not exist, creating..."
-	mkdir -p $@
+# all	: | $(data) $(db)
+# 	@make up
 
-$(db)	:
-	@echo "Folder $(db) does not exist, creating..."
-	mkdir -p $@
+# $(data)	:
+# 	@echo "Folder $(data) does not exist, creating..."
+# 	mkdir -p $@
 
-clean	:	down
-	@printf "Removing unused ${name} images...\n"
-	@docker system prune -a
-	@sudo rm -rf $(db)
+# $(db)	:
+# 	@echo "Folder $(db) does not exist, creating..."
+# 	mkdir -p $@
 
-fclean	:
-	@printf "Deep clean of docker\n"
-	@make stop
-	@docker system prune --all --force --volumes
-	@docker network prune --force
-	@docker volume prune --force
-	@sudo rm -rf $(db)
+# clean	:	down
+# 	@printf "Removing unused ${name} images...\n"
+# 	@docker system prune -a
+# 	@sudo rm -rf $(db)
 
-re	: | $(data) $(db)
-	@printf "docker-compose up -d --build : Building ${name}'s Configuration...\n"
-	@docker-compose -f srcs/docker-compose.yml --env-file srcs/.env up -d --build
-	@make list
+# fclean	:
+# 	@printf "Deep clean of docker\n"
+# 	@make stop
+# 	@docker system prune --all --force --volumes
+# 	@docker network prune --force
+# 	@docker volume prune --force
+# 	@sudo rm -rf $(db)
 
-build	:	re
+# re	: | $(data) $(db)
+# 	@printf "docker-compose up -d --build : Building ${name}'s Configuration...\n"
+# 	@docker-compose -f srcs/docker-compose.yml --env-file srcs/.env up -d --build
+# 	@make list
+
+# build	:	re
 
 
-up	:
-	@printf "docker-compose up -d : Starting project ${name}...\n"
-	@docker-compose -f srcs/docker-compose.yml --env-file srcs/.env up -d
-	@make dbrestore
-	@make list
+# up	:
+# 	@printf "docker-compose up -d : Starting project ${name}...\n"
+# 	@docker-compose -f srcs/docker-compose.yml --env-file srcs/.env up -d
+# 	@make dbrestore
+# 	@make list
 
-down	:
-	@printf "docker-compose down : Shutdown project ${name}...\n"
-	@docker-compose -f srcs/docker-compose.yml --env-file srcs/.env down
+# down	:
+# 	@printf "docker-compose down : Shutdown project ${name}...\n"
+# 	@docker-compose -f srcs/docker-compose.yml --env-file srcs/.env down
 
-list 	:
-	@printf "Listing containers :\n"
-	docker-compose -f srcs/docker-compose.yml --env-file srcs/.env ps
+# list 	:
+# 	@printf "Listing containers :\n"
+# 	docker-compose -f srcs/docker-compose.yml --env-file srcs/.env ps
 
-logs	:
-	@printf "Checking LOGs :\n"
-	docker-compose -f srcs/docker-compose.yml --env-file srcs/.env logs
+# logs	:
+# 	@printf "Checking LOGs :\n"
+# 	docker-compose -f srcs/docker-compose.yml --env-file srcs/.env logs
 
-pause	:
-	docker-compose -f srcs/docker-compose.yml --env-file srcs/.env pause
+# pause	:
+# 	docker-compose -f srcs/docker-compose.yml --env-file srcs/.env pause
 
-unpause	:
-	docker-compose -f srcs/docker-compose.yml --env-file srcs/.env unpause
+# unpause	:
+# 	docker-compose -f srcs/docker-compose.yml --env-file srcs/.env unpause
 
-stop	:
-	docker-compose -f srcs/docker-compose.yml --env-file srcs/.env stop
+# stop	:
+# 	docker-compose -f srcs/docker-compose.yml --env-file srcs/.env stop
 
-start	:
-	docker-compose -f srcs/docker-compose.yml --env-file srcs/.env start
+# start	:
+# 	docker-compose -f srcs/docker-compose.yml --env-file srcs/.env start
 
 #UTILS	:
 #show databases;
@@ -99,16 +104,16 @@ start	:
 #show grants for 'rahmed'@'%';
 #SELECT User FROM mysql.user;
 
-dbroot	:
-	docker exec -it mariadb mysql -u root -p
+# dbroot	:
+# 	docker exec -it mariadb mysql -u root -p
 
-dbuser	:
-	docker exec -it mariadb mysql -u rahmed -p
+# dbuser	:
+# 	docker exec -it mariadb mysql -u rahmed -p
 
-dblist	:
-	docker exec -it mariadb ls
+# dblist	:
+# 	docker exec -it mariadb ls
 
-.PHONY	: dbroot dbuser dblist all clean fclean re build up down list logs pause unpause stop start
+.PHONY	: front back dbroot dbuser dblist all clean fclean re build up down list logs pause unpause stop start
 
 # Set COLORS
 TXT_RED		=	\033[1;31m

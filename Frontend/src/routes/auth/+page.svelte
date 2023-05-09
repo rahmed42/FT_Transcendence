@@ -2,13 +2,14 @@
 
 <script>
 	import Header from '../Header.svelte';
-	import { isUserLoggedIn, userName } from '../stores.js';
+	// import { isUserLoggedIn, userName } from '../stores.js';
 	import { onMount } from 'svelte';
 
 	async function fetchData() {
-      const response = await fetch('http://localhost:3333/auth'); //Callback to controller auth
-      console.log(response);
-  }
+		//Callback to controller auth
+		const response = await fetch('http://localhost:3333/auth');
+		console.log(response); // ! Debug
+	}
 
 	// function handleLogIn() {
 
@@ -22,35 +23,34 @@
 	// }
 </script>
 
-  <svelte:head>
+<svelte:head>
 	<title>Login</title>
 	<meta name="description" content="Login Page" />
-  </svelte:head>
+</svelte:head>
 
 <main>
-  <div class="center">
-	<div class="text-column">
-	  <button on:click={fetchData}>LOGIN</button>
-	  <h1>Please LOGIN <br /> with your intra42</h1>
+	<div class="center">
+		<div class="text-column">
+			<button on:click={fetchData}>LOGIN</button>
+			<h1>Please LOGIN <br /> with your intra42</h1>
+		</div>
+		<div class="background-image" />
 	</div>
-	<div class="background-image"></div>
-  </div>
 </main>
-
 
 <style>
 	.center {
-	  display: flex;
-	  justify-content: center;
-	  align-items: center;
+		display: flex;
+		justify-content: center;
+		align-items: center;
 	}
 
 	.background-image {
-	  background-image: url('$lib/images/pongAnim.png');
-	  background-position: center;
-	  background-size: cover;
-	  height: 50vh;
-	  width: 50%;
+		background-image: url('$lib/images/pongAnim.png');
+		background-position: center;
+		background-size: cover;
+		height: 50vh;
+		width: 50%;
 	}
 
 	button {

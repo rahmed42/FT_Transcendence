@@ -29,9 +29,6 @@ npm install --save @nestjs/common
 
 
 
-
-
-
 - Site officiel de NestJS :
 https://docs.nestjs.com/
 - Getting started :
@@ -53,5 +50,5 @@ https://www.youtube.com/watch?v=5ygAoXD9msA
 https://www.groupeonepoint.com/fr/nos-publications/securisez-l-acces-a-vos-apis-avec-oauth2/
 
 **** DOC API 42 ********************************
-https://api.intra.42.fr/apidoc/guides/web_application_flow  
+https://api.intra.42.fr/apidoc/guides/web_application_flow
 

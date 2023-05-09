@@ -2,12 +2,14 @@
 
 // writable : can be updated by any of your components using the set method.
 // derived : for reactive values, they will be automatically updated when the value of one or more dependencies changes.
-import { writable } from 'svelte/store';
+
+	import { writable } from 'svelte/store';
 
 // create/init the state by exporting and declaring a const variable
 // $ is to suscribe (automatically update the component when the store changes)
-export const isUserLoggedIn = writable(false);
-export const userName = writable('*Default*');
+
+	export const isUserLoggedIn = writable(false);
+	export const userName = writable('*Default*');
 
 
 
