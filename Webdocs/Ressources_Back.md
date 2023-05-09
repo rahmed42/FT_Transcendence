@@ -49,3 +49,8 @@ https://www.tutorialspoint.com/postgresql/index.htm
 - tuto :
 https://www.youtube.com/watch?v=5ygAoXD9msA
 
+**** Authentification ***
+https://www.groupeonepoint.com/fr/nos-publications/securisez-l-acces-a-vos-apis-avec-oauth2/#:~:text=L'utilisation%20de%20OAuth2%20permet,utilisateur%20dans%20les%20applications%20tierces.
+
+
+
