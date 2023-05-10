@@ -5,12 +5,12 @@
 	// import { isUserLoggedIn, userName } from '../stores.js';
 	import { onMount } from 'svelte';
 
-	async function fetchData() {
+	async function redir_42() {
 		//Callback to controller auth
-		const response = await fetch('http://localhost:3333/auth');
-		console.log(response); // ! Debug
+		window.location.href = "https://api.intra.42.fr/oauth/authorize?client_id=u-s4t2ud-2f818a332a9a2006b00174a76ce71efe9e374cc942b996040f79806509ce968d&redirect_uri=http%3A%2F%2Flocalhost%3A5173%2Fprofile&response_type=code";
+		// const response = await fetch('http://localhost:3333/profile');
+		// console.log(response); // ! Debug
 	}
-
 	// function handleLogIn() {
 
 	// console.log('Before LOGIN = ' + $userName.toString()); // ! Debug
@@ -19,7 +19,6 @@
 	// userName.set('Fake Login'); // replace with the user's name to get from API
 	// console.log('After LOGIN  = ' + $userName.toString());// ! Debug
 	// console.log('After LOGIN  = ' + $isUserLoggedIn.toString());// ! Debug
-	// window.location.href = "https://api.intra.42.fr/oauth/authorize?client_id=u-s4t2ud-2f818a332a9a2006b00174a76ce71efe9e374cc942b996040f79806509ce968d&redirect_uri=https%3A%2F%2Fprofile.intra.42.fr%2Foauth%2Fapplications&response_type=code";
 	// }
 </script>
 
@@ -31,7 +30,7 @@
 <main>
 	<div class="center">
 		<div class="text-column">
-			<button on:click={fetchData}>LOGIN</button>
+			<button on:click={redir_42}>LOGIN</button>
 			<h1>Please LOGIN <br /> with your intra42</h1>
 		</div>
 		<div class="background-image" />

@@ -52,3 +52,9 @@ https://www.groupeonepoint.com/fr/nos-publications/securisez-l-acces-a-vos-apis-
 **** DOC API 42 ********************************
 https://api.intra.42.fr/apidoc/guides/web_application_flow
 
+**** ENV ****
+npm install dotenv
+import dotenv from 'dotenv';
+dotenv.config();
+Allow to use .env variables in file
+const port = process.env.PORT;

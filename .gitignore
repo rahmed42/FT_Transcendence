@@ -5,3 +5,4 @@
 *.icloud
 .vscode/targets.log
 .vscode/dryrun.log
+.env

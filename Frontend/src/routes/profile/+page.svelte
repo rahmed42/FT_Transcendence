@@ -2,7 +2,19 @@
 
 <script>
 	import Header from '../Header.svelte';
-	// import { isUserLoggedIn, userName } from '../stores.js';
+	// need to check if the code provided by 42 is already in the URL
+
+	if (typeof window !== 'undefined') {
+		const currentUrl = window.location.href;
+		const params = new URLSearchParams(currentUrl.split('?')[1]);
+		const code = params.get('code');
+
+		async function getToken() {
+			const response = await fetch('http://localhost:3333/auth/token?code=' + code);
+		}
+		getToken();
+		// console.log(response);
+	}
   </script>
 
   <svelte:head>
