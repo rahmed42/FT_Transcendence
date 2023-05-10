@@ -6,11 +6,11 @@
 
 	if (typeof window !== 'undefined') {
 		const currentUrl = window.location.href;
-		const params = new URLSearchParams(currentUrl.split('?')[1]);
-		const code = params.get('code');
-
+		const code = new URLSearchParams(window.location.search).get('code');
 		async function getToken() {
-			const response = await fetch('http://localhost:3333/auth/token?code=' + code);
+			const response = await fetch('http://localhost:3333/auth/token?code=' + code, {
+				method: 'POST',
+			});
 		}
 		getToken();
 		// console.log(response);

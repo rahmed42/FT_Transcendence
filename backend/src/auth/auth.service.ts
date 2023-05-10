@@ -1,10 +1,5 @@
-import { Injectable, Redirect, Res } from '@nestjs/common';
+import { Injectable, Query } from '@nestjs/common';
+import axios from 'axios'
 
 @Injectable()
-export class AuthService {
-	login() {}
-
-	logout() {
-		return ("LOGOUT from AuthService");
-	}
-}
+export class AuthService {}
