@@ -4,6 +4,7 @@ import axios from 'axios';
 
 const dotenv = require('dotenv');
 dotenv.config();
+
 @Controller('auth')
 export class AuthController {
 	constructor(private authService: AuthService)  {}
@@ -24,6 +25,9 @@ export class AuthController {
 			'Authorization': 'Bearer ' + token,
 		};
 		const data = await axios.get("https://api.intra.42.fr/v2/me",  { headers });
-		// console.log(data);
+		const user = {
+			id: data.data.id,
+		}
+		console.log(user);
 	}
 }
