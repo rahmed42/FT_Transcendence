@@ -6,7 +6,6 @@
 	import { onMount } from 'svelte';
 
 	async function redir_42() {
-		//Callback to controller auth
 		window.location.href = "https://api.intra.42.fr/oauth/authorize?client_id=u-s4t2ud-2f818a332a9a2006b00174a76ce71efe9e374cc942b996040f79806509ce968d&redirect_uri=http%3A%2F%2Flocalhost%3A5173%2Fprofile&response_type=code";
 		// const response = await fetch('http://localhost:3333/profile');
 		// console.log(response); // ! Debug

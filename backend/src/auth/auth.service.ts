@@ -1,9 +1,12 @@
-import { Injectable, Query } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { User } from '@prisma/client';
 import axios from 'axios'
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class AuthService {
-    async getToken(code: string) {
+    constructor(private prisma: PrismaService) {}
+    async getUser(code: string) {
         const payload = {
             grant_type: process.env.GRANT_TYPE,
             client_id: process.env.CLIENT_ID,
@@ -15,11 +18,11 @@ export class AuthService {
             headers: { 'Content-Type': 'application/json' },
         });
         const token = response.data.access_token;
-        const headers = {
-            'Authorization': 'Bearer ' + token,
-        };
-        const data = await axios.get("https://api.intra.42.fr/v2/me", { headers });
+        const data = await axios.get("https://api.intra.42.fr/v2/me", { 
+            headers: { 'Authorization': 'Bearer ' + token },
+        });
         const user = {
+            token,
             id: data.data.id,
             email: data.data.email,
             login: data.data.login,
@@ -31,4 +34,5 @@ export class AuthService {
         }
         return user;
     }
+    
 }

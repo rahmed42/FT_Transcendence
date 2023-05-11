@@ -19,7 +19,7 @@ yarn add -D prisma
 yarn add @prisma/client
 npx prisma init
 - Migrate models to the database
-npx prisma migrate dev
+sudo npx prisma migrate dev
 (this command also run npx prisma generate, wich create typescript types for the schemas)
 - Explore the database to the browser
 npx prisma studio

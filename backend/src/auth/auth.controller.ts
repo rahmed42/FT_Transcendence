@@ -1,6 +1,5 @@
 import { Controller, Get, Post, Query } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import axios from 'axios';
 
 const dotenv = require('dotenv');
 dotenv.config();
@@ -8,9 +7,9 @@ dotenv.config();
 @Controller('auth')
 export class AuthController {
 	constructor(private authService: AuthService)  {}
-	@Post('token')
+	@Post('login')
 		async login(@Query('code') code: string) {
-			const user = await this.authService.getToken(code);
+			const user = await this.authService.getUser(code);
 			console.log(user);
 		}
 }
