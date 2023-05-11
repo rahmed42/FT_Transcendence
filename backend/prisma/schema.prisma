@@ -12,8 +12,6 @@ datasource db {
 
 model User {
   id Int @id @default(autoincrement())
-  createAt DateTime @default(now())
-  updateAt DateTime @updatedAt
   email String
   login String
   first_name String
@@ -21,4 +19,6 @@ model User {
   large_pic String
   medium_pic String
   small_pic String
+  createAt DateTime @default(now())
+  updateAt DateTime @updatedAt
 }
