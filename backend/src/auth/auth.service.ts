@@ -32,7 +32,17 @@ export class AuthService {
             medium_pic: data.data.image.versions.medium,
             small_pic: data.data.image.versions.small,
         }
+        const check_id = await this.prisma.user.findUnique({
+            where: {
+                id: data.data.id,
+            }
+        })
+        if (!check_id)
+        {
+            const prisma_user = await this.prisma.user.create({
+                data: user,
+            });
+        }
         return user;
     }
-    
 }
