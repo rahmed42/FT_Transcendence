@@ -6,7 +6,7 @@
 #    By: rahmed <rahmed@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/05/09 12:57:06 by rahmed            #+#    #+#              #
-#    Updated: 2023/05/09 19:27:47 by rahmed           ###   ########.fr        #
+#    Updated: 2023/05/13 19:21:13 by rahmed           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -22,6 +22,15 @@ front :
 	@printf "Launching ${name} Front...\n"
 	@echo "${FANCY_RESET}"
 	cd Frontend && npm install && npm run dev -- --open
+#	make fgame
+
+fgame :
+	@echo "${TXT_YELLOW}"
+	@echo "~~~~~~~~~~ GAME FRONTEND ~~~~~~~~~~"
+	@echo "${TXT_GREEN}"
+	@printf "Launching ${name} Game front...\n"
+	@echo "${FANCY_RESET}"
+	cd Frontend && npm run startgame
 
 back :
 	@echo "${TXT_YELLOW}"
@@ -30,6 +39,15 @@ back :
 	@printf "Launching ${name} BACKEND...\n"
 	@echo "${FANCY_RESET}"
 	cd Backend && npm install && npm run start:dev
+#	make bgame
+
+bgame :
+	@echo "${TXT_YELLOW}"
+	@echo "~~~~~~~~~~ GAME BACKEND ~~~~~~~~~~"
+	@echo "${TXT_GREEN}"
+	@printf "Launching ${name} Game back...\n"
+	@echo "${FANCY_RESET}"
+	cd Backend && npm run startgame && open http://localhost:2567/colyseus/
 
 all	:
 	docker-compose up dev-db -d
