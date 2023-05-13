@@ -9,6 +9,7 @@ Set target option : https://www.typescriptlang.org/tsconfig#target
 
 - TypeScript REFERENCE :
 https://www.typescriptlang.org/docs/handbook/utility-types.html
+Decorators : https://github.com/tc39/proposal-decorators
 
 - NPM packages info : https://www.npmjs.com
 
@@ -103,6 +104,7 @@ Other tips : https://www.youtube.com/watch?v=AiFqApeurqI
 Phaser - HTML5 Game Framework :
 https://www.npmjs.com/package/phaser
 https://makeyourgame.fun/tutoriel/jeux-videos/phaser/phaser-mise-en-place
+https://glitch.com/~colyseus-phaser-tutorial
 
 
 ## Cookies
