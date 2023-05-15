@@ -6,7 +6,7 @@
 #    By: rahmed <rahmed@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/05/09 12:57:06 by rahmed            #+#    #+#              #
-#    Updated: 2023/05/15 21:07:49 by rahmed           ###   ########.fr        #
+#    Updated: 2023/05/15 21:26:03 by rahmed           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -38,6 +38,7 @@ back :
 	@echo "${TXT_GREEN}"
 	@printf "Launching ${name} BACKEND...\n"
 	@echo "${FANCY_RESET}"
+	@make up
 	cd Backend && npm install && npm run start:dev
 #	make bgame
 
