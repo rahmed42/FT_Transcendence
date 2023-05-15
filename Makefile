@@ -6,7 +6,7 @@
 #    By: rahmed <rahmed@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/05/09 12:57:06 by rahmed            #+#    #+#              #
-#    Updated: 2023/05/15 21:26:03 by rahmed           ###   ########.fr        #
+#    Updated: 2023/05/15 21:50:47 by rahmed           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -39,7 +39,7 @@ back :
 	@printf "Launching ${name} BACKEND...\n"
 	@echo "${FANCY_RESET}"
 	@make up
-	cd Backend && npm install && npm run start:dev
+	cd Backend && npm install && npx prisma generate && npm run start:dev
 #	make bgame
 
 bgame :
@@ -52,9 +52,11 @@ bgame :
 	@open http://localhost:2567/colyseus/
 
 all	:
-	docker-compose up dev-db -d
+#	docker-compose up dev-db -d
 	@make back
 	@make front
+	@make bgame
+	@make fgame
 
 # all	: | $(data) $(db)
 # 	@make up
