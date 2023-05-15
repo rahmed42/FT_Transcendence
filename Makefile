@@ -6,7 +6,7 @@
 #    By: rahmed <rahmed@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/05/09 12:57:06 by rahmed            #+#    #+#              #
-#    Updated: 2023/05/13 19:21:13 by rahmed           ###   ########.fr        #
+#    Updated: 2023/05/15 20:53:15 by rahmed           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -47,7 +47,8 @@ bgame :
 	@echo "${TXT_GREEN}"
 	@printf "Launching ${name} Game back...\n"
 	@echo "${FANCY_RESET}"
-	cd Backend && npm run startgame && open http://localhost:2567/colyseus/
+	cd Backend && npm run startgame
+	@open http://localhost:2567/colyseus/
 
 all	:
 	docker-compose up dev-db -d
@@ -80,41 +81,40 @@ all	:
 
 # re	: | $(data) $(db)
 # 	@printf "docker-compose up -d --build : Building ${name}'s Configuration...\n"
-# 	@docker-compose -f srcs/docker-compose.yml --env-file srcs/.env up -d --build
+# 	@docker-compose -f backend/docker-compose.yml --env-file backend/.env up -d --build
 # 	@make list
 
 # build	:	re
 
 
-# up	:
-# 	@printf "docker-compose up -d : Starting project ${name}...\n"
-# 	@docker-compose -f srcs/docker-compose.yml --env-file srcs/.env up -d
-# 	@make dbrestore
-# 	@make list
+up	:
+	@printf "docker-compose up -d : Starting project ${name}...\n"
+	@docker-compose -f backend/docker-compose.yml --env-file backend/.env up -d
+	@make list
 
-# down	:
-# 	@printf "docker-compose down : Shutdown project ${name}...\n"
-# 	@docker-compose -f srcs/docker-compose.yml --env-file srcs/.env down
+down	:
+	@printf "docker-compose down : Shutdown project ${name}...\n"
+	@docker-compose -f backend/docker-compose.yml --env-file backend/.env down
 
-# list 	:
-# 	@printf "Listing containers :\n"
-# 	docker-compose -f srcs/docker-compose.yml --env-file srcs/.env ps
+list 	:
+	@printf "Listing containers :\n"
+	docker-compose -f backend/docker-compose.yml --env-file backend/.env ps
 
-# logs	:
-# 	@printf "Checking LOGs :\n"
-# 	docker-compose -f srcs/docker-compose.yml --env-file srcs/.env logs
+logs	:
+	@printf "Checking LOGs :\n"
+	docker-compose -f backend/docker-compose.yml --env-file backend/.env logs
 
-# pause	:
-# 	docker-compose -f srcs/docker-compose.yml --env-file srcs/.env pause
+pause	:
+	docker-compose -f backend/docker-compose.yml --env-file backend/.env pause
 
-# unpause	:
-# 	docker-compose -f srcs/docker-compose.yml --env-file srcs/.env unpause
+unpause	:
+	docker-compose -f backend/docker-compose.yml --env-file backend/.env unpause
 
-# stop	:
-# 	docker-compose -f srcs/docker-compose.yml --env-file srcs/.env stop
+stop	:
+	docker-compose -f backend/docker-compose.yml --env-file backend/.env stop
 
-# start	:
-# 	docker-compose -f srcs/docker-compose.yml --env-file srcs/.env start
+start	:
+	docker-compose -f backend/docker-compose.yml --env-file backend/.env start
 
 #UTILS	:
 #show databases;
@@ -122,14 +122,15 @@ all	:
 #show grants for 'rahmed'@'%';
 #SELECT User FROM mysql.user;
 
-# dbroot	:
-# 	docker exec -it mariadb mysql -u root -p
+db	:
+	cd backend && npx prisma studio
+# 	docker exec -it postgres mysql -u root -p
 
 # dbuser	:
-# 	docker exec -it mariadb mysql -u rahmed -p
+# 	docker exec -it postgres mysql -u rahmed -p
 
 # dblist	:
-# 	docker exec -it mariadb ls
+# 	docker exec -it postgres ls
 
 .PHONY	: front back dbroot dbuser dblist all clean fclean re build up down list logs pause unpause stop start
 
