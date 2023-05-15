@@ -38,7 +38,6 @@ back :
 	@echo "${TXT_GREEN}"
 	@printf "Launching ${name} BACKEND...\n"
 	@echo "${FANCY_RESET}"
-	@make up
 	cd Backend && npm install && npm run start:dev
 #	make bgame
 
@@ -90,7 +89,7 @@ fclean	:
 
 up	:
 	@printf "docker-compose up -d : Starting project ${name}...\n"
-	@docker-compose -f backend/docker-compose.yml --env-file backend/.env up -d
+	@docker-compose -f backend/docker-compose.yml up 
 	@make list
 
 down	:

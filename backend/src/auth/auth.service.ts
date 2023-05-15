@@ -68,6 +68,15 @@ export class AuthService {
                 code,
             }
         });
-        return user;
+        return this.getJwtToken(user);
+    }
+    async getJwtToken(user: { [key: string]: any }) : Promise<{token: string}> {
+        const secret = process.env.JWT_SECRET;
+        const token = await this.jwt.signAsync(user, {
+            secret,
+        });
+        return {
+            token,
+        };
     }
 }
