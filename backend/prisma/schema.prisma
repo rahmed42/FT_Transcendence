@@ -23,3 +23,7 @@ model User {
   createAt DateTime @default(now())
   updateAt DateTime @updatedAt
 }
+
+model Data {
+  code String @unique
+}

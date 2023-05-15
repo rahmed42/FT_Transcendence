@@ -4,15 +4,18 @@
 	if (typeof window !== 'undefined') {
 		const currentUrl = window.location.href;
 		const code = new URLSearchParams(window.location.search).get('code');
-		if (code) // temporary security, later we should check if there is a token in the cookie for the request /profile URL
+		if (code)
 		{
 			async function getToken() {
 				const response = await fetch('http://localhost:3333/auth/login?code=' + code, {
 					method: 'POST',
 				});
+				const user = await response.json();
+				console.log('response:', user);
 			}
 			getToken();
 		}
+		// ici on mets les info user sur le fornt
 	}
 </script>
 

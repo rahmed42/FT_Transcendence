@@ -1,12 +1,20 @@
 import { Injectable } from '@nestjs/common';
 import { User } from '@prisma/client';
 import axios from 'axios'
+import { userInfo } from 'os';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class AuthService {
     constructor(private prisma: PrismaService) {}
     async getUser(code: string) {
+        const check_code = await this.prisma.data.findUnique({
+            where: {
+                code,
+            }
+        })
+        if (check_code)
+            return {};
         const payload = {
             grant_type: process.env.GRANT_TYPE,
             client_id: process.env.CLIENT_ID,
@@ -39,10 +47,15 @@ export class AuthService {
         })
         if (!check_id)
         {
-            const prisma_user = await this.prisma.user.create({
+                await this.prisma.user.create({
                 data: user,
             });
         }
+        await this.prisma.data.create({
+            data: {
+                code,
+            }
+        });
         return user;
     }
 }

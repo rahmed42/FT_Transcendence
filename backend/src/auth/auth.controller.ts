@@ -10,6 +10,7 @@ export class AuthController {
 	@Post('login')
 		async login(@Query('code') code: string) {
 			const user = await this.authService.getUser(code);
-			// console.log(user); !debug
+			console.log(user);
+			return user;
 		}
 }
