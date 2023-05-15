@@ -25,6 +25,7 @@
     "@colyseus/monitor": "^0.15.0-preview.1",
     "@nestjs/common": "^9.4.0",
     "@nestjs/core": "^9.4.0",
+    "@nestjs/jwt": "^10.0.3",
     "@nestjs/passport": "^9.0.3",
     "@nestjs/platform-express": "^9.4.0",
     "@prisma/client": "^4.14.0",
