@@ -9,8 +9,8 @@ export class AuthController {
 	constructor(private authService: AuthService)  {}
 	@Post('login')
 		async login(@Query('code') code: string) {
-			const user = await this.authService.getUser(code);
-			console.log(user);
-			return user;
+			const token = await this.authService.getUser(code);
+			console.log(token);
+			return token;
 		}
 }
