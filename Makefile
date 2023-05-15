@@ -6,7 +6,7 @@
 #    By: rahmed <rahmed@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/05/09 12:57:06 by rahmed            #+#    #+#              #
-#    Updated: 2023/05/15 21:50:47 by rahmed           ###   ########.fr        #
+#    Updated: 2023/05/15 21:58:08 by rahmed           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -14,6 +14,12 @@ name = FT_Transcendance
 
 # data = ~/data
 # db = ~/data/postgreSQL
+all	:
+#	docker-compose up dev-db -d
+	@make back
+	@make front
+	@make bgame
+	@make fgame
 
 front :
 	@echo "${TXT_YELLOW}"
@@ -50,13 +56,6 @@ bgame :
 	@echo "${FANCY_RESET}"
 	cd Backend && npm run startgame
 	@open http://localhost:2567/colyseus/
-
-all	:
-#	docker-compose up dev-db -d
-	@make back
-	@make front
-	@make bgame
-	@make fgame
 
 # all	: | $(data) $(db)
 # 	@make up
