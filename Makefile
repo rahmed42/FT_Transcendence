@@ -6,7 +6,7 @@
 #    By: rahmed <rahmed@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/05/09 12:57:06 by rahmed            #+#    #+#              #
-#    Updated: 2023/05/15 20:53:15 by rahmed           ###   ########.fr        #
+#    Updated: 2023/05/15 21:07:49 by rahmed           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -66,18 +66,18 @@ all	:
 # 	@echo "Folder $(db) does not exist, creating..."
 # 	mkdir -p $@
 
-# clean	:	down
-# 	@printf "Removing unused ${name} images...\n"
-# 	@docker system prune -a
-# 	@sudo rm -rf $(db)
+clean	:	down
+	@printf "Removing unused ${name} images...\n"
+	@docker system prune -a
+#	@sudo rm -rf $(db)
 
-# fclean	:
-# 	@printf "Deep clean of docker\n"
-# 	@make stop
-# 	@docker system prune --all --force --volumes
-# 	@docker network prune --force
-# 	@docker volume prune --force
-# 	@sudo rm -rf $(db)
+fclean	:
+	@printf "Deep clean of docker\n"
+	@make stop
+	@docker system prune --all --force --volumes
+	@docker network prune --force
+	@docker volume prune --force
+#	@sudo rm -rf $(db)
 
 # re	: | $(data) $(db)
 # 	@printf "docker-compose up -d --build : Building ${name}'s Configuration...\n"
