@@ -25,9 +25,19 @@
 			}
 			getToken();
 		}
+		else
+		{
+			async function getUserInfo() {
+				const response = await fetch('http://localhost:3333/profil/me', {
+					method: 'GET',
+					credentials: 'include', 
+				});
+				console.log(response);
+			}
+			getUserInfo();
+		}
 		// If there is no code in the URL, this is the client trying to acces his information
 		// Need to create endpoint that check the JWT Token and return info
-
 	}
 </script>
 

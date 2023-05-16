@@ -1,6 +1,7 @@
 import { Controller, Get, Post, Query, Req } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Request } from 'express';
+import { UserService } from 'src/user/user.service';
 
 const dotenv = require('dotenv');
 dotenv.config();
@@ -16,3 +17,15 @@ export class AuthController {
 			return token;
 		}
 }
+
+// @Controller('profil')
+// export class UserController {
+// 	constructor(private userService: UserService) {}
+// 		@Get('me')
+// 			fct() {
+// 				console.log('here back');
+// 			}
+// 		// async getUserInfo(@Req() request: Request) {
+// 				// const token = request.cookies;
+// 				// await this.userService.getInfo(token);
+// 		}
