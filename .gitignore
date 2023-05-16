@@ -6,3 +6,6 @@
 .vscode/targets.log
 .vscode/dryrun.log
 .env
+
+#Tests
+/game
