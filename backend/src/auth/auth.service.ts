@@ -71,8 +71,8 @@ export class AuthService {
         }
     }
     async getJwtToken(user: { [key: string]: any }) : Promise<{token: string}> {
-        const secret = process.env.JWT_SECRET;
-        const token = await this.jwt.signAsync(user, {
+        const secret: string = process.env.JWT_SECRET;
+        const token: string = await this.jwt.signAsync(user, {
             secret,
         });
         await this.prisma.user.update({
