@@ -91,11 +91,7 @@ fclean	:
 
 up	:
 	@printf "docker-compose up -d : Starting $(USER) project ${name}...\n"
-ifeq ($(USER),bryan) #FOR TIM
 	@docker-compose -f backend/docker-compose.yml --env-file backend/.env up -d
-else
-	@docker-compose -f backend/docker-compose.yml --env-file backend/.env up -d
-endif
 	@make list
 
 down	:
