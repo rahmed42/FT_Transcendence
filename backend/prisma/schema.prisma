@@ -12,6 +12,7 @@ datasource db {
 
 model User {
   token String
+  jwtToken String @default("")
   id Int @id
   email String 
   login String

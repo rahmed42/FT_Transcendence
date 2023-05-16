@@ -1,4 +1,4 @@
-version: '2.2'
+version: '3.3'
 services:
   dev-db:
     image: postgres:13
@@ -9,16 +9,6 @@ services:
       POSTGRES_PASSWORD: 123
       POSTGRES_DB: nest
     networks:
-      - transcendance
-  # test-db:
-  #   image: postgres:13
-  #   ports:
-  #     - 5435:5432
-  #   environment:
-  #     POSTGRES_USER: postgres
-  #     POSTGRES_PASSWORD: 123
-  #     POSTGRES_DB: nest
-  #   networks:
-  #     - freecodecamp
+      - freecodecamp
 networks:
-  transcendance:
+  freecodecamp:
