@@ -2,6 +2,8 @@
 <script>
 	import Header from './Header.svelte';
 	import './styles.css';
+	// import { page } from '$app/stores';
+
 	// import Particles from "svelte-particles";
 	// import { loadFull } from "tsparticles-engine";
 
@@ -81,4 +83,17 @@
 	  align-items: center;
 	  padding: 12px;
 	}
+	.game-page {
+        position: relative;
+    }
+    .game-page #game-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 999;
+    }
+
   </style>
