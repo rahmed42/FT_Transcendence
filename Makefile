@@ -44,8 +44,7 @@ back :
 	@echo "${TXT_GREEN}"
 	@printf "Launching ${name} BACKEND...\n"
 	@echo "${FANCY_RESET}"
-	@make up
-	cd Backend && npm install && npx prisma generate && npm run start:dev
+	cd Backend && npm install && npm run start:dev
 #	make bgame
 
 bgame :
@@ -91,7 +90,7 @@ fclean	:
 
 up	:
 	@printf "docker-compose up -d : Starting project ${name}...\n"
-	@docker-compose -f backend/docker-compose.yml --env-file backend/.env up -d
+	@docker-compose up
 	@make list
 
 down	:
@@ -100,7 +99,7 @@ down	:
 
 list 	:
 	@printf "Listing containers :\n"
-	docker-compose -f backend/docker-compose.yml --env-file backend/.env ps
+	docker ps
 
 logs	:
 	@printf "Checking LOGs :\n"
