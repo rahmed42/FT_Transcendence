@@ -6,7 +6,7 @@
 #    By: rahmed <rahmed@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/05/09 12:57:06 by rahmed            #+#    #+#              #
-#    Updated: 2023/05/16 19:20:00 by rahmed           ###   ########.fr        #
+#    Updated: 2023/05/16 19:35:49 by rahmed           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -14,12 +14,13 @@ name = FT_Transcendance
 
 # data = ~/data
 # db = ~/data/postgreSQL
+
 all	:
-#	docker-compose up dev-db -d
 	@make back
 	@make front
-	@make bgame
-	@make fgame
+#	@make bgame
+#	@make fgame
+#	@make db
 
 front :
 	@echo "${TXT_YELLOW}"
@@ -88,7 +89,6 @@ fclean	:
 
 # build	:	re
 
-
 up	:
 	@printf "docker-compose up -d : Starting $(USER) project ${name}...\n"
 ifeq ($(USER),bryan) #FOR TIM
@@ -126,19 +126,19 @@ start	:
 #show databases;
 #show grants for 'root'@'localhost';
 #show grants for 'rahmed'@'%';
-#SELECT User FROM mysql.user;
+#SELECT User FROM db.user;
 
 db	:
 	cd backend && npx prisma studio
-# 	docker exec -it postgres mysql -u root -p
+# 	docker exec -it postgres db -u root -p
 
 # dbuser	:
-# 	docker exec -it postgres mysql -u rahmed -p
+# 	docker exec -it postgres db -u rahmed -p
 
 # dblist	:
 # 	docker exec -it postgres ls
 
-.PHONY	: front back dbroot dbuser dblist all clean fclean re build up down list logs pause unpause stop start
+.PHONY	: front back fgame bgame all clean fclean re build up down list logs pause unpause stop start db
 
 # Set COLORS
 TXT_RED		=	\033[1;31m
