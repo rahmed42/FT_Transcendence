@@ -6,7 +6,7 @@
 #    By: rahmed <rahmed@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/05/09 12:57:06 by rahmed            #+#    #+#              #
-#    Updated: 2023/05/15 21:58:08 by rahmed           ###   ########.fr        #
+#    Updated: 2023/05/16 19:20:00 by rahmed           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -90,8 +90,12 @@ fclean	:
 
 
 up	:
-	@printf "docker-compose up -d : Starting project ${name}...\n"
+	@printf "docker-compose up -d : Starting $(USER) project ${name}...\n"
+ifeq ($(USER),bryan) #FOR TIM
+	@docker-compose backend/docker-compose.yml up
+else
 	@docker-compose -f backend/docker-compose.yml --env-file backend/.env up -d
+endif
 	@make list
 
 down	:
