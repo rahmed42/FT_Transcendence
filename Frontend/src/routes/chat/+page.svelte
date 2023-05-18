@@ -1,25 +1,24 @@
 <!-- Chat page content  -->
 
-<script>
+<script lang="ts">
 	import Header from '../Header.svelte';
-  </script>
+</script>
 
-  <svelte:head>
+<svelte:head>
 	<title>Chat</title>
 	<meta name="description" content="Chat Page" />
-  </svelte:head>
+</svelte:head>
 
-  <div class="center">
+<div class="center">
 	<div class="text-column">
-	  <h1>CHAT PAGE</h1>
+		<h1>CHAT PAGE</h1>
 	</div>
-  </div>
+</div>
 
 <style>
 	.center {
-	  display: flex;
-	  justify-content: center;
-	  align-items: center;
+		display: flex;
+		justify-content: center;
+		align-items: center;
 	}
-
 </style>

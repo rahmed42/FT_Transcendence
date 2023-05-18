@@ -1,5 +1,5 @@
 <!-- Game page content -->
-<script>
+<script lang="ts">
 	import { onDestroy } from 'svelte';
 	// import { sceneSelector } from './scenes/SceneSelector.ts';
 

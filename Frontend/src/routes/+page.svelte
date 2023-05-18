@@ -1,6 +1,6 @@
 <!-- Home  "/" page content -->
 
-<script>
+<script lang="ts">
 	import pongAnim from '$lib/images/pongAnim.png';
 </script>
 
@@ -11,10 +11,10 @@
 
 <section>
 	<h1>
-		<strong>Welcome</strong> to<br>Ft_Trancendance<br><br>
+		<strong>Welcome</strong> to<br />Ft_Trancendance<br /><br />
 		<span class="pongAnim">
 			<picture>
-				<img src={pongAnim} alt="pongAnim"style="height: 300px; width: auto;" />
+				<img src={pongAnim} alt="pongAnim" style="height: 300px; width: auto;" />
 			</picture>
 		</span>
 	</h1>
