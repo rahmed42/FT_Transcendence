@@ -83,7 +83,7 @@
 	  align-items: center;
 	  padding: 12px;
 	}
-	.game-page {
+	/* .game-page {
         position: relative;
     }
     .game-page #game-container {
@@ -94,6 +94,6 @@
         height: 100%;
         pointer-events: none;
         z-index: 999;
-    }
+    } */
 
   </style>
