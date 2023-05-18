@@ -1,10 +1,8 @@
 <!-- Profile page content -->
 
 <script>
-	if (typeof window !== 'undefined') {
+	if (typeof window !== 'undefined') { 
 		const code = new URLSearchParams(window.location.search).get('code');
-		// If there is a code provided by the URL, this is a new client connexion
-		// Need to generate a JWT Token for this client
 		if (code)
 		{
 			async function getToken() {
@@ -25,26 +23,29 @@
 			}
 			getToken();
 		}
-		else
-		{
-			async function getUserInfo() {
-				const response = await fetch('http://localhost:3333/profil/me', {
-					method: 'GET',
-					credentials: 'include', 
-				});
-				console.log(response);
-			}
-			getUserInfo();
-		}
-		// If there is no code in the URL, this is the client trying to acces his information
-		// Need to create endpoint that check the JWT Token and return info
 	}
+	let user = {
+		login: 'unknow',
+		email: 'unknow',
+		large_pic: '',
+	}
+	async function getUserInfo() {
+		const response = await fetch('http://localhost:3333/profil/me', {
+			method: 'GET',
+			credentials: 'include',
+		});
+		const contentType = response.headers.get('Content-Type');
+		if (contentType && contentType.includes('application/json')) {
+			const userInfo = await response.json();
+			user = userInfo;
+		}
+	}
+	getUserInfo();
 </script>
 
-  <!-- {#if user}
-  <p>Hello {user.login}</p>
-  <p>Your email is {user.email}</p>
-{/if} -->
+<img src={user.large_pic} alt={`Picture of ${user.login}`} />
+<p>Hello {user.login}</p>
+<p>Your email is {user.email}</p>
 
   <svelte:head>
 	<title>Profile</title>

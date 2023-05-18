@@ -9,7 +9,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class AuthService {
     constructor(private prisma: PrismaService, private jwt: JwtService) {}
     async getUser(code: string) {
-        // Check if the URL code was already used once, if not, return {}
+        // Check if the URL code was already used once, if not
         // This is done for dodge making request twice with the same URL code (API return error)
         // I can probably avoid doing this later by using JWT Token form the request
         const check_code = await this.prisma.data.findUnique({
@@ -71,8 +71,8 @@ export class AuthService {
         }
     }
     async getJwtToken(user: { [key: string]: any }) : Promise<{token: string}> {
-        const secret: string = process.env.JWT_SECRET;
-        const token: string = await this.jwt.signAsync(user, {
+        const secret = process.env.JWT_SECRET;
+        const token = await this.jwt.signAsync(user, {
             secret,
         });
         await this.prisma.user.update({

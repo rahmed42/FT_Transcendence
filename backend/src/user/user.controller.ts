@@ -8,6 +8,6 @@ export class UserController {
     @Get('me')
         async getUserInfo(@Req() request: Request) {
         const token = request.cookies;
-        await this.userService.getInfo(token);
+        return await this.userService.getInfo(token);
     }
 }
