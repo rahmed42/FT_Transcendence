@@ -6,7 +6,7 @@
 #    By: rahmed <rahmed@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/05/09 12:57:06 by rahmed            #+#    #+#              #
-#    Updated: 2023/05/18 13:32:54 by rahmed           ###   ########.fr        #
+#    Updated: 2023/05/18 14:40:28 by rahmed           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -90,7 +90,7 @@ fgame :
 	cd Frontend && npm run startgame
 
 db	:
-	cd backend && npx prisma studio
+	cd backend && npx prisma migrate dev && npx prisma studio
 
 ######################## DOCKER COMPOSE ########################
 check_docker_desktop:
