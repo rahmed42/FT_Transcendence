@@ -1,11 +1,12 @@
 <!-- Profile page content -->
 
 <script>
+	import { onMount } from 'svelte'
 	if (typeof window !== 'undefined') { 
 		const code = new URLSearchParams(window.location.search).get('code');
 		if (code)
 		{
-			async function getToken() {
+			onMount(async function getToken() {
 				const response = await fetch('http://localhost:3333/auth/login?code=' + code, {
 					method: 'POST',
 					credentials: 'include',
@@ -20,8 +21,8 @@
 						console.log('Cookie:', document.cookie);
 					}
 				}
-			}
-			getToken();
+			});
+			// getToken();
 		}
 	}
 	let user = {
@@ -29,7 +30,7 @@
 		email: 'unknow',
 		large_pic: '',
 	}
-	async function getUserInfo() {
+	onMount( async function getUserInfo() {
 		const response = await fetch('http://localhost:3333/profil/me', {
 			method: 'GET',
 			credentials: 'include',
@@ -39,8 +40,8 @@
 			const userInfo = await response.json();
 			user = userInfo;
 		}
-	}
-	getUserInfo();
+	})
+	// getUserInfo();
 </script>
 
 <img src={user.large_pic} alt={`Picture of ${user.login}`} />
