@@ -2,23 +2,11 @@
 
 <script>
 	import Header from '../Header.svelte';
-	// import { isUserLoggedIn, userName } from '../stores.js';
 	import { onMount } from 'svelte';
 
 	async function redir_42() {
 		window.location.href = "https://api.intra.42.fr/oauth/authorize?client_id=u-s4t2ud-2f818a332a9a2006b00174a76ce71efe9e374cc942b996040f79806509ce968d&redirect_uri=http%3A%2F%2Flocalhost%3A5173%2Fprofile&response_type=code";
-		// const response = await fetch('http://localhost:3333/profile');
-		// console.log(response); // ! Debug
 	}
-	// function handleLogIn() {
-
-	// console.log('Before LOGIN = ' + $userName.toString()); // ! Debug
-	// console.log('Before LOGIN = ' + $isUserLoggedIn.toString());// ! Debug
-	// isUserLoggedIn.set(true);
-	// userName.set('Fake Login'); // replace with the user's name to get from API
-	// console.log('After LOGIN  = ' + $userName.toString());// ! Debug
-	// console.log('After LOGIN  = ' + $isUserLoggedIn.toString());// ! Debug
-	// }
 </script>
 
 <svelte:head>

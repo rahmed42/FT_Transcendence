@@ -36,29 +36,29 @@
 	//   // starting from v2 you can add only the features you need reducing the bundle size
 	//   await loadFull(engine);
 	// };
-  </script>
+</script>
 
-  <div class="app" id="app">
+<div class="app" id="app">
 	<Header />
 	<main>
-	  <!-- <Particles
+		<!-- <Particles
 		id="tsparticles"
 		url="{particlesUrl}"
 		options="{particlesConfig}"
 		on:particlesLoaded="{onParticlesLoaded}"
 		particlesInit="{particlesInit}"
 	  /> -->
-	  <slot />
+		<slot />
 	</main>
 
 	<footer>
-	  <center>
-		Made By <strong> anggonza - ddupont - mmatthie - rahmed - tbrandt </strong>
-	  </center>
+		<center>
+			Made By <strong> ☁️ anggonza 🌟 ddupont 🌟 mmatthie 🌟 rahmed 🌟 tbrandt ☁️ </strong>
+		</center>
 	</footer>
-  </div>
+</div>
 
-  <style>
+<style>
 	/* .app {
 	  display: flex;
 	  flex-direction: column;
@@ -66,22 +66,22 @@
 	} */
 
 	main {
-	  flex: 1;
-	  display: flex;
-	  flex-direction: column;
-	  padding: 1rem;
-	  width: 100%;
-	  max-width: 64rem;
-	  margin: 0 auto;
-	  box-sizing: border-box;
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		padding: 1rem;
+		width: 100%;
+		max-width: 64rem;
+		margin: 0 auto;
+		box-sizing: border-box;
 	}
 
 	footer {
-	  display: flex;
-	  flex-direction: column;
-	  justify-content: center;
-	  align-items: center;
-	  padding: 12px;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+		padding: 12px;
 	}
 	/* .game-page {
         position: relative;
@@ -95,5 +95,4 @@
         pointer-events: none;
         z-index: 999;
     } */
-
-  </style>
+</style>

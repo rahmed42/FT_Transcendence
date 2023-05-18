@@ -1,25 +1,60 @@
 <!-- Shared Header config file with navigation links -->
 
-<script>
-	// import { writable } from 'svelte/store';
-	import { isUserLoggedIn, userName} from './stores.js';
+<script lang="ts">
 	import { page } from '$app/stores';
 	import logo from '$lib/images/42PongLogo.png';
+	import { user } from '../stores/user';
+	import { onMount } from 'svelte';
 
-	$: name = $userName; // use the latest value of the userName store
-	$: logged = $isUserLoggedIn; // use the latest value of the isUserLoggedIn store
+	let userInfo = {
+		token: '',
+		jwtToken: '',
+		id: '',
+		email: '',
+		login: '',
+		first_name: '',
+		last_name: '',
+		large_pic: '',
+		medium_pic: '',
+		small_pic: '',
+		createAt: '',
+		updateAt: ''
+	};
 
+	// onMount is called when the component is mounted in the DOM
+	onMount(() => {
+		// Subscribe to the user store
+		const unsubscribe = user.subscribe((value) => {
+			userInfo = value;
+		});
+
+		// Clean up the subscription on unmount
+		return () => {
+			unsubscribe();
+		};
+	});
+
+	// Logout process - if LOGOUT button is clicked
 	function handleLogOut() {
-// console.log('Before LOGOUT = ' + $userName.toString()); // ! Debug
-// console.log('Before LOGOUT = ' + $isUserLoggedIn.toString());// ! Debug
-		userName.set('-NotLog-');
-		isUserLoggedIn.set(false);
-// console.log('After LOGOUT = ' + $userName.toString());// ! Debug
-// console.log('After LOGOUT = ' + $isUserLoggedIn.toString());// ! Debug
-// console.log("COUCOU");
+		// Clear the user store
+		user.set({
+			token: '',
+			jwtToken: '',
+			id: '',
+			email: '',
+			login: '',
+			first_name: '',
+			last_name: '',
+			large_pic: '',
+			medium_pic: '',
+			small_pic: '',
+			createAt: '',
+			updateAt: ''
+		});
+		// Clear the cookie
+		document.cookie = 'jwt=;';
 	}
 </script>
-
 
 <header>
 	<nav>
@@ -29,7 +64,7 @@
 			<path d="M0,0 L1,2 C1.5,3 1.5,3 2,3 L2,0 Z" />
 		</svg>
 		<ul>
-			<!-- {#if logged} -->
+			{#if userInfo.login}
 				<!-- Header links -->
 				<li class:selected={$page.url.pathname === '/' ? 'page' : undefined}>
 					<a href="/">~Home~</a>
@@ -46,26 +81,28 @@
 				<li class:selected={$page.url.pathname === '/config' ? 'page' : undefined}>
 					<a href="/config">~Config~</a>
 				</li>
-			<!-- {:else} -->
-				<!-- {isUserLoggedIn.set(false)} -->
+			{:else}
 				<li class:selected={$page.url.pathname === '/auth' ? 'page' : undefined}>
-					<a href="/auth">~User~</a>
+					<a href="/auth">LOGIN</a>
 				</li>
-			<!-- {/if} -->
+			{/if}
 		</ul>
 		<!-- End of Header Box -->
 		<svg viewBox="0 0 2 3" aria-hidden="true">
 			<path d="M0,0 L0,3 C0.5,3 0.5,3 1,2 L2,0 Z" />
 		</svg>
 
-		<!-- {#if logged} -->
+		{#if userInfo.login}
 			<!-- Name Header Box -->
 			<svg viewBox="0 0 2 3" aria-hidden="true">
 				<path d="M0,0 L1,2 C1.5,3 1.5,3 2,3 L2,0 Z" />
 			</svg>
 			<ul>
 				<li class:selected={$page.url.pathname === '/profile' ? 'page' : undefined}>
-					<a href="/profile">{name}</a>
+					<a href="/profile">
+						{userInfo.login}
+						<img src={userInfo.small_pic} alt={`Picture of ${userInfo.login}`} style="max-height: 2em; width: auto;"/>
+					</a>
 				</li>
 				<li class:selected={$page.url.pathname === '/auth' ? 'page' : undefined}>
 					<a href="/auth" on:click={handleLogOut}>~Logout~</a>
@@ -74,7 +111,7 @@
 			<svg viewBox="0 0 2 3" aria-hidden="true">
 				<path d="M0,0 L0,3 C0.5,3 0.5,3 1,2 L2,0 Z" />
 			</svg>
-		<!-- {/if} -->
+		{/if}
 	</nav>
 </header>
 
