@@ -31,24 +31,24 @@
 		<ul>
 			<!-- {#if logged} -->
 				<!-- Header links -->
-				<li aria-current={$page.url.pathname === '/' ? 'page' : undefined}>
+				<li class:selected={$page.url.pathname === '/' ? 'page' : undefined}>
 					<a href="/">~Home~</a>
 				</li>
 
-				<li aria-current={$page.url.pathname === '/chat' ? 'page' : undefined}>
+				<li class:selected={$page.url.pathname === '/chat' ? 'page' : undefined}>
 					<a href="/chat">~Chat~</a>
 				</li>
 
-				<li aria-current={$page.url.pathname === '/game' ? 'page' : undefined}>
+				<li class:selected={$page.url.pathname === '/game' ? 'page' : undefined}>
 					<a href="/game">~Game~</a>
 				</li>
 
-				<li aria-current={$page.url.pathname === '/config' ? 'page' : undefined}>
+				<li class:selected={$page.url.pathname === '/config' ? 'page' : undefined}>
 					<a href="/config">~Config~</a>
 				</li>
 			<!-- {:else} -->
 				<!-- {isUserLoggedIn.set(false)} -->
-				<li aria-current={$page.url.pathname === '/auth' ? 'page' : undefined}>
+				<li class:selected={$page.url.pathname === '/auth' ? 'page' : undefined}>
 					<a href="/auth">~User~</a>
 				</li>
 			<!-- {/if} -->
@@ -64,10 +64,10 @@
 				<path d="M0,0 L1,2 C1.5,3 1.5,3 2,3 L2,0 Z" />
 			</svg>
 			<ul>
-				<li aria-current={$page.url.pathname === '/profile' ? 'page' : undefined}>
+				<li class:selected={$page.url.pathname === '/profile' ? 'page' : undefined}>
 					<a href="/profile">{name}</a>
 				</li>
-				<li aria-current={$page.url.pathname === '/auth' ? 'page' : undefined}>
+				<li class:selected={$page.url.pathname === '/auth' ? 'page' : undefined}>
 					<a href="/auth" on:click={handleLogOut}>~Logout~</a>
 				</li>
 			</ul>
@@ -125,7 +125,7 @@
 		height: 100%;
 	}
 
-	li[aria-current='page']::before {
+	/* li[aria-current='page']::before {
 		--size: 6px;
 		content: '';
 		width: 0;
@@ -135,7 +135,7 @@
 		left: calc(50% - var(--size));
 		border: var(--size) solid transparent;
 		border-top: var(--size) solid var(--color-theme-1);
-	}
+	} */
 
 	nav a {
 		display: flex;

@@ -23,6 +23,18 @@ export class SceneSelector extends Phaser.Scene {
     }
 
     create() {
+
+        // const gameContainer = this.add
+        //     .container(0, 0)
+        //     .setDepth(1)
+        //     .setSize(window.innerWidth, window.innerHeight)
+        //     .setExclusive(true)
+        //     .setScrollFactor(0);
+        // const gameContainerElement = document.getElementById('game-container');
+        // if (gameContainerElement) {
+        //     gameContainerElement.appendChild(gameContainer.getEl());
+        // }
+
         // automatically navigate to hash scene if provided
         if (window.location.hash) {
             this.runScene(window.location.hash.substring(1));
@@ -38,7 +50,7 @@ export class SceneSelector extends Phaser.Scene {
 
         for (let partNum in this.parts) {
             const index = parseInt(partNum) - 1;
-            const label = this.parts[partNum];
+			const label = this.parts[partNum as keyof typeof this.parts];
 
             // this.add.text(32, 32 + 32 * index, `Part ${partNum}: ${label}`, textStyle)
             this.add.text(130, 150 + 70 * index, `Part ${partNum}: ${label}`, textStyle)
@@ -52,6 +64,22 @@ export class SceneSelector extends Phaser.Scene {
 
     runScene(key: string) {
         this.game.scene.switch("selector", key)
+    }
+
+	beforeDestroy() {
+        // Déconnectez-vous de la "room" ou effectuez toute autre action de nettoyage nécessaire ici
+        // Par exemple, vous pouvez appeler une fonction de déconnexion ou d'arrêt du jeu
+        this.cleanup();
+    }
+
+    cleanup() {
+        // Effectuez ici toutes les opérations de nettoyage nécessaires, telles que la déconnexion de la "room" ou l'arrêt du jeu
+
+        // Détruisez l'instance de Phaser et supprimez toutes les références
+        this.game.destroy(true);
+
+        // Supprimez toutes les références à la scène
+        this.scene.remove("selector");
     }
 
 }

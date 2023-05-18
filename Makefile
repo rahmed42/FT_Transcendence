@@ -6,7 +6,7 @@
 #    By: rahmed <rahmed@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/05/09 12:57:06 by rahmed            #+#    #+#              #
-#    Updated: 2023/05/16 19:35:49 by rahmed           ###   ########.fr        #
+#    Updated: 2023/05/18 13:32:54 by rahmed           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -14,52 +14,6 @@ name = FT_Transcendance
 
 # data = ~/data
 # db = ~/data/postgreSQL
-
-all	:
-	@make back
-	@make front
-#	@make bgame
-#	@make fgame
-#	@make db
-
-front :
-	@echo "${TXT_YELLOW}"
-	@echo "~~~~~~~~~~ FRONTEND ~~~~~~~~~~"
-	@echo "${TXT_GREEN}"
-	@printf "Launching ${name} Front...\n"
-	@echo "${FANCY_RESET}"
-	cd Frontend && npm install && npm run dev -- --open
-#	make fgame
-
-fgame :
-	@echo "${TXT_YELLOW}"
-	@echo "~~~~~~~~~~ GAME FRONTEND ~~~~~~~~~~"
-	@echo "${TXT_GREEN}"
-	@printf "Launching ${name} Game front...\n"
-	@echo "${FANCY_RESET}"
-	cd Frontend && npm run startgame
-
-back :
-	@echo "${TXT_YELLOW}"
-	@echo "~~~~~~~~~~ BACKEND ~~~~~~~~~~"
-	@echo "${TXT_GREEN}"
-	@printf "Launching ${name} BACKEND...\n"
-	@echo "${FANCY_RESET}"
-	@make up
-	cd Backend && npm install && sudo npx prisma generate && npm run start:dev
-#	make bgame
-
-bgame :
-	@echo "${TXT_YELLOW}"
-	@echo "~~~~~~~~~~ GAME BACKEND ~~~~~~~~~~"
-	@echo "${TXT_GREEN}"
-	@printf "Launching ${name} Game back...\n"
-	@echo "${FANCY_RESET}"
-	cd Backend && npm run startgame
-	@open http://localhost:2567/colyseus/
-
-# all	: | $(data) $(db)
-# 	@make up
 
 # $(data)	:
 # 	@echo "Folder $(data) does not exist, creating..."
@@ -69,9 +23,15 @@ bgame :
 # 	@echo "Folder $(db) does not exist, creating..."
 # 	mkdir -p $@
 
+# | $(data) $(db)
+all	: back front bgame fgame db
+	@open http://localhost:2567/colyseus/
+
 clean	:	down
 	@printf "Removing unused ${name} images...\n"
 	@docker system prune -a
+	@sudo rm -rf ./backend/dist
+	@sudo rm -rf ./Frontend/dist
 #	@sudo rm -rf $(db)
 
 fclean	:
@@ -80,6 +40,8 @@ fclean	:
 	@docker system prune --all --force --volumes
 	@docker network prune --force
 	@docker volume prune --force
+	@sudo rm -rf ./backend/dist
+	@sudo rm -rf ./Frontend/dist
 #	@sudo rm -rf $(db)
 
 # re	: | $(data) $(db)
@@ -89,7 +51,52 @@ fclean	:
 
 # build	:	re
 
-up	:
+#################### PROJECT LAUNCH ####################
+back :
+	@echo "${TXT_YELLOW}"
+	@echo "~~~~~~~~~~ BACKEND ~~~~~~~~~~"
+	@echo "${TXT_GREEN}"
+	@printf "Launching ${name} BACKEND...\n"
+	@echo "${FANCY_RESET}"
+	@make up
+ifeq ($(USER),bryan) #FOR TIM
+	cd Backend && npm install && sudo npx prisma generate && npm run start:dev
+else
+	cd Backend && npm install && npx prisma generate && npm run start:dev
+endif
+
+front :
+	@echo "${TXT_YELLOW}"
+	@echo "~~~~~~~~~~ FRONTEND ~~~~~~~~~~"
+	@echo "${TXT_GREEN}"
+	@printf "Launching ${name} Front...\n"
+	@echo "${FANCY_RESET}"
+	cd Frontend && npm install && npm run dev -- --open
+
+bgame :
+	@echo "${TXT_YELLOW}"
+	@echo "~~~~~~~~~~ GAME BACKEND ~~~~~~~~~~"
+	@echo "${TXT_GREEN}"
+	@printf "Launching ${name} Game back...\n"
+	@echo "${FANCY_RESET}"
+	cd Backend && npm run startgame
+
+fgame :
+	@echo "${TXT_YELLOW}"
+	@echo "~~~~~~~~~~ GAME FRONTEND ~~~~~~~~~~"
+	@echo "${TXT_GREEN}"
+	@printf "Launching ${name} Game front...\n"
+	@echo "${FANCY_RESET}"
+	cd Frontend && npm run startgame
+
+db	:
+	cd backend && npx prisma studio
+
+######################## DOCKER COMPOSE ########################
+check_docker_desktop:
+	@docker info > /dev/null 2>&1 || (echo "Docker Desktop is not running. Please start Docker Desktop." && exit 1)
+
+up	: check_docker_desktop
 	@printf "docker-compose up -d : Starting $(USER) project ${name}...\n"
 	@docker-compose -f backend/docker-compose.yml --env-file backend/.env up -d
 	@make list
@@ -118,23 +125,16 @@ stop	:
 start	:
 	docker-compose -f backend/docker-compose.yml --env-file backend/.env start
 
+################################################################
 #UTILS	:
 #show databases;
 #show grants for 'root'@'localhost';
 #show grants for 'rahmed'@'%';
 #SELECT User FROM db.user;
 
-db	:
-	cd backend && npx prisma studio
 # 	docker exec -it postgres db -u root -p
-
-# dbuser	:
 # 	docker exec -it postgres db -u rahmed -p
-
-# dblist	:
 # 	docker exec -it postgres ls
-
-.PHONY	: front back fgame bgame all clean fclean re build up down list logs pause unpause stop start db
 
 # Set COLORS
 TXT_RED		=	\033[1;31m
@@ -150,4 +150,6 @@ BCK_BLUE	=	\033[0;44m
 BCK_MAGENTA	=	\033[0;45m
 BCK_CYAN	=	\033[0;46m
 FANCY_RESET	=	\033[0m
+
 ###########################################
+.PHONY	:  all clean fclean re
