@@ -1,38 +1,51 @@
-<!-- Game page content -->
 <script lang="ts">
 	import { afterUpdate, onDestroy } from 'svelte';
 	import { GameSelector } from './scenes/SceneSelector';
-	import './pongGame';
+	import Phaser from 'phaser';
 
-	let selectedGame: GameSelector | undefined; // Explicitly specify the type and initialize as undefined
+	let selectedGame: GameSelector | null = null;
+	let game: Phaser.Game | null = null;
 
-	// Function cleanup
-	function cleanup() {
-		console.log('Game page cleanup');
+	function initializePhaserGame(): void {
+		const config: Phaser.Types.Core.GameConfig = {
+			type: Phaser.AUTO,
+			width: 800,
+			height: 600,
+			scene: [GameSelector]
+		};
 
-		if (selectedGame) {
-			selectedGame.gameCleanup(); // Call the cleanup function of the SceneSelector scene
-		}
+		// Create the game
+		game = new Phaser.Game(config);
 	}
 
-	// Function afterUpdate - called after the component is updated
+	// Fonction afterUpdate - appelée après la mise à jour du composant
 	afterUpdate(() => {
-		console.log('Game page afterUpdate');
+		// console.log('Game page afterUpdate');
 
-		// Initialize phaser game
-		if (!selectedGame) {
-			selectedGame = new GameSelector(); // Create an instance of the GameSelector scene
-			selectedGame.scene.start(
-				'selector', // Start the 'selector' scene
-				{ container: 'game-container' } // specify the container element
-			);
+		if (!selectedGame && !game) {
+			// console.log('Game page afterUpdate INIT');
+			// Call the function to initialize the game
+			initializePhaserGame();
+			selectedGame = new GameSelector();
+			game.scene.start('selector'); // Démarrez la scène 'selector' du jeu
 		}
 	});
 
-	// Function onDestroy - called when the component is destroyed
+	// Fonction onDestroy - appelée lorsque le composant est détruit
 	onDestroy(() => {
-		cleanup(); // Call the cleanup function when the page is destroyed
+		// console.log('Game page onDestroy');
+				if (selectedGame) {
+			// console.log('Game page cleanup selectedGame');
+			game.destroy(true); // Détruisez la mémoire allouée pour le jeu
+			selectedGame = null; // Remettez selectedGame à null après le nettoyage
+		}
+
+		if (game) {
+			game.destroy(true);
+			game = null; // Remettez game à null après le nettoyage
+		}
 	});
+
 </script>
 
 <svelte:head>
@@ -43,7 +56,6 @@
 <div class="center">
 	<div class="text-column">
 		<h1>42 PONG</h1>
-		<!-- Add a container for the game -->
 		<div id="game-container" />
 	</div>
 </div>

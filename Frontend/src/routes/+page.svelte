@@ -11,7 +11,7 @@
 
 <section>
 	<h1>
-		<strong>Welcome</strong> to<br />Ft_Trancendance<br /><br />
+		Welcome to<br /><strong>Ft_Trancendance</strong><br /><br />
 		<span class="pongAnim">
 			<picture>
 				<img src={pongAnim} alt="pongAnim" style="height: 300px; width: auto;" />

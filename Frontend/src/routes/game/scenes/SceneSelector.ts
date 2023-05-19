@@ -1,4 +1,4 @@
-import Phaser from "phaser";
+import * as Phaser from "phaser"; // will import all the Phaser types
 
 export class GameSelector extends Phaser.Scene {
 	// Adding game parts list
@@ -16,15 +16,7 @@ export class GameSelector extends Phaser.Scene {
 	// preload basic assets
 	preload() {
 		// setting background color
-		this.cameras.main.setBackgroundColor(0x000000);
-
-		// adding vertical white dotted line to separate the two games
-		this.add.line(400, 0, 400, 0, 400, 600, 0xffffff);
-
-		// preload pong assets
-		// this.load.image('ball', '../assets/style1/Ball.png');
-		// this.load.image('myPaddle', '../assets/style1/Player.png');
-		// this.load.image('opponentPaddle', '../assets/style1/Computer.png');
+		this.cameras.main.setBackgroundColor(0x000000)
 	}
 
 	// create game parts list
@@ -57,16 +49,20 @@ export class GameSelector extends Phaser.Scene {
 	// run the game part selected by the user
 	runScene(key: string) {
 		console.log(`Running game ${key}`);
-		this.game.scene.switch('selector', key); // switch to the game part selected
+		this.scene.stop('selector'); // stop the selector
+		this.scene.run(key); // run the game part selected
+
+		// this.game.scene.switch('selector', key); // switch to the game part selected
 	}
 
-	// Cleaning the game
-	gameCleanup() {
-		for (let gameType in this.parts) {
-			this.scene.stop(`part${gameType}`);// stop all the game parts
-			this.scene.remove(`part${gameType}`);// remove all the game parts
-		}
-		this.scene.remove('selector');// stop the selector
-		this.game.destroy(true);// destroy the allocated memory for the game
-	}
+	// // Cleaning the game
+	// gameCleanup() {
+	// 	for (let gameType in this.parts) {
+	// 		this.scene.stop(`part${gameType}`);// stop all the game parts
+	// 		this.scene.remove(`part${gameType}`);// remove all the game parts
+	// 	}
+	// 	this.scene.stop('selector');// stop the selector
+	// 	this.scene.remove('selector');// remove the selector
+	// 	this.game.destroy(true);// destroy the allocated memory for the game
+	// }
 }

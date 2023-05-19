@@ -1,122 +1,159 @@
-/**
- * ---------------------------
- * Phaser + Colyseus - Part 1.
- * ---------------------------
- * - Connecting with the room
- * - Sending inputs at the user's framerate
- * - Update each player's positions WITHOUT interpolation
- */
-
 import Phaser from "phaser";
 import { Room, Client } from "colyseus.js";
 import { BACKEND_URL } from "../backend";
 
 export class Part1Scene extends Phaser.Scene {
-    room: Room;
-	// we will assign each player visual representation here
-    // by their `sessionId`
-	//playerEntities: {[sessionId: string]: any} = {};
-    playerEntities: { [sessionId: string]: Phaser.Types.Physics.Arcade.ImageWithDynamicBody } = {};
+	// //room reference
+	// room: Room | undefined;
 
-    debugFPS: Phaser.GameObjects.Text;
+	// // player reference (local player)
+	// currentPlayer: Phaser.Types.Physics.Arcade.ImageWithDynamicBody | undefined;
+	// playerEntities: { [sessionId: string]: Phaser.Types.Physics.Arcade.ImageWithDynamicBody } = {};
 
-    cursorKeys: Phaser.Types.Input.Keyboard.CursorKeys;
+	// // mouse pointer
+	// pointer: Phaser.Input.Pointer | undefined;
 
-	// local input cache
-    inputPayload = {
-        left: false,
-        right: false,
-        up: false,
-        down: false,
-    };
+	// // local input cache
+	// inputPayload = {
+	// 	// left: false,
+	// 	// right: false,
+	// 	up: false,
+	// 	down: false,
+	// };
 
-    constructor() {
-        super({ key: "part1" });
-    }
+	// Constructor of the scene
+	constructor() {
+		// active false to prevent the scene from starting automatically
+		super({ key: "part1", active: false });
+	}
 
-    async create() {
-        this.cursorKeys = this.input.keyboard.createCursorKeys();
-        this.debugFPS = this.add.text(4, 4, "", { color: "#ff0000", });
+	// preload basic assets
+	preload() {
+		// // Adding background color
+		// this.cameras.main.setBackgroundColor(0x000000);
 
-        // connect with the room
-        await this.connect();
+		this.add.text(80, 50, 'Game1', { font: '32px Arial', color: '#ffffff' });
 
+		// // adding vertical white dotted line to separate the two games
+		// // this.add.line(400, 0, 400, 0, 400, 600, 0xffffff);
 
-		 // listen for new players
-        this.room.state.players.onAdd((player, sessionId) => {
-            const entity = this.physics.add.image(player.x, player.y, 'ship_0001');
+		// // preload pong assets
+		// this.load.image('ball', '../assets/style1/Ball.png');
+		// this.load.image('myPaddle', '../assets/style1/Player.png');
+		// this.load.image('opponentPaddle', '../assets/style1/Computer.png');
+	}
 
-			// keep a reference of it on `playerEntities`
-            this.playerEntities[sessionId] = entity;
+	// // create the game
+	// async create() {
+	// 	//get the mouse pointer
+	// 	this.pointer = this.input.activePointer;
 
-            // listening for server updates we need all the new coordinates at once with .onChange()
-            player.onChange(() => {
-                //
-                // update local position immediately
-                // (WE WILL CHANGE THIS ON PART 2)
-                //
-                entity.x = player.x;
-                entity.y = player.y;
-            });
-        });
+	// 	// connect with the room
+	// 	await this.connect();
 
-		//Removing disconnected players
-        // remove local reference when entity is removed from the server
-        this.room.state.players.onRemove((player, sessionId) => {
-            const entity = this.playerEntities[sessionId];
-            if (entity) {
-				// destroy entity
-                entity.destroy();
-				// clear local reference
-                delete this.playerEntities[sessionId]
-            }
-        });
+	// 	// Listen for new players
+	// 	this.room.state.players.onAdd((player, sessionId) => {
+	// 		/* Player one */
+	// 		// create a new player entity
+	// 		const entity = this.physics.add.image(player.x, player.y, 'myPaddle');
 
-        // this.cameras.main.startFollow(this.ship, true, 0.2, 0.2);
-        // this.cameras.main.setZoom(1);
-        this.cameras.main.setBounds(0, 0, 800, 600);
-    }
+	// 		// keep a reference of it on `playerEntities`
+	// 		this.playerEntities[sessionId] = entity;
 
-    async connect() {
-        // add connection status text
-        const connectionStatusText = this.add
-            .text(0, 0, "Trying to connect with the server...")
-            .setStyle({ color: "#ff0000" })
-            .setPadding(4)
+	// 		// listening for server updates we need all the new coordinates at once with .onChange()
+	// 		player.onChange(() => {
+	// 			// update local position immediately
+	// 			entity.x = player.x;
+	// 			entity.y = player.y;
+	// 		});
 
-        const client = new Client(BACKEND_URL);
+	// 		/* Player two */
+	// 		// create second player entity
+	// 		const opponentEntity = this.physics.add.image(player.x, player.y, 'opponentPaddle');
 
-        try {
-            this.room = await client.joinOrCreate("part1_room", {});
+	// 		// keep a reference of it on `playerEntities`
+	// 		this.playerEntities[sessionId] = opponentEntity;
 
-            // connection successful!
-            connectionStatusText.destroy();
+	// 		// listening for server updates we need all the new coordinates at once with .onChange()
+	// 		player.onChange(() => {
+	// 			// update local position immediately
+	// 			opponentEntity.x = player.x;
+	// 			opponentEntity.y = player.y;
+	// 		});
 
-        } catch (e) {
-            // couldn't connect
-            connectionStatusText.text = "Could not connect with the server.";
-        }
+	// 		// listen for ball updates
+	// 		this.room.state.ball.onChange(() => {
+	// 			// update local position immediately
+	// 			ball.x = this.room.state.ball.x;
+	// 			ball.y = this.room.state.ball.y;
+	// 		});
 
-    }
+	// 		// listen for score updates
+	// 		this.room.state.score.onChange(() => {
+	// 			// update local position immediately
+	// 			scoreText.setText(`Score: ${this.room.state.score.player1} - ${this.room.state.score.player2}`);
+	// 		});
 
-	/**
-	 * At every update() tick, we are going to update the
-	 * local inputPayload, and send it as a message to the server.
-	 */
-    update(time: number, delta: number): void {
-        // skip loop if not connected with room yet.
-        if (!this.room) {
-            return;
-        }
+	// 		// listen for game over
+	// 		this.room.state.gameOver.onChange(() => {
+	// 			// update local position immediately
+	// 			if (this.room.state.gameOver) {
+	// 				gameOverText.setText(`Game Over!`);
+	// 			}
+	// 		});
 
-        // send input to the server
-        this.inputPayload.left = this.cursorKeys.left.isDown;
-        this.inputPayload.right = this.cursorKeys.right.isDown;
-        this.inputPayload.up = this.cursorKeys.up.isDown;
-        this.inputPayload.down = this.cursorKeys.down.isDown;
-        this.room.send(0, this.inputPayload);
+	// 		// Removing disconnected players
+	// 		// remove local reference when entity is removed from the server
+	// 		this.room.state.players.onRemove((player, sessionId) => {
+	// 			const entity = this.playerEntities[sessionId];
+	// 			if (entity) {
+	// 				// destroy entity
+	// 				entity.destroy();
+	// 				// clear local reference
+	// 				delete this.playerEntities[sessionId]
+	// 			}
+	// 		});
 
-        this.debugFPS.text = `Frame rate: ${this.game.loop.actualFps}`;
-    }
+	// 		// Camera settings
+	// 		this.cameras.main.setBounds(0, 0, 800, 600);
+	// 	}
 
+	// 	/* Methods */
+	// 	// Connect with the room
+	// 	async connect() {
+	// 		// add connection status text
+	// 		const connectionStatusText = this.add
+	// 			.text(0, 0, "Trying to connect with the server...")
+	// 			.setStyle({ color: "#ff0000" })
+	// 			.setPadding(4)
+
+	// 		const client = new Client(BACKEND_URL);
+
+	// 		try {
+	// 			this.room = await client.joinOrCreate("part1_room", {});
+
+	// 			// connection successful!
+	// 			connectionStatusText.destroy();
+
+	// 		} catch (e) {
+	// 			// couldn't connect
+	// 			connectionStatusText.text = "Could not connect with the server.";
+	// 		}
+	// 	}
+
+	// /**
+	//  * At every update() tick, we are going to update the
+	//  * local inputPayload, and send it as a message to the server.
+	//  */
+	// 	update(time: number, delta: number): void {
+	// 		// skip loop if not connected with room yet.
+	// 		if (!this.room) {
+	// 			return;
+	// 		}
+
+	// 		// send pointer to the server
+	// 		// this.inputPayload.pointerX = this.pointer.x;
+	// 		this.inputPayload.pointerY = this.pointer.y;
+	// 		this.room.send(0, this.inputPayload);
+	// 	}
 }

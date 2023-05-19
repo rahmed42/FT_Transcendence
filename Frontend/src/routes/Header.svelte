@@ -61,6 +61,7 @@
 			method: 'GET',
 			credentials: 'include'
 		});
+		console.log(response);
 		const contentType = response.headers.get('Content-Type');
 		if (contentType && contentType.includes('application/json')) {
 			const userInfo = await response.json();
