@@ -11,8 +11,6 @@ export class AuthController {
 	constructor(private authService: AuthService)  {}
 	@Post('login')
 		async login(@Query('code') code: string, @Req() request: Request) {
-			// console.log('Request cookie: ', request.cookies); !Debug
-			// console.log(code);
 			const token = await this.authService.getUser(code);
 			return token;
 		}
