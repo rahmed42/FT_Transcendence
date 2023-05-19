@@ -1,85 +1,72 @@
-// import Phaser from "phaser";
+import Phaser from "phaser";
 
-// export class SceneSelector extends Phaser.Scene {
+export class GameSelector extends Phaser.Scene {
+	// Adding game parts list
+	parts = {
+		'1': "Original game",
+		'2': "Modern game",
+	};
 
-//     parts = {
-//         '1': "Basic Player Movement",
-//         '2': "Interpolation",
-//         '3': "Client-predicted Input",
-//         '4': "Fixed Tickrate",
-//     };
+	// GameSelector constructor
+	constructor() {
+		super({ key: "selector", active: true });
+	}
 
-//     constructor() {
-//         super({ key: "selector", active: true });
-//     }
+	/* Optionnal constructor methods */
+	// preload basic assets
+	preload() {
+		// setting background color
+		this.cameras.main.setBackgroundColor(0x000000);
 
-//     preload() {
-//         // update menu background color
-//         this.cameras.main.setBackgroundColor(0x000000);
+		// adding vertical white dotted line to separate the two games
+		this.add.line(400, 0, 400, 0, 400, 600, 0xffffff);
 
-//         // preload demo assets
-//         // this.load.image('ship_0001', 'assets/ship_0001.png');
-//         this.load.image('ship_0001', 'https://cdn.glitch.global/3e033dcd-d5be-4db4-99e8-086ae90969ec/ship_0001.png?v=1649945243288');
-//     }
+		// preload pong assets
+		// this.load.image('ball', '../assets/style1/Ball.png');
+		// this.load.image('myPaddle', '../assets/style1/Player.png');
+		// this.load.image('opponentPaddle', '../assets/style1/Computer.png');
+	}
 
-//     create() {
+	// create game parts list
+	create() {
+		// Text to display
+		this.add.text(80, 50, 'Select your game type :', { font: '32px Arial', color: '#ffffff' });
 
-//         // const gameContainer = this.add
-//         //     .container(0, 0)
-//         //     .setDepth(1)
-//         //     .setSize(window.innerWidth, window.innerHeight)
-//         //     .setExclusive(true)
-//         //     .setScrollFactor(0);
-//         // const gameContainerElement = document.getElementById('game-container');
-//         // if (gameContainerElement) {
-//         //     gameContainerElement.appendChild(gameContainer.getEl());
-//         // }
+		// adding game parts
+		for (let gameType in this.parts) {
+			if (this.parts.hasOwnProperty(gameType)) {
+				const index = parseInt(gameType) - 1; // index of the game part
+				const selector = this.parts[gameType as keyof typeof this.parts]; // name of the game part
+				const textOptions = this.add.text(
+					130, 150 + 70 * index, // position of the text
+					`Game ${gameType}: ${selector}`, // text
+					{ font: '24px Arial', color: '#ffffff' }); // text style
 
-//         // automatically navigate to hash scene if provided
-//         if (window.location.hash) {
-//             this.runScene(window.location.hash.substring(1));
-//             return;
-//         }
+				// setting the text as interactive
+				textOptions.setInteractive();
 
-//         const textStyle: Phaser.Types.GameObjects.Text.TextStyle = {
-//             color: "#ff0000",
-//             fontSize: "32px",
-//             // fontSize: "24px",
-//             fontFamily: "Arial"
-//         };
+				// setting the text as clickable
+				textOptions.on("pointerdown", () => { // set the event when the text is clicked
+					this.runScene(`part${gameType}`); // run method to run the game part
+				});
+			}
+		}
+	}
 
-//         for (let partNum in this.parts) {
-//             const index = parseInt(partNum) - 1;
-// 			const label = this.parts[partNum as keyof typeof this.parts];
+	/* Methods */
+	// run the game part selected by the user
+	runScene(key: string) {
+		console.log(`Running game ${key}`);
+		this.game.scene.switch('selector', key); // switch to the game part selected
+	}
 
-//             // this.add.text(32, 32 + 32 * index, `Part ${partNum}: ${label}`, textStyle)
-//             this.add.text(130, 150 + 70 * index, `Part ${partNum}: ${label}`, textStyle)
-//                 .setInteractive()
-//                 .setPadding(6)
-//                 .on("pointerdown", () => {
-//                     this.runScene(`part${partNum}`);
-//                 });
-//         }
-//     }
-
-//     runScene(key: string) {
-//         this.game.scene.switch("selector", key)
-//     }
-
-// 	beforeDestroy() {
-//         // Déconnectez-vous de la "room" ou effectuez toute autre action de nettoyage nécessaire ici
-//         // Par exemple, vous pouvez appeler une fonction de déconnexion ou d'arrêt du jeu
-//         this.cleanup();
-//     }
-
-//     cleanup() {
-//         // Effectuez ici toutes les opérations de nettoyage nécessaires, telles que la déconnexion de la "room" ou l'arrêt du jeu
-
-//         // Détruisez l'instance de Phaser et supprimez toutes les références
-//         this.game.destroy(true);
-
-//         // Supprimez toutes les références à la scène
-//         this.scene.remove("selector");
-//     }
-
-// }
+	// Cleaning the game
+	gameCleanup() {
+		for (let gameType in this.parts) {
+			this.scene.stop(`part${gameType}`);// stop all the game parts
+			this.scene.remove(`part${gameType}`);// remove all the game parts
+		}
+		this.scene.remove('selector');// stop the selector
+		this.game.destroy(true);// destroy the allocated memory for the game
+	}
+}
