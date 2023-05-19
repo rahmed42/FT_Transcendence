@@ -9,7 +9,6 @@ export class ChatDtoCreateRoom
     @IsNotEmpty()
     roomName: string;
 
-    @IsNotEmpty()
     @IsOptional()
     password: string;
     
@@ -27,7 +26,6 @@ export class ChatDtoJoinRoom
     @IsNotEmpty()
     roomName : string;
 
-    @IsNotEmpty()
     @IsOptional()
     password: string;
 }

@@ -62,7 +62,7 @@ back :
 ifeq ($(USER),bryan) #FOR TIM
 	cd Backend && npm install && sudo npx prisma generate && npm run start:dev
 else
-	cd Backend && npm install && npx prisma generate && npm run start:dev
+	cd backend && npm install && npx prisma generate && npm run start:dev
 endif
 
 front :
