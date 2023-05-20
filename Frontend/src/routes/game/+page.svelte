@@ -6,37 +6,39 @@
 	let selectedGame: GameSelector | null = null;
 	let game: Phaser.Game | null = null;
 
-	function initializePhaserGame(): void {
-		const config: Phaser.Types.Core.GameConfig = {
-			type: Phaser.AUTO,
-			width: 800,
-			height: 600,
-			scene: [GameSelector]
-		};
-
-		// Create the game
-		game = new Phaser.Game(config);
-	}
-
 	// Fonction afterUpdate - appelée après la mise à jour du composant
 	afterUpdate(() => {
-		// console.log('Game page afterUpdate');
-
+		// At first render, selectedGame and game are null
 		if (!selectedGame && !game) {
-			// console.log('Game page afterUpdate INIT');
-			// Call the function to initialize the game
-			initializePhaserGame();
+			//Init Phaser and start the game
+			game = new Phaser.Game({
+				// CANVAS Rendering to be faster
+				type: Phaser.CANVAS,
+				// Set the size of the game
+				width: 800,
+				height: 600,
+				// Set parent id of the div where the game will be
+				parent: 'game-container',
+				// Set the scenes of the game
+				scene: [GameSelector],
+				// Set the physics of the game to be faster
+				render: {
+					pixelArt: true,
+					antialias: false
+				}
+			});
+
+			// Get the selected game
 			selectedGame = new GameSelector();
-			game.scene.start('selector'); // Démarrez la scène 'selector' du jeu
+
+			//Begin the game
+			game.scene.start('selector');
 		}
 	});
 
 	// Fonction onDestroy - appelée lorsque le composant est détruit
 	onDestroy(() => {
-		// console.log('Game page onDestroy');
-				if (selectedGame) {
-			// console.log('Game page cleanup selectedGame');
-			game.destroy(true); // Détruisez la mémoire allouée pour le jeu
+		if (selectedGame) {
 			selectedGame = null; // Remettez selectedGame à null après le nettoyage
 		}
 
@@ -45,7 +47,6 @@
 			game = null; // Remettez game à null après le nettoyage
 		}
 	});
-
 </script>
 
 <svelte:head>
@@ -55,7 +56,7 @@
 
 <div class="center">
 	<div class="text-column">
-		<h1>42 PONG</h1>
+		<!-- <h1>42 PONG</h1> -->
 		<div id="game-container" />
 	</div>
 </div>

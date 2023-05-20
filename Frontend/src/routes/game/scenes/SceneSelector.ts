@@ -21,18 +21,30 @@ export class GameSelector extends Phaser.Scene {
 
 	// create game parts list
 	create() {
+		/* Phaser API Doc : https://newdocs.phaser.io/docs/3.60.0/Phaser.Types.GameObjects.Text */
 		// Text to display
-		this.add.text(80, 50, 'Select your game type :', { font: '32px Arial', color: '#ffffff' });
+		const title = '42 PONG';
+		const centerX = this.cameras.main.centerX;
+		const centerY = this.cameras.main.centerY;
+		const spanY = centerY / 4;
+
+		// Text style display
+		const titleText = this.add.text(centerX, spanY * 2, title, { font: '55px Arial', color: '#ffffff' });
+		// Define center of text object
+		titleText.setOrigin(0.5, 0.5);
 
 		// adding game parts
 		for (let gameType in this.parts) {
 			if (this.parts.hasOwnProperty(gameType)) {
-				const index = parseInt(gameType) - 1; // index of the game part
+				const index = parseInt(gameType) + 3; // index of the game part
 				const selector = this.parts[gameType as keyof typeof this.parts]; // name of the game part
 				const textOptions = this.add.text(
-					130, 150 + 70 * index, // position of the text
-					`Game ${gameType}: ${selector}`, // text
-					{ font: '24px Arial', color: '#ffffff' }); // text style
+					centerX, spanY * index, // position of the text
+					`> ${selector} <`, // text
+					{ font: '32px Arial', color: '#ffffff' }); // text style
+
+				// Define the center of the text
+				textOptions.setOrigin(0.5, 0.5);
 
 				// setting the text as interactive
 				textOptions.setInteractive();
