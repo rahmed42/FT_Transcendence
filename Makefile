@@ -6,7 +6,7 @@
 #    By: rahmed <rahmed@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/05/09 12:57:06 by rahmed            #+#    #+#              #
-#    Updated: 2023/05/19 21:24:46 by rahmed           ###   ########.fr        #
+#    Updated: 2023/05/20 21:31:58 by rahmed           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -41,7 +41,7 @@ fclean	:
 	@docker network prune --force
 	@docker volume prune --force
 	@sudo rm -rf ./backend/dist ./backend/node_modules ./backend/package-lock.json
-	@sudo rm -rf ./Frontend/dist ./Frontend/node_modules ./Frontend/package-lock.json
+	@sudo rm -rf ./Frontend/dist ./Frontend/node_modules ./Frontend/package-lock.json ./Frontend/.parcel-cache
 #	@sudo rm -rf $(db)
 
 # re	: | $(data) $(db)
