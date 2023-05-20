@@ -6,7 +6,7 @@
 #    By: rahmed <rahmed@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/05/09 12:57:06 by rahmed            #+#    #+#              #
-#    Updated: 2023/05/20 21:31:58 by rahmed           ###   ########.fr        #
+#    Updated: 2023/05/20 21:41:10 by rahmed           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -50,6 +50,18 @@ fclean	:
 # 	@make list
 
 # build	:	re
+
+update :
+	@echo "${TXT_YELLOW}"
+	@echo "~~~~~~~~~~ UPDATING ~~~~~~~~~~"
+	@echo "${TXT_GREEN}"
+	@printf "Updating Frontend npm ...\n"
+	@echo "${FANCY_RESET}"
+	cd Frontend && npm update && npm audit fix
+	@echo "${TXT_GREEN}"
+	@printf "Updating Backend npm ...\n"
+	@echo "${FANCY_RESET}"
+	cd Backend && npm update && npm audit fix
 
 #################### PROJECT LAUNCH ####################
 back :
