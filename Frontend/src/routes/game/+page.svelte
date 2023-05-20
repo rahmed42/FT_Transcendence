@@ -23,8 +23,8 @@
 				scene: [GameSelector],
 				// Set the physics of the game to be faster
 				render: {
-					pixelArt: true,
-					antialias: false
+					// pixelArt: true,
+					// antialias: true
 				}
 			});
 
@@ -67,4 +67,5 @@
 		justify-content: center;
 		align-items: center;
 	}
+
 </style>

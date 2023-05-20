@@ -3,8 +3,8 @@ import * as Phaser from "phaser"; // will import all the Phaser types
 export class GameSelector extends Phaser.Scene {
 	// Adding game parts list
 	parts = {
-		'1': "Original game",
-		'2': "Modern game",
+		'1': "Original",
+		'2': "Modern",
 	};
 
 	// GameSelector constructor
@@ -30,6 +30,7 @@ export class GameSelector extends Phaser.Scene {
 
 		// Text style display
 		const titleText = this.add.text(centerX, spanY * 2, title, { font: '55px Arial', color: '#ffffff' });
+
 		// Define center of text object
 		titleText.setOrigin(0.5, 0.5);
 
@@ -38,19 +39,37 @@ export class GameSelector extends Phaser.Scene {
 			if (this.parts.hasOwnProperty(gameType)) {
 				const index = parseInt(gameType) + 3; // index of the game part
 				const selector = this.parts[gameType as keyof typeof this.parts]; // name of the game part
-				const textOptions = this.add.text(
+
+				const button = this.add.text(
 					centerX, spanY * index, // position of the text
-					`> ${selector} <`, // text
+					`🏓 ${selector} 🏓`, // text
 					{ font: '32px Arial', color: '#ffffff' }); // text style
 
 				// Define the center of the text
-				textOptions.setOrigin(0.5, 0.5);
+				button.setOrigin(0.5, 0.5);
 
 				// setting the text as interactive
-				textOptions.setInteractive();
+				button.setInteractive();
+
+
+				// Button style
+				button.setStyle({
+					backgroundColor: '#007fff',
+				});
+
+				// Add a hover effect when the mouse is over the button
+				button.on('pointerover', () => {
+					button.setScale(0.90); // Change scale to reduce size effect
+					button.setStyle({ backgroundColor: '#0055ff' });
+				});
+
+				button.on('pointerout', () => {
+					button.setScale(1);
+					button.setStyle({ backgroundColor: '#007fff' });
+				});
 
 				// setting the text as clickable
-				textOptions.on("pointerdown", () => { // set the event when the text is clicked
+				button.on("pointerdown", () => { // set the event when the text is clicked
 					this.runScene(`part${gameType}`); // run method to run the game part
 				});
 			}
@@ -66,15 +85,4 @@ export class GameSelector extends Phaser.Scene {
 
 		// this.game.scene.switch('selector', key); // switch to the game part selected
 	}
-
-	// // Cleaning the game
-	// gameCleanup() {
-	// 	for (let gameType in this.parts) {
-	// 		this.scene.stop(`part${gameType}`);// stop all the game parts
-	// 		this.scene.remove(`part${gameType}`);// remove all the game parts
-	// 	}
-	// 	this.scene.stop('selector');// stop the selector
-	// 	this.scene.remove('selector');// remove the selector
-	// 	this.game.destroy(true);// destroy the allocated memory for the game
-	// }
 }
