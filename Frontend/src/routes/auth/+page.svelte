@@ -1,6 +1,8 @@
 <!-- Login page content -->
 
 <script lang="ts">
+	import pongAnim from '$lib/images/pongAnim.png';
+
 	async function redir_42() {
 		window.location.href =
 		'https://api.intra.42.fr/oauth/authorize?client_id=u-s4t2ud-2f818a332a9a2006b00174a76ce71efe9e374cc942b996040f79806509ce968d&redirect_uri=http%3A%2F%2Flocalhost%3A5173&response_type=code'
@@ -18,7 +20,11 @@
 			<button on:click={redir_42}>LOGIN</button>
 			<h1>Please LOGIN <br /> with your intra42</h1>
 		</div>
-		<div class="background-image" />
+		<span class="pongAnim">
+			<picture>
+				<img src={pongAnim} alt="pongAnim" style="height: 300px; width: auto;" />
+			</picture>
+		</span>
 	</div>
 </main>
 
@@ -28,15 +34,13 @@
 		justify-content: center;
 		align-items: center;
 	}
-
-	.background-image {
-		background-image: url('$lib/images/pongAnim.png');
-		background-position: center;
-		background-size: cover;
-		height: 50vh;
-		width: 50%;
+	.pongAnim img {
+		position: static;
+		/* width: 100%;
+		height: 100%; */
+		top: 1;
+		display: inside;
 	}
-
 	button {
 		background-color: #007fff;
 		color: #fff;

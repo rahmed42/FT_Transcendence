@@ -4,7 +4,7 @@
 	import { page } from '$app/stores';
 	import logo from '$lib/images/42PongLogo.png';
 	import { user } from '../stores/user';
-	import { onMount } from 'svelte';
+	import { afterUpdate, onMount } from 'svelte';
 
 	let userInfo = {
 		token: '',
@@ -42,7 +42,9 @@
 			};
 		}
 	});
+
 	async function getToken(code: string) {
+		// Fetch token from the server
 		const response = await fetch('http://localhost:3333/auth/login?code=' + code, {
 			method: 'POST',
 			credentials: 'include'
@@ -57,18 +59,25 @@
 	}
 
 	async function getUserInfo() {
+		// Fetch user informations from the server
 		const response = await fetch('http://localhost:3333/profil/me', {
 			method: 'GET',
 			credentials: 'include'
 		});
-		console.log(response);
 		const contentType = response.headers.get('Content-Type');
 		if (contentType && contentType.includes('application/json')) {
+			// Get the JSON data from the response
 			const userInfo = await response.json();
 			// update the user store
 			user.set(userInfo);
 		}
+		// redirect to login Page if not log
+		console.log('userInfo.login = %s', userInfo.login);
+		if ((!userInfo.login || userInfo.login === '') && window.location.pathname !== '/auth') {
+			window.location.href = '/auth';
+		}
 	}
+
 	// Logout process - if LOGOUT button is clicked
 	function handleLogOut() {
 		// Clear the user store
