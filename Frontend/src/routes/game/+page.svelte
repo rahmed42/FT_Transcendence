@@ -12,17 +12,16 @@
 	afterUpdate(() => {
 		// At first render, selectedGame and game are null
 		if (!selectedGame && !game) {
-			console.log('>>>>Selected game %s / game ', selectedGame, game);
 			//Init Phaser and start the game
 			game = new Phaser.Game({
 				// CANVAS Rendering to be faster
-				type: Phaser.AUTO,
+				type: Phaser.CANVAS,
 				// Set the fps to 60
-				// fps: {
-				// 	target: 60,
-				// 	forceSetTimeOut: true,
-				// 	smoothStep: false
-				// },
+				fps: {
+					target: 60,
+					forceSetTimeOut: true,
+					smoothStep: true
+				},
 				backgroundColor: '#000000',
 				physics: {
 					default: 'arcade'
