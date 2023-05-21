@@ -16,13 +16,13 @@
 			//Init Phaser and start the game
 			game = new Phaser.Game({
 				// CANVAS Rendering to be faster
-				type: Phaser.CANVAS,
+				type: Phaser.AUTO,
 				// Set the fps to 60
-				fps: {
-					target: 60,
-					forceSetTimeOut: true,
-					smoothStep: false
-				},
+				// fps: {
+				// 	target: 60,
+				// 	forceSetTimeOut: true,
+				// 	smoothStep: false
+				// },
 				backgroundColor: '#000000',
 				physics: {
 					default: 'arcade'

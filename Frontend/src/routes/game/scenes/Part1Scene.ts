@@ -3,23 +3,36 @@ import { Room, Client } from "colyseus.js";
 import { BACKEND_URL } from "../backend";
 
 export class Part1Scene extends Phaser.Scene {
-	// //room reference
-	// room: Room | undefined;
+	//room reference
+	room: Room | undefined;
 
 	// // player reference (local player)
-	// currentPlayer: Phaser.Types.Physics.Arcade.ImageWithDynamicBody | undefined;
+	// currentPlayer: Phaser.Types.Physics.Arcade.ImageWithDynamicBody = this.physics.add.image(400, 300, 'ship_0001');
+
 	// playerEntities: { [sessionId: string]: Phaser.Types.Physics.Arcade.ImageWithDynamicBody } = {};
 
-	// // mouse pointer
-	// pointer: Phaser.Input.Pointer | undefined;
 
-	// // local input cache
-	// inputPayload = {
-	// 	// left: false,
-	// 	// right: false,
-	// 	up: false,
-	// 	down: false,
-	// };
+	// mouse pointer
+	pointer: Phaser.Input.Pointer | undefined;
+
+	// local input cache
+	inputPayload = {
+		left: false,
+		right: false,
+		up: false,
+		down: false,
+	};
+
+	// Set Paddle
+	localPaddle: Phaser.GameObjects.Rectangle | undefined;
+	remotePaddle: Phaser.GameObjects.Rectangle | undefined;
+
+	// Set Ball
+	ball: Phaser.GameObjects.Rectangle | undefined;
+
+	// Score
+	myScoreText: Phaser.GameObjects.Text | undefined;
+	opponentScoreText: Phaser.GameObjects.Text | undefined;
 
 	// scene reference
 	activeScene: string;
@@ -30,6 +43,13 @@ export class Part1Scene extends Phaser.Scene {
 		console.log("Part1Scene constructor");
 		super({ key: "part1", active: false });
 		this.activeScene = 'Part1Scene';
+
+		// Initialize the room
+		this.room = new Room("part1_room");
+		console.log(this.room);
+
+		// Initialize the player
+		// this.player = this.physics.add.image(400, 300, 'ship_0001');
 	}
 
 	// set the active scene
@@ -37,26 +57,24 @@ export class Part1Scene extends Phaser.Scene {
 		this.activeScene = sceneName;
 	}
 
-	// preload basic assets
-	preload() {
-		console.log("Part1Scene preload");
+	// // preload basic assets
+	// preload() {
+	// 	console.log("Part1Scene preload");
+	// 	// Adding background color
+	// 	// this.cameras.main.setBackgroundColor(0x000000);
 
-		// Adding background color
-		this.cameras.main.setBackgroundColor(0x000000);
 
-
-		// // preload pong assets
-		// this.load.image('ball', '../assets/style1/Ball.png');
-		// this.load.image('myPaddle', '../assets/style1/Player.png');
-		// this.load.image('opponentPaddle', '../assets/style1/Computer.png');
-	}
+	// 	// // preload pong assets
+	// 	// this.load.image('ball', '../assets/style1/Ball.png');
+	// 	// this.load.image('myPaddle', '../assets/style1/Player.png');
+	// 	// this.load.image('opponentPaddle', '../assets/style1/Computer.png');
+	// }
 
 	// create the game
 	async create() {
 		console.log("Part1Scene create");
-
-		// adding vertical white dotted line to separate the two games
-		this.add.line(400, 0, 400, 0, 400, 600, 0xffffff);
+		//get the mouse pointer
+		this.pointer = this.input.activePointer;
 
 		// Adding Home menu button
 		const homeButton = this.add.text(this.cameras.main.centerX, 18, 'Menu', { font: '32px Arial', color: '#ffffff' });
@@ -90,11 +108,30 @@ export class Part1Scene extends Phaser.Scene {
 			this.game.scene.switch("part1", "menu");
 		});
 
-		// 	//get the mouse pointer
-		// 	this.pointer = this.input.activePointer;
+		// connect with the room
+		// await this.connect();
 
-		// 	// connect with the room
-		// 	await this.connect();
+		// listen for new players
+		// this.room.state.players.onAdd((player, sessionId) => {
+		// 	console.log("New player joined with sessionId ", player, sessionId);
+
+		// 	const entity = this.physics.add.image(player.x, player.y, 'ship_0001');
+
+		// 	// keep a reference of it on `playerEntities`
+		// 	this.playerEntities[sessionId] = entity;
+
+		// 	// listening for server updates we need all the new coordinates at once with .onChange()
+		// 	player.onChange(() => {
+		// 		//
+		// 		// update local position immediately
+		// 		// (WE WILL CHANGE THIS ON PART 2)
+		// 		//
+		// 		entity.x = player.x;
+		// 		entity.y = player.y;
+		// 	});
+		// });
+
+
 
 		// 	// Listen for new players
 		// 	this.room.state.players.onAdd((player, sessionId) => {
@@ -164,41 +201,91 @@ export class Part1Scene extends Phaser.Scene {
 	}
 
 	// 	/* Methods */
-	// 	// Connect with the room
-	// 	async connect() {
-	// 		// add connection status text
-	// 		const connectionStatusText = this.add
-	// 			.text(0, 0, "Trying to connect with the server...")
-	// 			.setStyle({ color: "#ff0000" })
-	// 			.setPadding(4)
+	// Connect with the room
+	async connect() {
+		// add connection status text
+		const connectionStatusText = this.add
+			.text(0, 0, "Trying to connect with the server...")
+			.setStyle({ color: "#ff0000" })
+			.setPadding(4)
 
-	// 		const client = new Client(BACKEND_URL);
+		const client = new Client(BACKEND_URL);
 
-	// 		try {
-	// 			this.room = await client.joinOrCreate("part1_room", {});
+		try {
+			this.room = await client.joinOrCreate("part1_room", {});
 
-	// 			// connection successful!
-	// 			connectionStatusText.destroy();
+			// connection successful!
+			connectionStatusText.destroy();
 
-	// 		} catch (e) {
-	// 			// couldn't connect
-	// 			connectionStatusText.text = "Could not connect with the server.";
-	// 		}
-	// 	}
+		} catch (e) {
+			// couldn't connect
+			connectionStatusText.text = "Could not connect with the server.";
+		}
+	}
 
-	// /**
-	//  * At every update() tick, we are going to update the
-	//  * local inputPayload, and send it as a message to the server.
-	//  */
-	// 	update(time: number, delta: number): void {
-	// 		// skip loop if not connected with room yet.
-	// 		if (!this.room) {
-	// 			return;
-	// 		}
+	/**
+	 * At every update() tick, we are going to update the
+	 * local inputPayload, and send it as a message to the server.
+	 */
+	update(time: number, delta: number): void {
+		// skip loop if not connected with room yet.
+		if (!this.room) {
+			return;
+		}
 
-	// 		// send pointer to the server
-	// 		// this.inputPayload.pointerX = this.pointer.x;
-	// 		this.inputPayload.pointerY = this.pointer.y;
-	// 		this.room.send(0, this.inputPayload);
-	// 	}
+
+		// Refresh PONG Elements
+		this.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
+			// reset pointer Y
+			// this.pointer.reset();
+
+			if (this.myScoreText)
+				this.myScoreText.destroy();
+
+			if (this.opponentScoreText)
+				this.opponentScoreText.destroy();
+
+			if (this.localPaddle)
+				this.localPaddle.destroy();
+
+			if (this.remotePaddle)
+				this.remotePaddle.destroy();
+
+			// Display score
+			this.myScoreText = this.add.text(this.cameras.main.centerX / 2, 40, '0', { fontSize: '54px', color: 'white' });
+			this.opponentScoreText = this.add.text(this.cameras.main.centerX / 2 * 3, 40, '0', { fontSize: '54px', color: 'white' });
+
+			// on click change the score
+			// this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+			// 	this.myScoreText = this.add.text(this.cameras.main.centerX / 2, 40, `${pointer.x}`, { fontSize: '54px', color: 'white' });
+			// 	this.opponentScoreText = this.add.text(this.cameras.main.centerX / 2 * 3, 40, `${pointer.y}`, { fontSize: '54px', color: 'white' });
+			// });
+
+			// Display ball
+			this.ball = this.add.rectangle(this.cameras.main.centerX, this.cameras.main.centerY, 20, 20);
+			this.ball.setOrigin(0.5, 0.5);
+			this.ball.setStrokeStyle(2, 0xFFFFFF);
+
+			// Display Paddle
+			// this.pointer.y = this.cameras.main.centerY;
+			this.localPaddle = this.add.rectangle(10, this.pointer.y, 20, 100);
+			// this.localPaddle = this.add.rectangle(10, this.cameras.main.centerY, 20, 100);
+			this.localPaddle.setOrigin(0.5, 0.5);
+			this.localPaddle.setStrokeStyle(2, 0xFFFFFF);
+
+			this.remotePaddle = this.add.rectangle(this.cameras.main.width - 10, this.pointer.y, 20, 100);
+			// this.remotePaddle = this.add.rectangle(this.cameras.main.width - 10, this.cameras.main.centerY, 20, 100);
+			this.remotePaddle.setOrigin(0.5, 0.5);
+			this.remotePaddle.setStrokeStyle(2, 0xFFFFFF);
+		});
+
+		//Add collisions
+		// this.physics.add.collider(this.ball, this.localPaddle);
+		// this.physics.add.collider(this.ball, this.remotePaddle);
+
+		// send pointer to the server
+		// this.inputPayload.pointerX = this.pointer.x;
+		// this.inputPayload.pointerY = this.pointer.y;
+		// this.room.send(0, this.inputPayload);
+	}
 }

@@ -27,6 +27,12 @@ export class GameSelector extends Phaser.Scene {
 	preload() {
 		// setting background color
 		this.cameras.main.setBackgroundColor(0x004C99)
+
+
+        this.load.image('ship_0001', 'https://cdn.glitch.global/3e033dcd-d5be-4db4-99e8-086ae90969ec/ship_0001.png?v=1649945243288');
+
+		//adding image background
+		// this.load.image('pongAnim', 'https://static.vecteezy.com/system/resources/thumbnails/002/082/105/small/hud-ui-gui-futuristic-user-interface-screen-elements-high-tech-screen-for-video-game-sci-fi-concept-design-vector.jpg');
 	}
 
 	// create game parts list
@@ -61,7 +67,6 @@ export class GameSelector extends Phaser.Scene {
 				// setting the text as interactive
 				button.setInteractive();
 
-
 				// Button style
 				button.setStyle({
 					backgroundColor: '#007fff',
@@ -91,9 +96,6 @@ export class GameSelector extends Phaser.Scene {
 	/* Methods */
 	// run the game part selected by the user
 	runScene(sceneName: string) {
-		// this.scene.stop('selector'); // stop the selector
-		// this.scene.run(sceneName); // run the game part selected
-
 		this.game.scene.switch('menu', sceneName); // switch to the game part selected
 	}
 }

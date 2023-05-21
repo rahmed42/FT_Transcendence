@@ -3,8 +3,8 @@ import { Room, Client } from "colyseus.js";
 import { BACKEND_URL } from "../backend";
 
 export class Part2Scene extends Phaser.Scene {
-	// //room reference
-	// room: Room | undefined;
+	//room reference
+	room: Room;
 
 	// // player reference (local player)
 	// currentPlayer: Phaser.Types.Physics.Arcade.ImageWithDynamicBody | undefined;
@@ -30,6 +30,10 @@ export class Part2Scene extends Phaser.Scene {
 		console.log("Part2Scene constructor");
 		super({ key: "part2", active: false });
 		this.activeScene = 'Part2Scene';
+
+				// Initialize the room
+				this.room = new Room("part2_room");
+				console.log(this.room);
 	}
 
 	// set the active scene
@@ -37,19 +41,19 @@ export class Part2Scene extends Phaser.Scene {
 		this.activeScene = sceneName;
 	}
 
-	// preload basic assets
-	preload() {
-		console.log("Part2Scene preload");
+	// // preload basic assets
+	// preload() {
+	// 	console.log("Part2Scene preload");
 
-		// Adding background color
-		this.cameras.main.setBackgroundColor(0x000000);
+	// 	// Adding background color
+	// 	this.cameras.main.setBackgroundColor(0x000000);
 
 
-		// // preload pong assets
-		// this.load.image('ball', '../assets/style1/Ball.png');
-		// this.load.image('myPaddle', '../assets/style1/Player.png');
-		// this.load.image('opponentPaddle', '../assets/style1/Computer.png');
-	}
+	// 	// // preload pong assets
+	// 	// this.load.image('ball', '../assets/style1/Ball.png');
+	// 	// this.load.image('myPaddle', '../assets/style1/Player.png');
+	// 	// this.load.image('opponentPaddle', '../assets/style1/Computer.png');
+	// }
 
 	// create the game
 	async create() {
