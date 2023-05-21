@@ -7,16 +7,26 @@ export class GameSelector extends Phaser.Scene {
 		'2': "Modern",
 	};
 
+	// scene reference
+	activeScene: string;
+
 	// GameSelector constructor
 	constructor() {
-		super({ key: "selector", active: true });
+		console.log("SceneSelector constructor");
+		super({ key: "menu", active: true });
+		this.activeScene = 'selectorScene';
+	}
+
+	// set the active scene
+	setActiveScene(sceneName: string) {
+		this.activeScene = sceneName;
 	}
 
 	/* Optionnal constructor methods */
 	// preload basic assets
 	preload() {
 		// setting background color
-		this.cameras.main.setBackgroundColor(0x000000)
+		this.cameras.main.setBackgroundColor(0x004C99)
 	}
 
 	// create game parts list
@@ -70,7 +80,9 @@ export class GameSelector extends Phaser.Scene {
 
 				// setting the text as clickable
 				button.on("pointerdown", () => { // set the event when the text is clicked
-					this.runScene(`part${gameType}`); // run method to run the game part
+					this.setActiveScene(`part${gameType}`); // set the active scene
+					console.log(`Running game ${this.activeScene} : ${selector} Pong`);
+					this.runScene(this.activeScene); // run the scene
 				});
 			}
 		}
@@ -78,11 +90,10 @@ export class GameSelector extends Phaser.Scene {
 
 	/* Methods */
 	// run the game part selected by the user
-	runScene(key: string) {
-		console.log(`Running game ${key}`);
-		this.scene.stop('selector'); // stop the selector
-		this.scene.run(key); // run the game part selected
+	runScene(sceneName: string) {
+		// this.scene.stop('selector'); // stop the selector
+		// this.scene.run(sceneName); // run the game part selected
 
-		// this.game.scene.switch('selector', key); // switch to the game part selected
+		this.game.scene.switch('menu', sceneName); // switch to the game part selected
 	}
 }

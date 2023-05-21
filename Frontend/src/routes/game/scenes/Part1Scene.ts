@@ -21,21 +21,29 @@ export class Part1Scene extends Phaser.Scene {
 	// 	down: false,
 	// };
 
+	// scene reference
+	activeScene: string;
+
 	// Constructor of the scene
 	constructor() {
 		// active false to prevent the scene from starting automatically
+		console.log("Part1Scene constructor");
 		super({ key: "part1", active: false });
+		this.activeScene = 'Part1Scene';
+	}
+
+	// set the active scene
+	setActiveScene(sceneName: string) {
+		this.activeScene = sceneName;
 	}
 
 	// preload basic assets
 	preload() {
-		// // Adding background color
-		// this.cameras.main.setBackgroundColor(0x000000);
+		console.log("Part1Scene preload");
 
-		this.add.text(80, 50, 'Game1', { font: '32px Arial', color: '#ffffff' });
+		// Adding background color
+		this.cameras.main.setBackgroundColor(0x000000);
 
-		// // adding vertical white dotted line to separate the two games
-		// // this.add.line(400, 0, 400, 0, 400, 600, 0xffffff);
 
 		// // preload pong assets
 		// this.load.image('ball', '../assets/style1/Ball.png');
@@ -43,80 +51,117 @@ export class Part1Scene extends Phaser.Scene {
 		// this.load.image('opponentPaddle', '../assets/style1/Computer.png');
 	}
 
-	// // create the game
-	// async create() {
-	// 	//get the mouse pointer
-	// 	this.pointer = this.input.activePointer;
+	// create the game
+	async create() {
+		console.log("Part1Scene create");
 
-	// 	// connect with the room
-	// 	await this.connect();
+		// adding vertical white dotted line to separate the two games
+		this.add.line(400, 0, 400, 0, 400, 600, 0xffffff);
 
-	// 	// Listen for new players
-	// 	this.room.state.players.onAdd((player, sessionId) => {
-	// 		/* Player one */
-	// 		// create a new player entity
-	// 		const entity = this.physics.add.image(player.x, player.y, 'myPaddle');
+		// Adding Home menu button
+		const homeButton = this.add.text(this.cameras.main.centerX, 18, 'Menu', { font: '32px Arial', color: '#ffffff' });
 
-	// 		// keep a reference of it on `playerEntities`
-	// 		this.playerEntities[sessionId] = entity;
+		// Define the center of the text
+		homeButton.setOrigin(0.5, 0.5);
 
-	// 		// listening for server updates we need all the new coordinates at once with .onChange()
-	// 		player.onChange(() => {
-	// 			// update local position immediately
-	// 			entity.x = player.x;
-	// 			entity.y = player.y;
-	// 		});
+		// setting the text as interactive
+		homeButton.setInteractive();
 
-	// 		/* Player two */
-	// 		// create second player entity
-	// 		const opponentEntity = this.physics.add.image(player.x, player.y, 'opponentPaddle');
+		// button style
+		homeButton.setStyle({
+			backgroundColor: '#007fff',
+		});
 
-	// 		// keep a reference of it on `playerEntities`
-	// 		this.playerEntities[sessionId] = opponentEntity;
+		// Add a hover effect when the mouse is over the button
+		homeButton.on('pointerover', () => {
+			homeButton.setScale(0.90); // Change scale to reduce size effect
+			homeButton.setStyle({ backgroundColor: '#0055ff' });
+		});
 
-	// 		// listening for server updates we need all the new coordinates at once with .onChange()
-	// 		player.onChange(() => {
-	// 			// update local position immediately
-	// 			opponentEntity.x = player.x;
-	// 			opponentEntity.y = player.y;
-	// 		});
+		homeButton.on('pointerout', () => {
+			homeButton.setScale(1);
+			homeButton.setStyle({ backgroundColor: '#007fff' });
+		});
 
-	// 		// listen for ball updates
-	// 		this.room.state.ball.onChange(() => {
-	// 			// update local position immediately
-	// 			ball.x = this.room.state.ball.x;
-	// 			ball.y = this.room.state.ball.y;
-	// 		});
+		// Add a pointerdown event to go back to the menu
+		homeButton.on("pointerdown", () => {
+			this.setActiveScene("menu");
+			console.log(`Running game ${this.activeScene} : Menu`);
+			this.game.scene.switch("part1", "menu");
+		});
 
-	// 		// listen for score updates
-	// 		this.room.state.score.onChange(() => {
-	// 			// update local position immediately
-	// 			scoreText.setText(`Score: ${this.room.state.score.player1} - ${this.room.state.score.player2}`);
-	// 		});
+		// 	//get the mouse pointer
+		// 	this.pointer = this.input.activePointer;
 
-	// 		// listen for game over
-	// 		this.room.state.gameOver.onChange(() => {
-	// 			// update local position immediately
-	// 			if (this.room.state.gameOver) {
-	// 				gameOverText.setText(`Game Over!`);
-	// 			}
-	// 		});
+		// 	// connect with the room
+		// 	await this.connect();
 
-	// 		// Removing disconnected players
-	// 		// remove local reference when entity is removed from the server
-	// 		this.room.state.players.onRemove((player, sessionId) => {
-	// 			const entity = this.playerEntities[sessionId];
-	// 			if (entity) {
-	// 				// destroy entity
-	// 				entity.destroy();
-	// 				// clear local reference
-	// 				delete this.playerEntities[sessionId]
-	// 			}
-	// 		});
+		// 	// Listen for new players
+		// 	this.room.state.players.onAdd((player, sessionId) => {
+		// 		/* Player one */
+		// 		// create a new player entity
+		// 		const entity = this.physics.add.image(player.x, player.y, 'myPaddle');
 
-	// 		// Camera settings
-	// 		this.cameras.main.setBounds(0, 0, 800, 600);
-	// 	}
+		// 		// keep a reference of it on `playerEntities`
+		// 		this.playerEntities[sessionId] = entity;
+
+		// 		// listening for server updates we need all the new coordinates at once with .onChange()
+		// 		player.onChange(() => {
+		// 			// update local position immediately
+		// 			entity.x = player.x;
+		// 			entity.y = player.y;
+		// 		});
+
+		// 		/* Player two */
+		// 		// create second player entity
+		// 		const opponentEntity = this.physics.add.image(player.x, player.y, 'opponentPaddle');
+
+		// 		// keep a reference of it on `playerEntities`
+		// 		this.playerEntities[sessionId] = opponentEntity;
+
+		// 		// listening for server updates we need all the new coordinates at once with .onChange()
+		// 		player.onChange(() => {
+		// 			// update local position immediately
+		// 			opponentEntity.x = player.x;
+		// 			opponentEntity.y = player.y;
+		// 		});
+
+		// 		// listen for ball updates
+		// 		this.room.state.ball.onChange(() => {
+		// 			// update local position immediately
+		// 			ball.x = this.room.state.ball.x;
+		// 			ball.y = this.room.state.ball.y;
+		// 		});
+
+		// 		// listen for score updates
+		// 		this.room.state.score.onChange(() => {
+		// 			// update local position immediately
+		// 			scoreText.setText(`Score: ${this.room.state.score.player1} - ${this.room.state.score.player2}`);
+		// 		});
+
+		// 		// listen for game over
+		// 		this.room.state.gameOver.onChange(() => {
+		// 			// update local position immediately
+		// 			if (this.room.state.gameOver) {
+		// 				gameOverText.setText(`Game Over!`);
+		// 			}
+		// 		});
+
+		// 		// Removing disconnected players
+		// 		// remove local reference when entity is removed from the server
+		// 		this.room.state.players.onRemove((player, sessionId) => {
+		// 			const entity = this.playerEntities[sessionId];
+		// 			if (entity) {
+		// 				// destroy entity
+		// 				entity.destroy();
+		// 				// clear local reference
+		// 				delete this.playerEntities[sessionId]
+		// 			}
+		// 		});
+
+		// 		// Camera settings
+		// 		this.cameras.main.setBounds(0, 0, 800, 600);
+	}
 
 	// 	/* Methods */
 	// 	// Connect with the room
