@@ -22,11 +22,14 @@ export class Part1Scene extends Phaser.Scene {
 	};
 
 	// Set Paddle
-	localPaddle: Phaser.GameObjects.Rectangle | undefined;
-	remotePaddle: Phaser.GameObjects.Rectangle | undefined;
+	// localPaddle: Phaser.GameObjects.Rectangle | undefined;
+	localPaddle: Phaser.Types.Physics.Arcade.ImageWithDynamicBody | undefined;
+	// remotePaddle: Phaser.GameObjects.Rectangle | undefined;
+	remotePaddle: Phaser.Types.Physics.Arcade.ImageWithDynamicBody | undefined;
 
 	// Set Ball
-	ball: Phaser.Physics.Arcade.Image | undefined; //Phaser.GameObjects.Rectangle | undefined;
+	// ball: Phaser.Physics.Arcade.Image | undefined; //Phaser.GameObjects.Rectangle |undefined;
+	ball: Phaser.Types.Physics.Arcade.ImageWithDynamicBody | undefined;
 
 	// Score
 	myScoreText: Phaser.GameObjects.Text | undefined;
@@ -74,7 +77,18 @@ export class Part1Scene extends Phaser.Scene {
 
 	async create() {
 		this.gameUpdater();
-		this.ball = this.physics.add.image(400, 300, 'ballStyle1');
+
+		// add a start button
+		const startButton = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, 'Start Game', { font: '32px Arial', color: '#ffffff' });
+
+		// start the game
+		startButton.setInteractive();
+		startButton.on("pointerdown", () => {
+			// Hide the button
+			startButton.setVisible(false);
+			// Reset the game
+			this.resetGame();
+		});
 
 		// connect with the room
 		// await this.connect();
@@ -171,13 +185,67 @@ export class Part1Scene extends Phaser.Scene {
 	// 	/* Methods */
 	// Game visual callbacks
 	gameUpdater(): void {
-		// create the game
-		console.log("Part1Scene create");
+		/* SETUP STYLES */
+		// Display styled background
+		const background = this.add.image(0, 0, 'boardStyle1');
+		background.setDisplaySize(this.cameras.main.width, this.cameras.main.height);
+		background.setOrigin(0, 0);
+
+		// Display ball
+		this.ball = this.physics.add.image(400, 300, 'ballStyle1');
+		this.ball.setOrigin(0.5, 0.5);
+
+		// Display score
+		this.myScoreText = this.add.text(this.cameras.main.centerX / 2, 40, '0', { fontSize: '60px', color: 'white' });
+		this.opponentScoreText = this.add.text(this.cameras.main.centerX / 2 * 3, 40, '0', { fontSize: '60px', color: 'white' });
 
 		//Init mouse pointer
 		this.pointer = this.input.activePointer;
 		this.pointer.y = 0;
 
+		/* SETUP PHYSICS */
+		// Add map bounds, disable collisions on left/right bounds
+		this.physics.world.setBoundsCollision(true, true, true, true);
+		this.physics.world.setBounds(0, 0, this.cameras.main.width, this.cameras.main.height);
+
+		// Add ball physics
+		if (this.ball) {
+			this.ball.setCollideWorldBounds(true);
+			this.ball.setBounce(1);
+			this.ball.setVelocityX(Phaser.Math.Between(-100, 100));
+			this.ball.setVelocityY(Phaser.Math.Between(-100, 100));
+		}
+
+		this.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
+			if (this.localPaddle)
+				this.localPaddle.destroy();
+
+			if (this.remotePaddle)
+				this.remotePaddle.destroy();
+
+			// Display Paddle and set bounds
+			const paddle = {
+				'x': 20,
+				'y': 100,
+				'pos': this.pointer.y
+			};
+
+			this.localPaddle = this.physics.add.image(paddle.x / 2, paddle.pos, 'myPaddleStyle1');
+			this.localPaddle.setOrigin(0.5, 0.5);
+			this.localPaddle.setCollideWorldBounds(true);
+
+			this.remotePaddle = this.physics.add.image(this.cameras.main.width - paddle.x / 2, paddle.pos, 'opponentPaddleStyle1');
+			this.remotePaddle.setOrigin(0.5, 0.5);
+			this.remotePaddle.setCollideWorldBounds(true);
+		});
+
+		if (this.ball && this.localPaddle && this.remotePaddle) {
+			// Add collisions
+			this.physics.add.collider(this.ball, this.localPaddle, this.hitPaddle, undefined, this);
+			this.physics.add.collider(this.ball, this.remotePaddle, this.hitPaddle, undefined, this);
+		}
+
+		/* Adding Menu button */
 		// Adding Home menu button
 		const homeButton = this.add.text(this.cameras.main.centerX, 18, 'Menu', { font: '32px Arial', color: '#ffffff' });
 
@@ -210,65 +278,12 @@ export class Part1Scene extends Phaser.Scene {
 			this.game.scene.switch("part1", "menu");
 		});
 
-		// Refresh PONG Elements
-		// Display score
-		this.myScoreText = this.add.text(this.cameras.main.centerX / 2, 40, '0', { fontSize: '60px', color: 'white' });
-		this.opponentScoreText = this.add.text(this.cameras.main.centerX / 2 * 3, 40, '0', { fontSize: '60px', color: 'white' });
-
-		// Refresh the score
+		/* Refresh Score */
 		if (this.myScoreText)
 			this.myScoreText.setText(this.myScore.toString());
 		if (this.opponentScoreText)
 			this.opponentScoreText.setText(this.opponentScore.toString());
 
-		this.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
-			if (this.localPaddle)
-				this.localPaddle.destroy();
-
-			if (this.remotePaddle)
-				this.remotePaddle.destroy();
-
-			// Display ball
-			// this.ball = this.add.rectangle(this.cameras.main.centerX, this.cameras.main.centerY, 20, 20);
-			if (this.ball)
-				this.ball.setOrigin(0.5, 0.5);
-			// this.ball.setStrokeStyle(2, 0xFFFFFF);
-
-			// Display Paddle and set bounds
-			const paddle = {
-				'x': 20,
-				'y': 100,
-				'pos': this.pointer.y
-			};
-
-			if (this.pointer.y > this.cameras.main.height - paddle.y / 2)
-				paddle.pos = this.cameras.main.height - paddle.y / 2;
-			else if (this.pointer.y < paddle.y / 2)
-				paddle.pos = paddle.y / 2;
-
-			this.localPaddle = this.add.rectangle(paddle.x / 2, paddle.pos, paddle.x, paddle.y);
-			this.localPaddle.setOrigin(0.5, 0.5);
-			this.localPaddle.setStrokeStyle(2, 0xFFFFFF);
-
-			this.remotePaddle = this.add.rectangle(this.cameras.main.width - paddle.x / 2, paddle.pos, paddle.x, paddle.y);
-			this.remotePaddle.setOrigin(0.5, 0.5);
-			this.remotePaddle.setStrokeStyle(2, 0xFFFFFF);
-		});
-
-		// Add map bounds, disable collisions on left/right bounds
-		this.physics.world.setBoundsCollision(false, false, true, true);
-		this.physics.world.setBounds(0, 0, this.cameras.main.width, this.cameras.main.height);
-
-		if (this.ball && this.localPaddle && this.remotePaddle) {
-			// Convert rectangles into physics dynamic objects
-			this.physics.add.existing(this.localPaddle);
-			this.physics.add.existing(this.remotePaddle);
-			this.physics.add.existing(this.ball);
-
-			// Add collisions
-			this.physics.add.collider(this.ball, this.localPaddle, this.hitPaddle, undefined, this);
-			this.physics.add.collider(this.ball, this.remotePaddle, this.hitPaddle, undefined, this);
-		}
 	}
 	// Game logics
 	hitPaddle(): void {
@@ -297,6 +312,11 @@ export class Part1Scene extends Phaser.Scene {
 
 			// Launch the ball to random direction
 			this.ball.setVelocityX(Phaser.Math.Between(-100, 100));
+			this.ball.setVelocityY(Phaser.Math.Between(-100, 100));
+
+			// set the ball speed
+			// this.ball.setAccelerationX(100);
+			this.ball.setAcceleration(100);
 		}
 	}
 

@@ -1,7 +1,12 @@
 import * as Phaser from "phaser"; // will import all the Phaser types
 
 // To import images in assets folder
+
+//Style modern
 import ballStyle1 from '$lib/assets/style1/Ball.png';
+import myPaddleStyle1 from '$lib/assets/style1/Player.png';
+import opponentPaddleStyle1 from '$lib/assets/style1/Computer.png';
+import boardStyle1 from '$lib/assets/style1/Board.png';
 
 export class GameSelector extends Phaser.Scene {
 	// Adding game parts list
@@ -32,6 +37,9 @@ export class GameSelector extends Phaser.Scene {
 		this.cameras.main.setBackgroundColor(0x004C99)
 
 		this.load.image('ballStyle1', ballStyle1);
+		this.load.image('myPaddleStyle1', myPaddleStyle1);
+		this.load.image('opponentPaddleStyle1', opponentPaddleStyle1);
+		this.load.image('boardStyle1', boardStyle1);
 	}
 
 	// create game parts list
