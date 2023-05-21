@@ -108,6 +108,51 @@ export class Part1Scene extends Phaser.Scene {
 			this.game.scene.switch("part1", "menu");
 		});
 
+		// Refresh PONG Elements
+		this.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
+			// reset pointer Y
+			// this.pointer.reset();
+
+			if (this.myScoreText)
+				this.myScoreText.destroy();
+
+			if (this.opponentScoreText)
+				this.opponentScoreText.destroy();
+
+			if (this.localPaddle)
+				this.localPaddle.destroy();
+
+			if (this.remotePaddle)
+				this.remotePaddle.destroy();
+
+			// Display score
+			this.myScoreText = this.add.text(this.cameras.main.centerX / 2, 40, '0', { fontSize: '54px', color: 'white' });
+			this.opponentScoreText = this.add.text(this.cameras.main.centerX / 2 * 3, 40, '0', { fontSize: '54px', color: 'white' });
+
+			// on click change the score
+			// this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+			// 	this.myScoreText = this.add.text(this.cameras.main.centerX / 2, 40, `${pointer.x}`, { fontSize: '54px', color: 'white' });
+			// 	this.opponentScoreText = this.add.text(this.cameras.main.centerX / 2 * 3, 40, `${pointer.y}`, { fontSize: '54px', color: 'white' });
+			// });
+
+			// Display ball
+			this.ball = this.add.rectangle(this.cameras.main.centerX, this.cameras.main.centerY, 20, 20);
+			this.ball.setOrigin(0.5, 0.5);
+			this.ball.setStrokeStyle(2, 0xFFFFFF);
+
+			// Display Paddle
+			// this.pointer.y = this.cameras.main.centerY;
+			this.localPaddle = this.add.rectangle(10, this.pointer.y, 20, 100);
+			// this.localPaddle = this.add.rectangle(10, this.cameras.main.centerY, 20, 100);
+			this.localPaddle.setOrigin(0.5, 0.5);
+			this.localPaddle.setStrokeStyle(2, 0xFFFFFF);
+
+			this.remotePaddle = this.add.rectangle(this.cameras.main.width - 10, this.pointer.y, 20, 100);
+			// this.remotePaddle = this.add.rectangle(this.cameras.main.width - 10, this.cameras.main.centerY, 20, 100);
+			this.remotePaddle.setOrigin(0.5, 0.5);
+			this.remotePaddle.setStrokeStyle(2, 0xFFFFFF);
+		});
+
 		// connect with the room
 		// await this.connect();
 
@@ -234,50 +279,7 @@ export class Part1Scene extends Phaser.Scene {
 		}
 
 
-		// Refresh PONG Elements
-		this.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
-			// reset pointer Y
-			// this.pointer.reset();
 
-			if (this.myScoreText)
-				this.myScoreText.destroy();
-
-			if (this.opponentScoreText)
-				this.opponentScoreText.destroy();
-
-			if (this.localPaddle)
-				this.localPaddle.destroy();
-
-			if (this.remotePaddle)
-				this.remotePaddle.destroy();
-
-			// Display score
-			this.myScoreText = this.add.text(this.cameras.main.centerX / 2, 40, '0', { fontSize: '54px', color: 'white' });
-			this.opponentScoreText = this.add.text(this.cameras.main.centerX / 2 * 3, 40, '0', { fontSize: '54px', color: 'white' });
-
-			// on click change the score
-			// this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
-			// 	this.myScoreText = this.add.text(this.cameras.main.centerX / 2, 40, `${pointer.x}`, { fontSize: '54px', color: 'white' });
-			// 	this.opponentScoreText = this.add.text(this.cameras.main.centerX / 2 * 3, 40, `${pointer.y}`, { fontSize: '54px', color: 'white' });
-			// });
-
-			// Display ball
-			this.ball = this.add.rectangle(this.cameras.main.centerX, this.cameras.main.centerY, 20, 20);
-			this.ball.setOrigin(0.5, 0.5);
-			this.ball.setStrokeStyle(2, 0xFFFFFF);
-
-			// Display Paddle
-			// this.pointer.y = this.cameras.main.centerY;
-			this.localPaddle = this.add.rectangle(10, this.pointer.y, 20, 100);
-			// this.localPaddle = this.add.rectangle(10, this.cameras.main.centerY, 20, 100);
-			this.localPaddle.setOrigin(0.5, 0.5);
-			this.localPaddle.setStrokeStyle(2, 0xFFFFFF);
-
-			this.remotePaddle = this.add.rectangle(this.cameras.main.width - 10, this.pointer.y, 20, 100);
-			// this.remotePaddle = this.add.rectangle(this.cameras.main.width - 10, this.cameras.main.centerY, 20, 100);
-			this.remotePaddle.setOrigin(0.5, 0.5);
-			this.remotePaddle.setStrokeStyle(2, 0xFFFFFF);
-		});
 
 		//Add collisions
 		// this.physics.add.collider(this.ball, this.localPaddle);
