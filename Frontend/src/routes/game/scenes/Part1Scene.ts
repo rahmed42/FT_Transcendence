@@ -6,8 +6,7 @@ export class Part1Scene extends Phaser.Scene {
 	//room reference
 	room: Room | undefined;
 
-	// // player reference (local player)
-	// currentPlayer: Phaser.Types.Physics.Arcade.ImageWithDynamicBody = this.physics.add.image(400, 300, 'ship_0001');
+	// Players
 	// playerEntities: { [sessionId: string]: Phaser.Types.Physics.Arcade.ImageWithDynamicBody } = {};
 
 	// mouse pointer
@@ -51,9 +50,6 @@ export class Part1Scene extends Phaser.Scene {
 		// Initialize the room
 		this.room = new Room("part1_room");
 		console.log(this.room);
-
-		// Initialize the player
-		// this.player = this.physics.add.image(400, 300, 'ship_0001');
 	}
 
 	// set the active scene
@@ -68,7 +64,6 @@ export class Part1Scene extends Phaser.Scene {
 	// 	// this.cameras.main.setBackgroundColor(0x000000);
 
 	//load game assets
-
 	// 	// // preload pong assets
 	// 	// this.load.image('ball', '../assets/style1/Ball.png');
 	// 	// this.load.image('myPaddle', '../assets/style1/Player.png');
@@ -80,6 +75,7 @@ export class Part1Scene extends Phaser.Scene {
 
 		// add a start button
 		const startButton = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, 'Start Game', { font: '32px Arial', color: '#ffffff' });
+		startButton.setOrigin(0.5, 0.5);
 
 		// start the game
 		startButton.setInteractive();
@@ -112,8 +108,6 @@ export class Part1Scene extends Phaser.Scene {
 		// 		entity.y = player.y;
 		// 	});
 		// });
-
-
 
 		// 	// Listen for new players
 		// 	this.room.state.players.onAdd((player, sessionId) => {
@@ -205,15 +199,15 @@ export class Part1Scene extends Phaser.Scene {
 
 		/* SETUP PHYSICS */
 		// Add map bounds, disable collisions on left/right bounds
-		this.physics.world.setBoundsCollision(true, true, true, true);
+		this.physics.world.setBoundsCollision(false, false, true, true);
 		this.physics.world.setBounds(0, 0, this.cameras.main.width, this.cameras.main.height);
 
 		// Add ball physics
 		if (this.ball) {
 			this.ball.setCollideWorldBounds(true);
 			this.ball.setBounce(1);
-			this.ball.setVelocityX(Phaser.Math.Between(-100, 100));
-			this.ball.setVelocityY(Phaser.Math.Between(-100, 100));
+			// this.ball.setVelocityX(Phaser.Math.Between(-100, 100));
+			// this.ball.setVelocityY(Phaser.Math.Between(-100, 100));
 		}
 
 		this.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
@@ -239,11 +233,12 @@ export class Part1Scene extends Phaser.Scene {
 			this.remotePaddle.setCollideWorldBounds(true);
 		});
 
-		if (this.ball && this.localPaddle && this.remotePaddle) {
-			// Add collisions
-			this.physics.add.collider(this.ball, this.localPaddle, this.hitPaddle, undefined, this);
-			this.physics.add.collider(this.ball, this.remotePaddle, this.hitPaddle, undefined, this);
-		}
+		// if (this.ball && this.localPaddle && this.remotePaddle) {
+		// Add collisions
+		this.physics.add.collider(this.ball, this.localPaddle, this.hitPaddle, undefined, this);
+		this.physics.add.collider(this.ball, this.remotePaddle, this.hitPaddle, undefined, this);
+		// }
+
 
 		/* Adding Menu button */
 		// Adding Home menu button
@@ -280,9 +275,11 @@ export class Part1Scene extends Phaser.Scene {
 
 		/* Refresh Score */
 		if (this.myScoreText)
-			this.myScoreText.setText(this.myScore.toString());
+			this.myScoreText.setText(this.ball.x.toString());
+			// this.myScoreText.setText(this.myScore.toString());
 		if (this.opponentScoreText)
-			this.opponentScoreText.setText(this.opponentScore.toString());
+			this.opponentScoreText.setText(this.ball.y.toString());
+			// this.opponentScoreText.setText(this.opponentScore.toString());
 
 	}
 	// Game logics
@@ -311,12 +308,19 @@ export class Part1Scene extends Phaser.Scene {
 			this.ball.y = this.cameras.main.centerY;
 
 			// Launch the ball to random direction
-			this.ball.setVelocityX(Phaser.Math.Between(-100, 100));
-			this.ball.setVelocityY(Phaser.Math.Between(-100, 100));
+			let velocityX = Phaser.Math.Between(300, 500);
+			let velocityY = Phaser.Math.Between(100, 250);
+			// random negative or positive
+			velocityX *= Math.random() < 0.5 ? 1 : -1;
+			velocityY *= Math.random() < 0.5 ? 1 : -1;
+			this.ball.setVelocity(velocityX, velocityY);
+
+			// this.ball.setVelocityX(Phaser.Math.Between(50, 100));
+			// this.ball.setVelocityY(Phaser.Math.Between(-500, 100));
 
 			// set the ball speed
 			// this.ball.setAccelerationX(100);
-			this.ball.setAcceleration(100);
+			// this.ball.setAcceleration(100);
 		}
 	}
 
@@ -367,9 +371,8 @@ export class Part1Scene extends Phaser.Scene {
 		if (!this.room) {
 			return;
 		}
-
 		// Reset the ball if outbounds
-		if (this.ball && (this.ball.y < 0 || this.ball.y > this.cameras.main.height)) {
+		if (this.ball && (this.ball.x < 0 || this.ball.x > this.cameras.main.width)) {
 			this.resetBall();
 		}
 		// send pointer to the server
