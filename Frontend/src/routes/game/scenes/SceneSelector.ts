@@ -1,5 +1,8 @@
 import * as Phaser from "phaser"; // will import all the Phaser types
 
+// To import images in assets folder
+import ballStyle1 from '$lib/assets/style1/Ball.png';
+
 export class GameSelector extends Phaser.Scene {
 	// Adding game parts list
 	parts = {
@@ -28,11 +31,7 @@ export class GameSelector extends Phaser.Scene {
 		// setting background color
 		this.cameras.main.setBackgroundColor(0x004C99)
 
-
-        this.load.image('ship_0001', 'https://cdn.glitch.global/3e033dcd-d5be-4db4-99e8-086ae90969ec/ship_0001.png?v=1649945243288');
-
-		//adding image background
-		// this.load.image('pongAnim', 'https://static.vecteezy.com/system/resources/thumbnails/002/082/105/small/hud-ui-gui-futuristic-user-interface-screen-elements-high-tech-screen-for-video-game-sci-fi-concept-design-vector.jpg');
+		this.load.image('ballStyle1', ballStyle1);
 	}
 
 	// create game parts list

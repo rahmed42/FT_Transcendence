@@ -31,9 +31,9 @@ export class Part2Scene extends Phaser.Scene {
 		super({ key: "part2", active: false });
 		this.activeScene = 'Part2Scene';
 
-				// Initialize the room
-				this.room = new Room("part2_room");
-				console.log(this.room);
+		// Initialize the room
+		this.room = new Room("part2_room");
+		console.log(this.room);
 	}
 
 	// set the active scene

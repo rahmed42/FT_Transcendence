@@ -11,7 +11,7 @@ export class Part1Scene extends Phaser.Scene {
 	// playerEntities: { [sessionId: string]: Phaser.Types.Physics.Arcade.ImageWithDynamicBody } = {};
 
 	// mouse pointer
-	pointer: Phaser.Input.Pointer;
+	pointer: Phaser.Input.Pointer | undefined;
 
 	// local input cache
 	inputPayload = {
@@ -26,7 +26,7 @@ export class Part1Scene extends Phaser.Scene {
 	remotePaddle: Phaser.GameObjects.Rectangle | undefined;
 
 	// Set Ball
-	ball: Phaser.GameObjects.Rectangle | undefined;
+	ball: Phaser.Physics.Arcade.Image | undefined; //Phaser.GameObjects.Rectangle | undefined;
 
 	// Score
 	myScoreText: Phaser.GameObjects.Text | undefined;
@@ -64,6 +64,7 @@ export class Part1Scene extends Phaser.Scene {
 	// 	// Adding background color
 	// 	// this.cameras.main.setBackgroundColor(0x000000);
 
+	//load game assets
 
 	// 	// // preload pong assets
 	// 	// this.load.image('ball', '../assets/style1/Ball.png');
@@ -73,6 +74,8 @@ export class Part1Scene extends Phaser.Scene {
 
 	async create() {
 		this.gameUpdater();
+		this.ball = this.physics.add.image(400, 300, 'ballStyle1');
+
 		// connect with the room
 		// await this.connect();
 
@@ -166,10 +169,12 @@ export class Part1Scene extends Phaser.Scene {
 	}
 
 	// 	/* Methods */
+	// Game visual callbacks
 	gameUpdater(): void {
 		// create the game
 		console.log("Part1Scene create");
-		//Init pointer
+
+		//Init mouse pointer
 		this.pointer = this.input.activePointer;
 		this.pointer.y = 0;
 
@@ -224,9 +229,10 @@ export class Part1Scene extends Phaser.Scene {
 				this.remotePaddle.destroy();
 
 			// Display ball
-			this.ball = this.add.rectangle(this.cameras.main.centerX, this.cameras.main.centerY, 20, 20);
-			this.ball.setOrigin(0.5, 0.5);
-			this.ball.setStrokeStyle(2, 0xFFFFFF);
+			// this.ball = this.add.rectangle(this.cameras.main.centerX, this.cameras.main.centerY, 20, 20);
+			if (this.ball)
+				this.ball.setOrigin(0.5, 0.5);
+			// this.ball.setStrokeStyle(2, 0xFFFFFF);
 
 			// Display Paddle and set bounds
 			const paddle = {
@@ -249,7 +255,7 @@ export class Part1Scene extends Phaser.Scene {
 			this.remotePaddle.setStrokeStyle(2, 0xFFFFFF);
 		});
 
-		// Add map bounds
+		// Add map bounds, disable collisions on left/right bounds
 		this.physics.world.setBoundsCollision(false, false, true, true);
 		this.physics.world.setBounds(0, 0, this.cameras.main.width, this.cameras.main.height);
 
