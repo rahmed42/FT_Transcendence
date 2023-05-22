@@ -1,10 +1,23 @@
 <!-- Shared Header config file with navigation links -->
 
 <script lang="ts">
+	import { get } from 'svelte/store';
 	import { page } from '$app/stores';
 	import logo from '$lib/images/42PongLogo.png';
 	import { user } from '../stores/user';
 	import { beforeUpdate, onMount } from 'svelte';
+	// import { fa } from '../stores/user'
+
+	// let test = get(fa);
+	// let test1 = test.fa;
+	// if (test1 == false)
+	// {
+	// 	console.log('FA is false');
+	// }
+	// else
+	// {
+	// 	console.log('FA is true');
+	// }
 
 	let userInfo = {
 		token: '',
@@ -65,7 +78,11 @@
 	}
 
 	async function getUserInfo() {
+		// console.log(document.cookie);
 		// Fetch user informations from the server
+		// const token = document.cookie
+
+		// console.log('TOKENVALUE=', document.cookie);
 		const response = await fetch('http://localhost:3333/profil/me', {
 			method: 'GET',
 			credentials: 'include'

@@ -1,5 +1,8 @@
 import { writable } from 'svelte/store';
 
+interface fa {
+	fa: boolean;
+}
 interface User {
 	token: string;
 	jwtToken: string;
@@ -28,4 +31,8 @@ export const user = writable<User>({
 	small_pic: '',
 	createAt: '',
 	updateAt: '',
+});
+
+export const fa = writable<fa>({
+	fa: false,
 });
