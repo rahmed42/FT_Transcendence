@@ -30,9 +30,9 @@ export const user = writable<User>({
 });
 
 interface login2Fa {
-	checked : boolean;
+	checked: boolean;
 }
 
 export const log2Fa = writable<login2Fa>({
-	checked : false
+	checked: false
 });

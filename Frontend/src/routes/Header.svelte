@@ -1,24 +1,10 @@
 <!-- Shared Header config file with navigation links -->
 
 <script lang="ts">
-	import { get } from 'svelte/store';
 	import { page } from '$app/stores';
 	import logo from '$lib/images/42PongLogo.png';
 	import { user } from '../stores/user';
-	// import { log2Fa } from '../stores/user';
 	import { beforeUpdate, onMount } from 'svelte';
-
-	// let test = get(log2Fa);
-	// console.log('FA=', test);
-	// let test1 = test.checked;
-	// if (test1 == false)
-	// {
-	// 	console.log('FA is false');
-	// }
-	// else
-	// {
-	// 	console.log('FA is true');
-	// }
 
 	let userInfo = {
 		token: '',
@@ -35,27 +21,14 @@
 		updateAt: ''
 	};
 
-	// let userLog2Fa = {
-	// 	checked : false
-	// };
-
 	// onMount is called when the component is mounted in the DOM
 	onMount(async () => {
-	// let test = get(log2Fa);
-	// console.log('FA=', test);
-
 		if (typeof window !== 'undefined') {
 			// Subscribe to the user store
 			const unsubscribe = user.subscribe((value) => {
 				// update userInfo with last user value at store changes
 				userInfo = value;
 			});
-
-			// // Suscribe to the 2FA store
-			// const unsubscribeFa = log2Fa.subscribe((value) => {
-			// 	// update log2Fa with last 2FA value at store changes
-			// 	userLog2Fa = value;
-			// });
 
 			const code = new URLSearchParams(window.location.search).get('code');
 			if (code) {
@@ -66,7 +39,6 @@
 			// Clean up the subscription on unmount
 			return () => {
 				unsubscribe();
-				// unsubscribeFa();
 			};
 		}
 	});
@@ -93,11 +65,7 @@
 	}
 
 	async function getUserInfo() {
-		// console.log(document.cookie);
 		// Fetch user informations from the server
-		// const token = document.cookie
-
-		// console.log('TOKENVALUE=', document.cookie);
 		const response = await fetch('http://localhost:3333/profil/me', {
 			method: 'GET',
 			credentials: 'include'
@@ -109,10 +77,6 @@
 			// update the user store
 			user.set(userInfo);
 		}
-
-		// // update 2Fa in store
-		// console.log('FA=', test);
-		// log2Fa.set(userLog2Fa);
 
 		// redirect to login Page if not log
 		if ((!userInfo.login || userInfo.login === '') && window.location.pathname !== '/')
