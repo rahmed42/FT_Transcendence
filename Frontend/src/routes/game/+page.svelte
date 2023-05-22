@@ -1,21 +1,62 @@
-<!-- Game page content -->
 <script lang="ts">
-	import { onDestroy } from 'svelte';
-	// import { sceneSelector } from './scenes/SceneSelector.ts';
+	import { afterUpdate, onDestroy } from 'svelte';
+	import Phaser from 'phaser';
+	import { GameSelector } from './scenes/SceneSelector';
+	import { Part1Scene } from './scenes/Part1Scene';
+	import { Part2Scene } from './scenes/Part2Scene';
 
-	// let sceneSelector: SceneSelector; // Explicitly specify the type
+	let selectedGame: GameSelector | null = null;
+	let game: Phaser.Game | null = null;
 
-	// Function cleanup
-	function cleanup() {
-		console.log('Game page cleanup');
+	// Fonction afterUpdate - appelée après la mise à jour du composant
+	afterUpdate(() => {
+		// At first render, selectedGame and game are null
+		if (!selectedGame && !game) {
+			console.log('>>>>Selected game %s / game ', selectedGame, game);
+			//Init Phaser and start the game
+			game = new Phaser.Game({
+				// CANVAS Rendering to be faster
+				type: Phaser.AUTO,
+				// Set the fps to 60
+				// fps: {
+				// 	target: 60,
+				// 	forceSetTimeOut: true,
+				// 	smoothStep: false
+				// },
+				backgroundColor: '#000000',
+				physics: {
+					default: 'arcade'
+				},
+				pixelArt: true,
 
-		// if (sceneSelector) {
-		// 	sceneSelector.cleanup(); // Call the cleanup function of the SceneSelector scene
-		// }
-	}
+				// Set the size of the game
+				width: 800,
+				height: 600,
+				// Set parent id of the div where the game will be
+				parent: 'game-container',
+				// Set the scenes of the game
+				scene: [GameSelector, Part1Scene, Part2Scene]
+			});
 
+			// Get the selected game
+			selectedGame = new GameSelector();
+
+			//Begin the game
+			game.scene.start('selector');
+		}
+	});
+
+	// Fonction onDestroy - appelée lorsque le composant est détruit
 	onDestroy(() => {
-		cleanup(); // Call the cleanup function when the page is destroyed
+		console.log('Leaving Game');
+		if (selectedGame) {
+			selectedGame = null; // Remettez selectedGame à null après le nettoyage
+		}
+
+		if (game) {
+			game.destroy(true);
+			game = null; // Remettez game à null après le nettoyage
+		}
 	});
 </script>
 
@@ -24,14 +65,12 @@
 	<meta name="description" content="Game Page" />
 </svelte:head>
 
-<!-- {#if $page.url.pathname === '/game'} -->
 <div class="center">
 	<div class="text-column">
-		<h1>GAME PAGE</h1>
+		<!-- <h1>42 PONG</h1> -->
+		<div id="game-container" />
 	</div>
 </div>
-
-<!-- {/if} -->
 
 <style>
 	.center {
