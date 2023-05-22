@@ -42,3 +42,13 @@ export class ChatDtoAdminOperation
     @IsNotEmpty()
     idUserToExecute : number;
 }
+
+export class ChatDtoGetRoom 
+{
+    @IsNotEmpty()
+    @IsNumber() 
+    idUser : number;
+
+    @IsOptional()
+    roomName : string;
+}

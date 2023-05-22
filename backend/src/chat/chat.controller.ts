@@ -1,7 +1,9 @@
-import {Body, Controller, Get, Post} from '@nestjs/common';
+import {Body, Controller, Get, Param, Post, UseGuards} from '@nestjs/common';
 import { ChatService } from './chat.service';
-import { ChatDtoAdminOperation, ChatDtoCreateRoom, ChatDtoJoinRoom } from './dto';
+import { ChatDtoAdminOperation, ChatDtoCreateRoom, ChatDtoGetRoom, ChatDtoJoinRoom } from './dto';
 
+
+@UseGuards()
 @Controller('chat')
 export class ChatController {
     constructor(private readonly ChatService : ChatService) {}
@@ -23,10 +25,10 @@ export class ChatController {
     async kickUser(@Body() body: ChatDtoAdminOperation) {
         return await this.ChatService.kickUser(body);
     }
-
     @Get('rooms/:name')
-    async getRoom(@Body() body: ChatDtoAdminOperation) {
-        return await this.ChatService.getRoom(body);
+    async getRoom(@Param('name') roomName: string, @Body() body: ChatDtoGetRoom) {
+        body.roomName = roomName;
+        return await this.ChatService.getRoomInfo(body);
     }
-    /* TODO KICK, BAN, MUTE, LEAVE, GIVE ADMIN, GIVE OWNER, BLOQUER (don't show other messages)*/
+    /* TODO KICK, BAN, MUTE, LEAVE, GIVE ADMIN, GIVE OWNER, BLOQUER (don't show other messages)    */
 }
