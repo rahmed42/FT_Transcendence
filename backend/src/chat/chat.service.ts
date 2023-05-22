@@ -540,5 +540,161 @@ export class ChatService {
         });
         return {"userId": user.id, "rooms" : roomsOfUser}
     }
+
+    async banUser(body: ChatDtoAdminOperation)
+    {
+        const admin = await this.prisma.user.findUnique({
+            where: {
+                id: body.idAdmin,
+            },
+        });
+        if (!admin) {
+            throw new BadRequestException('User does not exist');
+        }
+        const toBan = await this.prisma.user.findUnique({
+            where: {
+                id: body.idUserToExecute,
+            },
+        });
+        if (!toBan) {
+            throw new BadRequestException('User to ban does not exist');
+        }
+        const room = await this.prisma.room.findUnique({
+            where: {
+                name: body.roomName,
+            },
+        });
+        if (!room) {
+            throw new BadRequestException('Room does not exist');
+        }
+        const isAdmin = await this.prisma.room.findFirst({
+            where: {
+                name: body.roomName,
+                administrators: {
+                    some: {
+                        id: body.idAdmin,
+                    },
+                },
+            },
+        });
+        if (!isAdmin) {
+            throw new BadRequestException('User is not admin');
+        }
+        const isUserInRoom = await this.prisma.room.findFirst({
+            where: {
+                name: body.roomName,
+                users: {
+                    some: {
+                        id: body.idUserToExecute,
+                    },
+                },
+            },
+        });
+        if (!isUserInRoom) {
+            throw new BadRequestException('User not in room');
+        }
+        const isBanned = await this.prisma.room.findFirst({
+            where: {
+                name: body.roomName,
+                bannedUsers: {
+                    some: {
+                        id: body.idUserToExecute,
+                    },
+                },
+            },
+        });
+        if (isBanned) {
+            throw new BadRequestException('User already banned');
+        }
+        const isBannedUserOwner = await this.prisma.room.findFirst({
+            where: {
+                name: body.roomName,
+                ownerId: body.idUserToExecute,
+            },
+        });
+        if (isBannedUserOwner) {
+            throw new BadRequestException('User is owner of room');
+        }
+        const isBannedUserAdmin = await this.prisma.room.findFirst({
+            where: {
+                name: body.roomName,
+                administrators: {
+                    some: {
+                        id: body.idUserToExecute,
+                    },
+                },
+            },
+        });
+        const isBannedUserMuted = await this.prisma.room.findFirst({
+            where: {
+                name: body.roomName,
+                mutedUsers: {
+                    some: {
+                        id: body.idUserToExecute,
+                    },
+                },
+            },
+        });
+        await this.prisma.room.update({
+            where: {
+                name: body.roomName,
+            },
+            data: {
+                mutedUsers: isBannedUserMuted ? {} : {
+                    disconnect: {
+                        id: body.idUserToExecute,
+                    },
+                },
+                bannedUsers: {
+                    connect: {
+                        id: body.idUserToExecute,
+                    },
+                },
+                users: {
+                    disconnect : {
+                        id : body.idUserToExecute,
+                    }
+                },
+                invitedUsers : {
+                    disconnect : {
+                        id : body.idUserToExecute,
+                    }
+                },
+                administrators: isBannedUserAdmin ? {} : {
+                    disconnect: {
+                        id: body.idUserToExecute,
+                    }
+                },
+            },
+        });
+        await this.prisma.user.update({
+            where: {
+                id: body.idUserToExecute,
+            },
+            data: {
+                rooms: {
+                    disconnect: {
+                        name: body.roomName,
+                    },
+                },
+                administratedRooms: isBannedUserAdmin ? {} : {
+                    disconnect: {
+                        name: body.roomName,
+                    },
+                },
+                mutedRooms: isBannedUserMuted ? {} : {
+                    disconnect: {
+                        name: body.roomName,
+                    },
+                },
+                invitedRooms: {
+                    disconnect: {
+                        name: body.roomName,
+                    },
+                },
+            },
+        })
+        return { message: "User successfully banned" }
+    }
 }
 

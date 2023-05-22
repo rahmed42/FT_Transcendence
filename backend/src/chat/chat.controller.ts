@@ -39,6 +39,14 @@ export class ChatController {
         }
         return await this.ChatService.kickUser(body);
     }
+    @Post('banUser')
+    async banUser(@Body() body: ChatDtoAdminOperation) {
+        if (!body)
+        {
+            throw new BadRequestException("Body is empty");
+        }
+        return await this.ChatService.banUser(body);
+    }
     @Get('rooms')
     async getRooms(body : ChatDtoGetRoom) {
         if (!body)
