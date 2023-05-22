@@ -1,21 +1,70 @@
 <script>
   import { onMount } from 'svelte';
+  import { user } from '../../stores/user';
+  import { get } from 'svelte/store';
 
   let messageInput = '';
 
   let isInvalidType = false;
   let isInvalidName = false;
   let isInvalidPassword = false;
+  let isJoinInvalidType = false;
+  let isJoinInvalidName = false;
+  let isJoinInvalidPassword = false;
   let isModalOpen = false;
+  let isJoinModalOpen = false;
   let newChannelName = '';
   let newChannelType = '';
   let newChannelPassword = '';
-  let userId = null;
-  let channelList = null;
+  let joinChannelName = '';
+  let joinChannelType = '';
+  let joinChannelPassword = '';
+  let userId = get(user);
+  const userID = userId.id;
   let selectedChannel = null;
 
-  channelList = [
-  ];
+  let channelList = [
+  { name : "Channel 1" },
+  { name : "Channel 2" },
+  { name : "Channel 3" },
+  { name : "Channel 4" },
+  { name : "Channel 5" },
+  { name : "Channel 6" },
+  { name : "Channel 7" },
+  { name : "Channel 8" },
+  { name : "Channel 9" },
+  { name : "Channel 10" },
+  { name : "Channel 11" },
+  { name : "Channel 12" },
+  { name : "Channel 13" },
+  { name : "Channel 14" },
+  { name : "Channel 15" },
+  { name : "Channel 16" },
+  { name : "Channel 17" },
+  { name : "Channel 18" },
+  { name : "Channel 19" },
+  { name : "Channel 20" },
+  { name : "Channel 21" },
+  { name : "Channel 22" },
+  { name : "Channel 23" },
+  { name : "Channel 24" },
+  { name : "Channel 25" },
+  { name : "Channel 26" },
+  { name : "Channel 27" },
+  { name : "Channel 28" },
+  { name : "Channel 29" },
+  { name : "Channel 30" },
+  { name : "Channel 31" },
+  { name : "Channel 32" },
+  { name : "Channel 33" },
+  { name : "Channel 34" },
+  { name : "Channel 35" },
+  { name : "Channel 36" },
+  { name : "Channel 37" },
+  { name : "Channel 38" },
+  { name : "Channel 39" },
+  { name : "Channel 40" }
+];
 
   function openModal() {
     isModalOpen = true;
@@ -29,6 +78,20 @@
     isInvalidName = false;
     isInvalidType = false;
     isInvalidPassword = false;
+  }
+
+  function openJoinModal() {
+    isJoinModalOpen = true;
+  }
+
+  function closeJoinModal() {
+    isJoinModalOpen = false;
+    joinChannelName = '';
+    joinChannelType = '';
+    joinChannelPassword = '';
+    isJoinInvalidName = false;
+    isJoinInvalidType = false;
+    isJoinInvalidPassword = false;
   }
 
   async function createChannel() {
@@ -49,17 +112,16 @@
         const response = await fetch('http://localhost:3333/chat/createRoom', {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            idUser: 89504,
+            idUser: userID,
             roomName: newChannelName,
             type: newChannelType,
-            password: newChannelPassword
-          })
+            password: newChannelPassword,
+          }),
         });
-        if (!response.ok)
-          console.log(await response.json())
+        console.log(userID, newChannelName, newChannelType, newChannelPassword);
         closeModal();
         // Ajoutez ici la logique pour mettre à jour la liste des channels côté front-end
       }
@@ -78,42 +140,79 @@
     return true;
   }
 
-  async function joinChannel(channel) {
-    selectedChannel = channel;
-    const response = await fetch('http://localhost:3333/chat/joinRoom', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
+  async function joinChannel() {
+    if (
+      joinChannelName.trim() !== '' &&
+      joinChannelName.length <= 10 &&
+      isValidChannelName(joinChannelName)
+    ) {
+      if (joinChannelType === '') {
+        isJoinInvalidType = true;
+      } else {
+        if (joinChannelType === 'protected') {
+          if (joinChannelPassword.trim() === '') {
+            isJoinInvalidPassword = true;
+            return;
+          }
+        }
+        const response = await fetch('http://localhost:3333/chat/joinRoom', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            idUser: userID,
+            roomName: joinChannelName,
+            type: joinChannelType,
+            password: joinChannelPassword,
+          }),
+        });
+        console.log(userID, joinChannelName, joinChannelType, joinChannelPassword);
+        closeJoinModal();
+        // Ajoutez ici la logique pour mettre à jour la liste des channels côté front-end
       }
-    });
+    } else {
+      isJoinInvalidName = true;
+    }
   }
 
   async function sendMessage() {
     console.log(messageInput);
     messageInput = '';
   }
-
-  onMount(async () => {
-    // Effectuez ici une requête vers votre backend pour récupérer l'ID de l'utilisateur et la liste des channels
-    try {
-      const response = await fetch('http://localhost:3333/chat/rooms', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        userId = data.userId;
-        channelList = data.channels;
-      } else {
-        throw new Error('Failed to fetch user data');
-      }
-    } catch (error) {
-      console.error(error);
-    }
-  });
 </script>
+
+{#if isJoinModalOpen}
+  <div class="modal">
+    <div class="modal-content">
+      <h3>Join a channel</h3>
+      <input bind:value={joinChannelName} type="text" placeholder="Channel Name" />
+      {#if isJoinInvalidName}
+        <p class="error-message">Invalid channel name. Please enter a valid name.</p>
+      {/if}
+      {#if isJoinInvalidType}
+        <p class="error-message">Please select a channel type.</p>
+      {/if}
+      <div class="channel-type">
+        <span>Channel Type:</span>
+        <label>
+          <input type="radio" value="public" bind:group={joinChannelType} /> Public
+        </label>
+        <label>
+          <input type="radio" value="protected" bind:group={joinChannelType} /> Protected
+        </label>
+      </div>
+      {#if joinChannelType === 'protected'}
+        <input bind:value={joinChannelPassword} type="password" placeholder="Password" />
+        {#if isJoinInvalidType && joinChannelType === 'protected' && isJoinInvalidPassword}
+          <p class="error-message">Please enter a password for the protected channel.</p>
+        {/if}
+      {/if}
+      <button on:click={joinChannel}>Join</button>
+      <button on:click={closeJoinModal}>Cancel</button>
+    </div>
+  </div>
+{/if}
 
 <svelte:head>
   <title>Chat</title>
@@ -132,12 +231,15 @@
         <p>No channels joined</p>
       {/if}
     </div>
-    <button class="create-channel" on:click={() => openModal()}>
+    <button class="create-channel p-anim" on:click={() => openModal()}>
       Create a channel
+    </button>
+    <button class="create-channel p-anim" on:click={() => openJoinModal()}>
+      Join Channel
     </button>
     {#if channelList !== null}
       {#each channelList as channel}
-        <button class="channel-button" on:click={() => joinChannel(channel)}>
+        <button class="channel-button p-anim" on:click={() => joinChannel()}>
           {channel.name}
         </button>
       {/each}
@@ -162,9 +264,6 @@
         {#if isInvalidType}
           <p class="error-message">Please select a channel type.</p>
         {/if}
-        {#if isInvalidType && newChannelType === 'protected' && isInvalidPassword}
-          <p class="error-message">Please enter a password for the protected channel.</p>
-        {/if}
         <div class="channel-type">
           <span>Channel Type:</span>
           <label>
@@ -179,9 +278,44 @@
         </div>
         {#if newChannelType === 'protected'}
           <input bind:value={newChannelPassword} type="password" placeholder="Password" />
+          {#if isInvalidPassword}
+            <p class="error-message">Please enter a password for the protected channel.</p>
+          {/if}
         {/if}
         <button on:click={createChannel}>Create</button>
         <button on:click={closeModal}>Cancel</button>
+      </div>
+    </div>
+  {/if}
+
+  {#if isJoinModalOpen}
+    <div class="modal">
+      <div class="modal-content">
+        <h3>Join a channel</h3>
+        <input bind:value={joinChannelName} type="text" placeholder="Channel Name" />
+        {#if isJoinInvalidName}
+          <p class="error-message">Invalid channel name. Please enter a valid name.</p>
+        {/if}
+        {#if isJoinInvalidType}
+          <p class="error-message">Please select a channel type.</p>
+        {/if}
+        <div class="channel-type">
+          <span>Channel Type:</span>
+          <label>
+            <input type="radio" value="public" bind:group={joinChannelType} /> Public
+          </label>
+          <label>
+            <input type="radio" value="protected" bind:group={joinChannelType} /> Protected
+          </label>
+        </div>
+        {#if joinChannelType === 'protected'}
+          <input bind:value={joinChannelPassword} type="password" placeholder="Password" />
+          {#if isJoinInvalidType && joinChannelType === 'protected' && isJoinInvalidPassword}
+            <p class="error-message">Please enter a password for the protected channel.</p>
+          {/if}
+        {/if}
+        <button on:click={joinChannel}>Join</button>
+        <button on:click={closeJoinModal}>Cancel</button>
       </div>
     </div>
   {/if}
@@ -208,6 +342,7 @@
     border: none;
     cursor: pointer;
     text-align: left;
+    border-radius: 10px;
   }
 
   .channel-header {
@@ -222,6 +357,7 @@
     border: none;
     cursor: pointer;
     text-align: left;
+    border-radius: 10px;
   }
 
   .chat-area {
@@ -274,4 +410,12 @@
     font-size: 12px;
     margin-top: 5px;
   }
-</style>
+
+  .p-anim {
+    -moz-transition: color 2s;
+    color: #6E98B8;
+  }
+  .p-anim:hover {
+    color: #EDA11A;
+  }
+  </style>
