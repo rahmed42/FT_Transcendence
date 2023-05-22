@@ -1,85 +1,101 @@
-// import Phaser from "phaser";
+import * as Phaser from "phaser"; // will import all the Phaser types
 
-// export class SceneSelector extends Phaser.Scene {
+export class GameSelector extends Phaser.Scene {
+	// Adding game parts list
+	parts = {
+		'1': "Original",
+		'2': "Modern",
+	};
 
-//     parts = {
-//         '1': "Basic Player Movement",
-//         '2': "Interpolation",
-//         '3': "Client-predicted Input",
-//         '4': "Fixed Tickrate",
-//     };
+	// scene reference
+	activeScene: string;
 
-//     constructor() {
-//         super({ key: "selector", active: true });
-//     }
+	// GameSelector constructor
+	constructor() {
+		console.log("SceneSelector constructor");
+		super({ key: "menu", active: true });
+		this.activeScene = 'selectorScene';
+	}
 
-//     preload() {
-//         // update menu background color
-//         this.cameras.main.setBackgroundColor(0x000000);
+	// set the active scene
+	setActiveScene(sceneName: string) {
+		this.activeScene = sceneName;
+	}
 
-//         // preload demo assets
-//         // this.load.image('ship_0001', 'assets/ship_0001.png');
-//         this.load.image('ship_0001', 'https://cdn.glitch.global/3e033dcd-d5be-4db4-99e8-086ae90969ec/ship_0001.png?v=1649945243288');
-//     }
+	/* Optionnal constructor methods */
+	// preload basic assets
+	preload() {
+		// setting background color
+		this.cameras.main.setBackgroundColor(0x004C99)
 
-//     create() {
 
-//         // const gameContainer = this.add
-//         //     .container(0, 0)
-//         //     .setDepth(1)
-//         //     .setSize(window.innerWidth, window.innerHeight)
-//         //     .setExclusive(true)
-//         //     .setScrollFactor(0);
-//         // const gameContainerElement = document.getElementById('game-container');
-//         // if (gameContainerElement) {
-//         //     gameContainerElement.appendChild(gameContainer.getEl());
-//         // }
+        this.load.image('ship_0001', 'https://cdn.glitch.global/3e033dcd-d5be-4db4-99e8-086ae90969ec/ship_0001.png?v=1649945243288');
 
-//         // automatically navigate to hash scene if provided
-//         if (window.location.hash) {
-//             this.runScene(window.location.hash.substring(1));
-//             return;
-//         }
+		//adding image background
+		// this.load.image('pongAnim', 'https://static.vecteezy.com/system/resources/thumbnails/002/082/105/small/hud-ui-gui-futuristic-user-interface-screen-elements-high-tech-screen-for-video-game-sci-fi-concept-design-vector.jpg');
+	}
 
-//         const textStyle: Phaser.Types.GameObjects.Text.TextStyle = {
-//             color: "#ff0000",
-//             fontSize: "32px",
-//             // fontSize: "24px",
-//             fontFamily: "Arial"
-//         };
+	// create game parts list
+	create() {
+		/* Phaser API Doc : https://newdocs.phaser.io/docs/3.60.0/Phaser.Types.GameObjects.Text */
+		// Text to display
+		const title = '42 PONG';
+		const centerX = this.cameras.main.centerX;
+		const centerY = this.cameras.main.centerY;
+		const spanY = centerY / 4;
 
-//         for (let partNum in this.parts) {
-//             const index = parseInt(partNum) - 1;
-// 			const label = this.parts[partNum as keyof typeof this.parts];
+		// Text style display
+		const titleText = this.add.text(centerX, spanY * 2, title, { font: '55px Arial', color: '#ffffff' });
 
-//             // this.add.text(32, 32 + 32 * index, `Part ${partNum}: ${label}`, textStyle)
-//             this.add.text(130, 150 + 70 * index, `Part ${partNum}: ${label}`, textStyle)
-//                 .setInteractive()
-//                 .setPadding(6)
-//                 .on("pointerdown", () => {
-//                     this.runScene(`part${partNum}`);
-//                 });
-//         }
-//     }
+		// Define center of text object
+		titleText.setOrigin(0.5, 0.5);
 
-//     runScene(key: string) {
-//         this.game.scene.switch("selector", key)
-//     }
+		// adding game parts
+		for (let gameType in this.parts) {
+			if (this.parts.hasOwnProperty(gameType)) {
+				const index = parseInt(gameType) + 3; // index of the game part
+				const selector = this.parts[gameType as keyof typeof this.parts]; // name of the game part
 
-// 	beforeDestroy() {
-//         // Déconnectez-vous de la "room" ou effectuez toute autre action de nettoyage nécessaire ici
-//         // Par exemple, vous pouvez appeler une fonction de déconnexion ou d'arrêt du jeu
-//         this.cleanup();
-//     }
+				const button = this.add.text(
+					centerX, spanY * index, // position of the text
+					`🏓 ${selector} 🏓`, // text
+					{ font: '32px Arial', color: '#ffffff' }); // text style
 
-//     cleanup() {
-//         // Effectuez ici toutes les opérations de nettoyage nécessaires, telles que la déconnexion de la "room" ou l'arrêt du jeu
+				// Define the center of the text
+				button.setOrigin(0.5, 0.5);
 
-//         // Détruisez l'instance de Phaser et supprimez toutes les références
-//         this.game.destroy(true);
+				// setting the text as interactive
+				button.setInteractive();
 
-//         // Supprimez toutes les références à la scène
-//         this.scene.remove("selector");
-//     }
+				// Button style
+				button.setStyle({
+					backgroundColor: '#007fff',
+				});
 
-// }
+				// Add a hover effect when the mouse is over the button
+				button.on('pointerover', () => {
+					button.setScale(0.90); // Change scale to reduce size effect
+					button.setStyle({ backgroundColor: '#0055ff' });
+				});
+
+				button.on('pointerout', () => {
+					button.setScale(1);
+					button.setStyle({ backgroundColor: '#007fff' });
+				});
+
+				// setting the text as clickable
+				button.on("pointerdown", () => { // set the event when the text is clicked
+					this.setActiveScene(`part${gameType}`); // set the active scene
+					console.log(`Running game ${this.activeScene} : ${selector} Pong`);
+					this.runScene(this.activeScene); // run the scene
+				});
+			}
+		}
+	}
+
+	/* Methods */
+	// run the game part selected by the user
+	runScene(sceneName: string) {
+		this.game.scene.switch('menu', sceneName); // switch to the game part selected
+	}
+}

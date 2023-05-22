@@ -1,5 +1,6 @@
 import { Room, Client } from "colyseus";
 import { Part1State, Player } from "./Part1State";
+// import { Part1State, Player } from "./Part1State";
 
 export class Part1Room extends Room<Part1State> {
 
@@ -15,12 +16,12 @@ export class Part1Room extends Room<Part1State> {
       const player = this.state.players.get(client.sessionId);
       const velocity = 2;
 
-      if (input.left) {
-        player.x -= velocity;
+    //   if (input.left) {
+    //     player.x -= velocity;
 
-      } else if (input.right) {
-        player.x += velocity;
-      }
+    //   } else if (input.right) {
+    //     player.x += velocity;
+    //   }
 
       if (input.up) {
         player.y -= velocity;
@@ -35,10 +36,14 @@ export class Part1Room extends Room<Part1State> {
   onJoin (client: Client, options: any) {
     console.log(client.sessionId, "joined!");
 
-    // create player at random position.
+    // create player at center vertical position
     const player = new Player();
-    player.x = Math.random() * this.state.mapWidth;
-    player.y = Math.random() * this.state.mapHeight;
+	// Pop on left side if player 1, right side if player 2
+	if (this.state.players.size % 2 == 0)
+    	player.x = 0;
+	else
+		player.x = this.state.mapWidth;
+    player.y = this.state.mapHeight / 2;
 
     this.state.players.set(client.sessionId, player);
   }
