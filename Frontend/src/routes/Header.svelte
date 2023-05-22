@@ -4,7 +4,7 @@
 	import { page } from '$app/stores';
 	import logo from '$lib/images/42PongLogo.png';
 	import { user } from '../stores/user';
-	import { onMount } from 'svelte';
+	import { beforeUpdate, onMount } from 'svelte';
 
 	let userInfo = {
 		token: '',
@@ -42,7 +42,15 @@
 			};
 		}
 	});
+
+	beforeUpdate(async () => {
+		// redirect to home Page if log and on login Page
+		if ((userInfo.login || userInfo.login !== '') && window.location.pathname === '/')
+			window.location.href = '/home';
+	});
+
 	async function getToken(code: string) {
+		// Fetch token from the server
 		const response = await fetch('http://localhost:3333/auth/login?code=' + code, {
 			method: 'POST',
 			credentials: 'include'
@@ -57,17 +65,23 @@
 	}
 
 	async function getUserInfo() {
+		// Fetch user informations from the server
 		const response = await fetch('http://localhost:3333/profil/me', {
 			method: 'GET',
 			credentials: 'include'
 		});
 		const contentType = response.headers.get('Content-Type');
 		if (contentType && contentType.includes('application/json')) {
+			// Get the JSON data from the response
 			const userInfo = await response.json();
 			// update the user store
 			user.set(userInfo);
 		}
+		// redirect to login Page if not log
+		if ((!userInfo.login || userInfo.login === '') && window.location.pathname !== '/')
+			window.location.href = '/';
 	}
+
 	// Logout process - if LOGOUT button is clicked
 	function handleLogOut() {
 		// Clear the user store
@@ -92,7 +106,13 @@
 
 <header>
 	<nav>
-		<img src={logo} alt="Logo 42Pong" />
+		<!-- Logo clickable with redirection -->
+		{#if userInfo.login}
+			<a href="/home"> <img src={logo} alt="Logo 42Pong" /> </a>
+		{:else}
+			<a href="/"> <img src={logo} alt="Logo 42Pong" /> </a>
+		{/if}
+
 		<!-- Begin of Header Box -->
 		<svg viewBox="0 0 2 3" aria-hidden="true">
 			<path d="M0,0 L1,2 C1.5,3 1.5,3 2,3 L2,0 Z" />
@@ -100,8 +120,8 @@
 		<ul>
 			{#if userInfo.login}
 				<!-- Header links -->
-				<li class:selected={$page.url.pathname === '/' ? 'page' : undefined}>
-					<a href="/">~Home~</a>
+				<li class:selected={$page.url.pathname === '/home' ? 'page' : undefined}>
+					<a href="/home">~Home~</a>
 				</li>
 
 				<li class:selected={$page.url.pathname === '/chat' ? 'page' : undefined}>
@@ -116,18 +136,18 @@
 					<a href="/config">~Config~</a>
 				</li>
 			{:else}
-				<li class:selected={$page.url.pathname === '/auth' ? 'page' : undefined}>
-					<a href="/auth">LOGIN</a>
+				<li class:selected={$page.url.pathname === '/' ? 'page' : undefined}>
+					<a href="/">LOGIN</a>
 				</li>
 			{/if}
 		</ul>
-		<!-- End of Header Box -->
 		<svg viewBox="0 0 2 3" aria-hidden="true">
 			<path d="M0,0 L0,3 C0.5,3 0.5,3 1,2 L2,0 Z" />
 		</svg>
+		<!-- End of Header Box -->
 
+		<!-- Profile Header Box -->
 		{#if userInfo.login}
-			<!-- Name Header Box -->
 			<svg viewBox="0 0 2 3" aria-hidden="true">
 				<path d="M0,0 L1,2 C1.5,3 1.5,3 2,3 L2,0 Z" />
 			</svg>
@@ -142,14 +162,15 @@
 						/>
 					</a>
 				</li>
-				<li class:selected={$page.url.pathname === '/auth' ? 'page' : undefined}>
-					<a href="/auth" on:click={handleLogOut}>~Logout~</a>
+				<li class:selected={$page.url.pathname === '/' ? 'page' : undefined}>
+					<a href="/" on:click={handleLogOut}>~Logout~</a>
 				</li>
 			</ul>
 			<svg viewBox="0 0 2 3" aria-hidden="true">
 				<path d="M0,0 L0,3 C0.5,3 0.5,3 1,2 L2,0 Z" />
 			</svg>
 		{/if}
+		<!-- End of Profile Header Box -->
 	</nav>
 </header>
 
