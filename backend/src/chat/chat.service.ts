@@ -511,5 +511,34 @@ export class ChatService {
         });
         return roomInfo;
     }
+
+
+    async getRooms(body: ChatDtoGetRoom)
+    {
+        const user = await this.prisma.user.findUnique({
+            where: {
+                id: body.idUser,
+            },
+        });
+        if (!user) 
+        {
+            throw new BadRequestException('User does not exist');
+        }
+        const roomsOfUser = await this.prisma.user.findUnique({
+            where: {
+                id: body.idUser,
+            },
+            select : {
+                rooms : {
+                    select : {
+                        id : true,
+                        name : true,
+                        type : true,
+                    },
+                },
+            },
+        });
+        return {"userId": user.id, "rooms" : roomsOfUser}
+    }
 }
 

@@ -46,7 +46,7 @@ export class ChatDtoAdminOperation
 export class ChatDtoGetRoom 
 {
     @IsNotEmpty()
-    @IsNumber() 
+    @IsNumber()
     idUser : number;
 
     @IsOptional()
