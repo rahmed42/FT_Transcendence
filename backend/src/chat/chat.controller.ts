@@ -1,6 +1,6 @@
-import {Body, Controller, Post} from '@nestjs/common';
+import {Body, Controller, Get, Post} from '@nestjs/common';
 import { ChatService } from './chat.service';
-import { ChatDtoCreateRoom, ChatDtoJoinRoom } from './dto';
+import { ChatDtoAdminOperation, ChatDtoCreateRoom, ChatDtoJoinRoom } from './dto';
 
 @Controller('chat')
 export class ChatController {
@@ -15,5 +15,18 @@ export class ChatController {
     async joinRoom(@Body() body: ChatDtoJoinRoom) {
         return await this.ChatService.joinRoom(body);
     }
-    
+    @Post('inviteUser')
+    async inviteUser(@Body() body: ChatDtoAdminOperation) {
+        return await this.ChatService.inviteUser(body);
+    }
+    @Post('kickUser')
+    async kickUser(@Body() body: ChatDtoAdminOperation) {
+        return await this.ChatService.kickUser(body);
+    }
+
+    @Get('rooms/:name')
+    async getRoom(@Body() body: ChatDtoAdminOperation) {
+        return await this.ChatService.getRoom(body);
+    }
+    /* TODO KICK, BAN, MUTE, LEAVE, GIVE ADMIN, GIVE OWNER, BLOQUER (don't show other messages)*/
 }

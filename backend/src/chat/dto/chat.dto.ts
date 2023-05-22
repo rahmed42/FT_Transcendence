@@ -29,3 +29,16 @@ export class ChatDtoJoinRoom
     @IsOptional()
     password: string;
 }
+
+export class ChatDtoAdminOperation
+{
+    @IsNotEmpty()
+    @IsNumber()
+    idAdmin : number;
+
+    @IsNotEmpty()
+    roomName : string;
+
+    @IsNotEmpty()
+    idUserToExecute : number;
+}
