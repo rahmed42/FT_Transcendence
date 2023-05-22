@@ -199,7 +199,7 @@ export class Part1Scene extends Phaser.Scene {
 
 		/* SETUP PHYSICS */
 		// Add map bounds, disable collisions on left/right bounds
-		this.physics.world.setBoundsCollision(false, false, true, true);
+		this.physics.world.setBoundsCollision(true, true, true, true);
 		this.physics.world.setBounds(0, 0, this.cameras.main.width, this.cameras.main.height);
 
 		// Add ball physics
@@ -224,11 +224,11 @@ export class Part1Scene extends Phaser.Scene {
 				'pos': this.pointer.y
 			};
 
-			this.localPaddle = this.physics.add.image(paddle.x / 2, paddle.pos, 'myPaddleStyle1');
+			this.localPaddle = this.physics.add.image(paddle.x, paddle.pos, 'myPaddleStyle1');
 			this.localPaddle.setOrigin(0.5, 0.5);
 			this.localPaddle.setCollideWorldBounds(true);
 
-			this.remotePaddle = this.physics.add.image(this.cameras.main.width - paddle.x / 2, paddle.pos, 'opponentPaddleStyle1');
+			this.remotePaddle = this.physics.add.image(this.cameras.main.width - paddle.x, paddle.pos, 'opponentPaddleStyle1');
 			this.remotePaddle.setOrigin(0.5, 0.5);
 			this.remotePaddle.setCollideWorldBounds(true);
 		});
@@ -309,7 +309,7 @@ export class Part1Scene extends Phaser.Scene {
 
 			// Launch the ball to random direction
 			let velocityX = Phaser.Math.Between(300, 500);
-			let velocityY = Phaser.Math.Between(100, 250);
+			let velocityY = Phaser.Math.Between(100, 350);
 			// random negative or positive
 			velocityX *= Math.random() < 0.5 ? 1 : -1;
 			velocityY *= Math.random() < 0.5 ? 1 : -1;
