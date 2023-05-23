@@ -34,6 +34,7 @@
 			if (code) {
 				await getToken(code);
 			}
+			// HERE NEED TO CHECK IS THERE IS A JWT IN THE COOKIE, IS YES, DON'T DO GETUSERINFO
 			await getUserInfo();
 
 			// Clean up the subscription on unmount

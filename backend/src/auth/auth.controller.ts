@@ -1,7 +1,6 @@
-import { Controller, Get, Post, Query, Req } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, Req } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Request } from 'express';
-import { UserService } from 'src/user/user.service';
 
 const dotenv = require('dotenv');
 dotenv.config();
@@ -14,16 +13,19 @@ export class AuthController {
 			const token = await this.authService.getUser(code);
 			return token;
 		}
-}
+	@Post('google')
+		async add_2fa(@Body() requestBody: any ) {
+			console.log('IN BACKEND REQUEST->', requestBody);
+			// await this.authService.push_2fa(requestBody.checked)
+		}
+}	
 
-// @Controller('profil')
+// @Controller('a')
 // export class UserController {
-// 	constructor(private userService: UserService) {}
-// 		@Get('me')
-// 			fct() {
-// 				console.log('here back');
-// 			}
-// 		// async getUserInfo(@Req() request: Request) {
-// 				// const token = request.cookies;
-// 				// await this.userService.getInfo(token);
+// 	constructor(private authService: AuthService) {}
+// 	@Post('b')
+// 		async add_2fa(@Body() requestBody: any ) {
+// 			console.log(requestBody.checked);
+// 			// await this.authService.push_2fa(requestBody.checked)
 // 		}
+// }	
