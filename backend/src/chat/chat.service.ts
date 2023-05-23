@@ -812,5 +812,96 @@ export class ChatService {
         });
         return { message: "User successfully left room" }
     }
+    async giveAdmin(body: ChatDtoAdminOperation)
+    {
+        const admin = await this.prisma.user.findUnique({
+            where: {
+                id: body.idAdmin,
+            },
+        });
+        const user = await this.prisma.user.findUnique({
+            where: {
+                id: body.idUserToExecute,
+            },
+        });
+        if (!user) {
+            throw new BadRequestException('User does not exist');
+        }
+        if (!admin) {
+            throw new BadRequestException('Admin does not exist');
+        }
+        const room = await this.prisma.room.findUnique({
+            where: {
+                name: body.roomName,
+            },
+        });
+        if (!room) {
+            throw new BadRequestException('Room does not exist');
+        }
+        const isUserInRoom = await this.prisma.room.findFirst({
+            where: {
+                name: body.roomName,
+                users: {
+                    some: {
+                        id: body.idUserToExecute,
+                    },
+                },
+            },
+        });
+        if (!isUserInRoom) {
+            throw new BadRequestException('User not in room');
+        }
+        const isAdminAdmin = await this.prisma.room.findFirst({
+            where: {
+                name: body.roomName,
+                administrators: {
+                    some: {
+                        id: body.idAdmin,
+                    },
+                },
+            },
+        });
+        if (!isAdminAdmin) {
+            throw new BadRequestException('User is not admin');
+        }
+        const isUserAdmin = await this.prisma.room.findFirst({
+            where: {
+                name: body.roomName,
+                administrators: {
+                    some: {
+                        id: body.idUserToExecute,
+                    },
+                },
+            },
+        });
+        if (isUserAdmin) {
+            throw new BadRequestException('User is already admin');
+        }
+        await this.prisma.room.update({
+            where: {
+                name: body.roomName,
+            },
+            data: {
+                administrators: {
+                    connect: {
+                        id: body.idUserToExecute,
+                    },
+                },
+            },
+        });
+        await this.prisma.user.update({
+            where: {
+                id: body.idUserToExecute,
+            },
+            data: {
+                administratedRooms: {
+                    connect: {
+                        name: body.roomName,
+                    },
+                },
+            },
+        });
+        return { message: "User successfully given admin" }
+    }
 }
 

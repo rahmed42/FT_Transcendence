@@ -41,5 +41,11 @@ export class ChatController {
     {
         return await this.ChatService.leaveRoom(body);
     }
-    /* TODO MUTE, LEAVE, GIVE ADMIN, GIVE OWNER, BLOQUER (don't show other messages)    */
+
+    @Post('giveAdmin')
+    async giveAdmin(@Body() body: ChatDtoAdminOperation)
+    {
+        return await this.ChatService.giveAdmin(body);
+    }
+    /* TODO MUTE,GIVE ADMIN, GIVE OWNER, BLOQUER (don't show other messages)    */
 }
