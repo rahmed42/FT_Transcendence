@@ -176,12 +176,12 @@ export class Part1Scene extends Phaser.Scene {
 	gameInit(): void {
 		/* SETUP STYLES */
 		// Display styled background
-		const background = this.add.image(0, 0, 'boardStyle1');
+		const background = this.add.image(0, 0, 'boardDefault');
 		background.setDisplaySize(this.cameras.main.width, this.cameras.main.height);
 		background.setOrigin(0, 0);
 
 		// Display ball
-		this.ball = this.physics.add.image(400, 300, 'ballStyle1');
+		this.ball = this.physics.add.image(400, 300, 'ballDefault');
 		this.ball.setOrigin(0.5, 0.5);
 
 		// Display score
@@ -222,12 +222,12 @@ export class Part1Scene extends Phaser.Scene {
 					'y': 100,
 					'pos': posY,
 				};
-			this.localPaddle = this.physics.add.image(paddle.x, paddle.pos, 'myPaddleStyle1');
+			this.localPaddle = this.physics.add.image(paddle.x, paddle.pos, 'paddleDefault');
 			this.localPaddle.setOrigin(0.5, 0.5);
 			this.localPaddle.setCollideWorldBounds(true);
 			this.localPaddle.setImmovable(true);
 
-			this.remotePaddle = this.physics.add.image(this.cameras.main.width - paddle.x, paddle.pos, 'opponentPaddleStyle1');
+			this.remotePaddle = this.physics.add.image(this.cameras.main.width - paddle.x, paddle.pos, 'paddleDefault');
 			this.remotePaddle.setOrigin(0.5, 0.5);
 			this.remotePaddle.setCollideWorldBounds(true);
 			this.remotePaddle.setImmovable(true);
