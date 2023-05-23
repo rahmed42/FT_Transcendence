@@ -168,6 +168,11 @@
             password: joinChannelPassword,
           }),
         });
+        if (!response.ok)
+        {
+          const data = await response.json();
+          console.log(data.message)
+        }
         console.log(userID);
         console.log(joinChannelName, joinChannelType, joinChannelPassword);
         closeJoinModal();
