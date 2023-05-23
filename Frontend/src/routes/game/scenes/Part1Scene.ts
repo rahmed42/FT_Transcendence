@@ -229,9 +229,8 @@ export class Part1Scene extends Phaser.Scene {
 
 			if (this.ball && this.localPaddle && this.remotePaddle) {
 				// Add collisions between ball and paddles
-				this.physics.add.collider(this.ball, this.localPaddle, this.hitLocalPaddle, undefined, this);
-				this.physics.add.collider(this.ball, this.remotePaddle, this.hitRemotePaddle, undefined, this);
-
+				this.physics.add.collider(this.ball, this.localPaddle);
+				this.physics.add.collider(this.ball, this.remotePaddle);
 			}
 		});
 
@@ -285,44 +284,6 @@ export class Part1Scene extends Phaser.Scene {
 	}
 
 	// Game logics
-	hitLocalPaddle(): void {
-		let diff = 0;
-		if (this.ball && this.localPaddle) {
-			if (this.ball.x < this.localPaddle.x) {
-				// Ball is on the left-hand side of the paddle
-				diff = this.localPaddle.x - this.ball.x;
-				this.ball.setVelocityX(-10 * diff);
-			} else if (this.ball.x > this.localPaddle.x) {
-				// Ball is on the right-hand side of the paddle
-				diff = this.ball.x - this.localPaddle.x;
-				this.ball.setVelocityX(10 * diff);
-			} else {
-				// Ball is perfectly in the middle
-				// Add a little random X to stop it bouncing straight up!
-				this.ball.setVelocityX(2 + Math.random() * 8);
-			}
-		}
-	}
-
-	hitRemotePaddle(): void {
-		let diff = 0;
-		if (this.ball && this.remotePaddle) {
-			if (this.ball.x < this.remotePaddle.x) {
-				// Ball is on the left-hand side of the paddle
-				diff = this.remotePaddle.x - this.ball.x;
-				this.ball.setVelocityX(-10 * diff);
-			} else if (this.ball.x > this.remotePaddle.x) {
-				// Ball is on the right-hand side of the paddle
-				diff = this.ball.x - this.remotePaddle.x;
-				this.ball.setVelocityX(10 * diff);
-			} else {
-				// Ball is perfectly in the middle
-				// Add a little random X to stop it bouncing straight up!
-				this.ball.setVelocityX(2 + Math.random() * 8);
-			}
-		}
-	}
-
 	resetBall(): void {
 		/* Refresh Score */
 		if (this.myScoreText)
