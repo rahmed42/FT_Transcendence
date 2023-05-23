@@ -224,13 +224,14 @@ export class Part1Scene extends Phaser.Scene {
 			this.remotePaddle = this.physics.add.image(this.cameras.main.width - paddle.x, paddle.pos, 'opponentPaddleStyle1');
 			this.remotePaddle.setOrigin(0.5, 0.5);
 			this.remotePaddle.setCollideWorldBounds(true);
+
+			if (this.ball && this.localPaddle && this.remotePaddle) {
+			// Add collisions
+			this.physics.add.collider(this.ball, this.localPaddle, this.hitPaddle, undefined, this);
+			this.physics.add.collider(this.ball, this.remotePaddle, this.hitPaddle, undefined, this);
+			 }
 		});
 
-		// if (this.ball && this.localPaddle && this.remotePaddle) {
-		// Add collisions
-		this.physics.add.collider(this.ball, this.localPaddle, this.hitPaddle, undefined, this);
-		this.physics.add.collider(this.ball, this.remotePaddle, this.hitPaddle, undefined, this);
-		// }
 
 		/* Adding Menu button */
 		// Adding Home menu button
@@ -272,8 +273,10 @@ export class Part1Scene extends Phaser.Scene {
 
 		this.startButton.on("pointerdown", () => {
 			// Start the game
-			if (this.startButton)
+			if (this.startButton) {
 				this.startButton.setVisible(false);
+				this.startButton.disableInteractive();
+			}
 			this.startGame();
 		});
 	}
@@ -320,7 +323,7 @@ export class Part1Scene extends Phaser.Scene {
 			// this.ball.setVelocity(velocityX, velocityY);
 
 			//test
-			this.ball.setVelocity(300, 0);
+			this.ball.setVelocity(300, 0); // to delete
 
 			// Refresh the score
 			if (this.myScoreText)
@@ -346,8 +349,10 @@ export class Part1Scene extends Phaser.Scene {
 			this.ball.setVelocity(0);
 		}
 		// Show start button
-		if (this.startButton)
+		if (this.startButton) {
 			this.startButton.setVisible(true);
+			this.startButton.setInteractive();
+		}
 	}
 
 	// Connect with the room
