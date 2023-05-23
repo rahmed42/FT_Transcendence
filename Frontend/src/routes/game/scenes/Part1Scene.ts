@@ -210,13 +210,18 @@ export class Part1Scene extends Phaser.Scene {
 			if (this.remotePaddle)
 				this.remotePaddle.destroy();
 
-			// Display Paddle and set bounds
-			const paddle = {
-				'x': 20,
-				'y': 100,
-				'pos': this.pointer.y
-			};
+				let posY;
+				if (this.pointer)
+					posY = this.pointer.y;
+				else
+					posY = this.cameras.main.centerY;
 
+				// Display Paddle and set bounds
+				const paddle = {
+					'x': 20,
+					'y': 100,
+					'pos': posY,
+				};
 			this.localPaddle = this.physics.add.image(paddle.x, paddle.pos, 'myPaddleStyle1');
 			this.localPaddle.setOrigin(0.5, 0.5);
 			this.localPaddle.setCollideWorldBounds(true);
