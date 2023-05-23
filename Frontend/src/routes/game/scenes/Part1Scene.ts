@@ -1,4 +1,4 @@
-import Phaser from "phaser";
+import Phaser, { Textures } from "phaser";
 import { Room, Client } from "colyseus.js";
 import { BACKEND_URL } from "../backend";
 
@@ -33,9 +33,13 @@ export class Part1Scene extends Phaser.Scene {
 	// Score
 	myScoreText: Phaser.GameObjects.Text | undefined;
 	opponentScoreText: Phaser.GameObjects.Text | undefined;
+
+	//Starting button
+	startButton: Phaser.GameObjects.Text | undefined;
+
 	// Score values
-	myScore: number = 0;
-	opponentScore: number = 0;
+	myScore: number;
+	opponentScore: number;
 
 	// scene reference
 	activeScene: string;
@@ -43,13 +47,16 @@ export class Part1Scene extends Phaser.Scene {
 	// Constructor of the scene
 	constructor() {
 		// active false to prevent the scene from starting automatically
-		console.log("Part1Scene constructor");
 		super({ key: "part1", active: false });
 		this.activeScene = 'Part1Scene';
 
 		// Initialize the room
 		this.room = new Room("part1_room");
 		console.log(this.room);
+
+		// Initialize the game state
+		this.myScore = 0;
+		this.opponentScore = 0;
 	}
 
 	// set the active scene
@@ -59,7 +66,6 @@ export class Part1Scene extends Phaser.Scene {
 
 	// // preload basic assets
 	// preload() {
-	// 	console.log("Part1Scene preload");
 	// 	// Adding background color
 	// 	// this.cameras.main.setBackgroundColor(0x000000);
 
@@ -71,21 +77,11 @@ export class Part1Scene extends Phaser.Scene {
 	// }
 
 	async create() {
-		this.gameUpdater();
+		this.gameInit();
+	}
 
-		// add a start button
-		const startButton = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, 'Start Game', { font: '32px Arial', color: '#ffffff' });
-		startButton.setOrigin(0.5, 0.5);
-
-		// start the game
-		startButton.setInteractive();
-		startButton.on("pointerdown", () => {
-			// Hide the button
-			startButton.setVisible(false);
-			// Reset the game
-			this.resetGame();
-		});
-
+	// 	/* Methods */
+	gameListeners(): void {
 		// connect with the room
 		// await this.connect();
 
@@ -176,9 +172,8 @@ export class Part1Scene extends Phaser.Scene {
 		// 		this.cameras.main.setBounds(0, 0, 800, 600);
 	}
 
-	// 	/* Methods */
 	// Game visual callbacks
-	gameUpdater(): void {
+	gameInit(): void {
 		/* SETUP STYLES */
 		// Display styled background
 		const background = this.add.image(0, 0, 'boardStyle1');
@@ -199,15 +194,13 @@ export class Part1Scene extends Phaser.Scene {
 
 		/* SETUP PHYSICS */
 		// Add map bounds, disable collisions on left/right bounds
-		this.physics.world.setBoundsCollision(true, true, true, true);
+		this.physics.world.setBoundsCollision(false, false, true, true);
 		this.physics.world.setBounds(0, 0, this.cameras.main.width, this.cameras.main.height);
 
 		// Add ball physics
 		if (this.ball) {
 			this.ball.setCollideWorldBounds(true);
 			this.ball.setBounce(1);
-			// this.ball.setVelocityX(Phaser.Math.Between(-100, 100));
-			// this.ball.setVelocityY(Phaser.Math.Between(-100, 100));
 		}
 
 		this.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
@@ -238,7 +231,6 @@ export class Part1Scene extends Phaser.Scene {
 		this.physics.add.collider(this.ball, this.localPaddle, this.hitPaddle, undefined, this);
 		this.physics.add.collider(this.ball, this.remotePaddle, this.hitPaddle, undefined, this);
 		// }
-
 
 		/* Adding Menu button */
 		// Adding Home menu button
@@ -273,15 +265,19 @@ export class Part1Scene extends Phaser.Scene {
 			this.game.scene.switch("part1", "menu");
 		});
 
-		/* Refresh Score */
-		if (this.myScoreText)
-			this.myScoreText.setText(this.ball.x.toString());
-			// this.myScoreText.setText(this.myScore.toString());
-		if (this.opponentScoreText)
-			this.opponentScoreText.setText(this.ball.y.toString());
-			// this.opponentScoreText.setText(this.opponentScore.toString());
+		// Adding start button for the Game
+		this.startButton = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, 'Start Game', { font: '32px Arial', color: '#ffffff' });
+		this.startButton.setOrigin(0.5, 0.5);
+		this.startButton.setInteractive();
 
+		this.startButton.on("pointerdown", () => {
+			// Start the game
+			if (this.startButton)
+				this.startButton.setVisible(false);
+			this.startGame();
+		});
 	}
+
 	// Game logics
 	hitPaddle(): void {
 		let diff = 0;
@@ -302,42 +298,56 @@ export class Part1Scene extends Phaser.Scene {
 	}
 
 	resetBall(): void {
+		/* Refresh Score */
+		if (this.myScoreText)
+			this.myScoreText.setText(this.myScore.toString());
+		// this.myScoreText.setText(this.myScore.toString());
+		if (this.opponentScoreText)
+			this.opponentScoreText.setText(this.opponentScore.toString());
+		// this.opponentScoreText.setText(this.opponentScore.toString());
+
 		if (this.ball) {
 			// set the ball to center
 			this.ball.x = this.cameras.main.centerX;
 			this.ball.y = this.cameras.main.centerY;
 
-			// Launch the ball to random direction
-			let velocityX = Phaser.Math.Between(300, 500);
-			let velocityY = Phaser.Math.Between(100, 350);
-			// random negative or positive
-			velocityX *= Math.random() < 0.5 ? 1 : -1;
-			velocityY *= Math.random() < 0.5 ? 1 : -1;
-			this.ball.setVelocity(velocityX, velocityY);
+			// // Launch the ball to random direction
+			// let velocityX = Phaser.Math.Between(300, 500);
+			// let velocityY = Phaser.Math.Between(100, 350);
+			// // random negative or positive
+			// velocityX *= Math.random() < 0.5 ? 1 : -1;
+			// velocityY *= Math.random() < 0.5 ? 1 : -1;
+			// this.ball.setVelocity(velocityX, velocityY);
 
-			// this.ball.setVelocityX(Phaser.Math.Between(50, 100));
-			// this.ball.setVelocityY(Phaser.Math.Between(-500, 100));
+			//test
+			this.ball.setVelocity(300, 0);
 
-			// set the ball speed
-			// this.ball.setAccelerationX(100);
-			// this.ball.setAcceleration(100);
+			// Refresh the score
+			if (this.myScoreText)
+				this.myScoreText.setText(this.myScore.toString());
+			if (this.opponentScoreText)
+				this.opponentScoreText.setText(this.opponentScore.toString());
 		}
 	}
 
-	resetGame(): void {
+	startGame(): void {
 		// Reset score
 		this.myScore = 0;
 		this.opponentScore = 0;
 
-		// Refresh the score
-		if (this.myScoreText)
-			this.myScoreText.setText(this.myScore.toString());
-		if (this.opponentScoreText)
-			this.opponentScoreText.setText(this.opponentScore.toString());
-
 		// Reset ball
-		if (this.ball)
+		this.resetBall();
+	}
+
+	resetGame(): void {
+		// Reset ball and stop it
+		if (this.ball) {
 			this.resetBall();
+			this.ball.setVelocity(0);
+		}
+		// Show start button
+		if (this.startButton)
+			this.startButton.setVisible(true);
 	}
 
 	// Connect with the room
@@ -373,7 +383,15 @@ export class Part1Scene extends Phaser.Scene {
 		}
 		// Reset the ball if outbounds
 		if (this.ball && (this.ball.x < 0 || this.ball.x > this.cameras.main.width)) {
-			this.resetBall();
+			if (this.ball.x < 0)
+				this.opponentScore++;
+			else
+				this.myScore++;
+
+			if (this.myScore >= 3 || this.opponentScore >= 3)
+				this.resetGame();
+			else
+				this.resetBall();
 		}
 		// send pointer to the server
 		// this.inputPayload.pointerX = this.pointer.x;
