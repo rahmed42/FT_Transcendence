@@ -220,15 +220,15 @@ export class Part1Scene extends Phaser.Scene {
 			this.localPaddle = this.physics.add.image(paddle.x, paddle.pos, 'myPaddleStyle1');
 			this.localPaddle.setOrigin(0.5, 0.5);
 			this.localPaddle.setCollideWorldBounds(true);
+			this.localPaddle.setImmovable(true);
 
 			this.remotePaddle = this.physics.add.image(this.cameras.main.width - paddle.x, paddle.pos, 'opponentPaddleStyle1');
 			this.remotePaddle.setOrigin(0.5, 0.5);
 			this.remotePaddle.setCollideWorldBounds(true);
+			this.remotePaddle.setImmovable(true);
 
 			if (this.ball && this.localPaddle && this.remotePaddle) {
 				// Add collisions between ball and paddles
-				
-
 				this.physics.add.collider(this.ball, this.localPaddle, this.hitLocalPaddle, undefined, this);
 				this.physics.add.collider(this.ball, this.remotePaddle, this.hitRemotePaddle, undefined, this);
 
@@ -270,7 +270,7 @@ export class Part1Scene extends Phaser.Scene {
 		});
 
 		// Adding start button for the Game
-		this.startButton = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, 'Start Game', { font: '32px Arial', color: '#ffffff' });
+		this.startButton = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, 'Start Game', { font: '64px Arial', color: '#ffffff' });
 		this.startButton.setOrigin(0.5, 0.5);
 		this.startButton.setInteractive();
 
@@ -337,16 +337,16 @@ export class Part1Scene extends Phaser.Scene {
 			this.ball.x = this.cameras.main.centerX;
 			this.ball.y = this.cameras.main.centerY;
 
-			// // Launch the ball to random direction
-			// let velocityX = Phaser.Math.Between(300, 500);
-			// let velocityY = Phaser.Math.Between(100, 350);
-			// // random negative or positive
-			// velocityX *= Math.random() < 0.5 ? 1 : -1;
-			// velocityY *= Math.random() < 0.5 ? 1 : -1;
-			// this.ball.setVelocity(velocityX, velocityY);
+			// Launch the ball to random direction
+			let velocityX = Phaser.Math.Between(300, 500);
+			let velocityY = Phaser.Math.Between(100, 350);
+			// random negative or positive
+			velocityX *= Math.random() < 0.5 ? 1 : -1;
+			velocityY *= Math.random() < 0.5 ? 1 : -1;
+			this.ball.setVelocity(velocityX, velocityY);
 
 			//test
-			this.ball.setVelocity(300, 0); // to delete
+			//this.ball.setVelocity(300, 0); // to delete
 
 			// Refresh the score
 			if (this.myScoreText)
