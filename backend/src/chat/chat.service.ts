@@ -696,5 +696,121 @@ export class ChatService {
         })
         return { message: "User successfully banned" }
     }
+    async leaveRoom(body: ChatDtoJoinRoom)
+    {
+        const user = await this.prisma.user.findUnique({
+            where: {
+                id: body.idUser,
+            },
+        });
+        if (!user) {
+            throw new BadRequestException('User does not exist');
+        }
+        const room = await this.prisma.room.findUnique({
+            where: {
+                name: body.roomName,
+            },
+        });
+        if (!room) {
+            throw new BadRequestException('Room does not exist');
+        }
+        const isUserInRoom = await this.prisma.room.findFirst({
+            where: {
+                name: body.roomName,
+                users: {
+                    some: {
+                        id: body.idUser,
+                    },
+                },
+            },
+        });
+        if (!isUserInRoom) {
+            throw new BadRequestException('User not in room');
+        }
+        const isUserOwner = await this.prisma.room.findFirst({
+            where: {
+                name: body.roomName,
+                ownerId: body.idUser,
+            },
+        });
+        if (isUserOwner) {
+            throw new BadRequestException('User is owner of room');
+        }
+        const isUserAdmin = await this.prisma.room.findFirst({
+            where: {
+                name: body.roomName,
+                administrators: {
+                    some: {
+                        id: body.idUser,
+                    },
+                },
+            },
+        });
+        const isUserMuted = await this.prisma.room.findFirst({
+            where: {
+                name: body.roomName,
+                mutedUsers: {
+                    some : {
+                        id : body.idUser,
+                    },
+                },
+            },
+        });
+        await this.prisma.room.update({
+            where: {
+                name: body.roomName,
+            },
+            data : {
+                mutedUsers : isUserMuted ? {} : {
+                    disconnect : {
+                        id : body.idUser,
+                    },
+                },
+                users: {
+                    disconnect: {
+                        id: body.idUser,
+                    },
+                },
+                invitedUsers: {
+                    disconnect: {
+                        id: body.idUser,
+                    },
+                },
+                administrators: isUserAdmin ? {} : {
+                    disconnect: {
+                        id: body.idUser,
+                    },
+                },
+            },
+        });
+        await this.prisma.user.update({
+            where: {
+                id: body.idUser,
+            },
+            data: {
+                rooms: {
+                    disconnect: {
+                        name: body.roomName,
+                    },
+                },
+                administratedRooms: isUserAdmin ? {} : {
+                    disconnect: {
+                        name: body.roomName,    
+                    },
+                },
+                mutedRooms: isUserMuted ? {} : {
+                    disconnect: {
+                        name: body.roomName,
+                    },
+                },
+                invitedRooms: {
+                    disconnect: {
+                        name: body.roomName,
+                    },
+                },
+            },
+        });
+        return { message: "User successfully left room" }
+    }
 }
 
