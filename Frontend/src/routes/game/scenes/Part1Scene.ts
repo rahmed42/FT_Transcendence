@@ -210,18 +210,18 @@ export class Part1Scene extends Phaser.Scene {
 			if (this.remotePaddle)
 				this.remotePaddle.destroy();
 
-				let posY;
-				if (this.pointer)
-					posY = this.pointer.y;
-				else
-					posY = this.cameras.main.centerY;
+			let posY;
+			if (this.pointer)
+				posY = this.pointer.y;
+			else
+				posY = this.cameras.main.centerY;
 
-				// Display Paddle and set bounds
-				const paddle = {
-					'x': 20,
-					'y': 100,
-					'pos': posY,
-				};
+			// Display Paddle and set bounds
+			const paddle = {
+				'x': 20,
+				'y': 100,
+				'pos': posY,
+			};
 			this.localPaddle = this.physics.add.image(paddle.x, paddle.pos, 'paddleDefault');
 			this.localPaddle.setOrigin(0.5, 0.5);
 			this.localPaddle.setCollideWorldBounds(true);
@@ -268,6 +268,14 @@ export class Part1Scene extends Phaser.Scene {
 
 		// Add a pointerdown event to go back to the menu
 		homeButton.on("pointerdown", () => {
+			this.resetGame();
+			this.myScore = 0;
+			this.opponentScore = 0;
+			// Refresh the score
+			if (this.myScoreText)
+				this.myScoreText.setText(this.myScore.toString());
+			if (this.opponentScoreText)
+				this.opponentScoreText.setText(this.opponentScore.toString());
 			this.setActiveScene("menu");
 			console.log(`Running game ${this.activeScene} : Menu`);
 			this.game.scene.switch("part1", "menu");

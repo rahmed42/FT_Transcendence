@@ -268,6 +268,14 @@ export class Part2Scene extends Phaser.Scene {
 
 		// Add a pointerdown event to go back to the menu
 		homeButton.on("pointerdown", () => {
+			this.resetGame();
+			this.myScore = 0;
+			this.opponentScore = 0;
+			// Refresh the score
+			if (this.myScoreText)
+				this.myScoreText.setText(this.myScore.toString());
+			if (this.opponentScoreText)
+				this.opponentScoreText.setText(this.opponentScore.toString());
 			this.setActiveScene("menu");
 			console.log(`Running game ${this.activeScene} : Menu`);
 			this.game.scene.switch("part2", "menu");
