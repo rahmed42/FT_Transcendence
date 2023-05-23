@@ -1,6 +1,6 @@
 <script>
-  import { onMount } from 'svelte';
   import { user } from '../../stores/user';
+  import { onMount } from 'svelte';
   import { get } from 'svelte/store';
 
   let messageInput = '';
@@ -19,52 +19,56 @@
   let joinChannelName = '';
   let joinChannelType = '';
   let joinChannelPassword = '';
-  let userId = get(user);
-  const userID = userId.id;
-  let selectedChannel = null;
+  let userID;
+  let token;
 
-  let channelList = [
-  { name : "Channel 1" },
-  { name : "Channel 2" },
-  { name : "Channel 3" },
-  { name : "Channel 4" },
-  { name : "Channel 5" },
-  { name : "Channel 6" },
-  { name : "Channel 7" },
-  { name : "Channel 8" },
-  { name : "Channel 9" },
-  { name : "Channel 10" },
-  { name : "Channel 11" },
-  { name : "Channel 12" },
-  { name : "Channel 13" },
-  { name : "Channel 14" },
-  { name : "Channel 15" },
-  { name : "Channel 16" },
-  { name : "Channel 17" },
-  { name : "Channel 18" },
-  { name : "Channel 19" },
-  { name : "Channel 20" },
-  { name : "Channel 21" },
-  { name : "Channel 22" },
-  { name : "Channel 23" },
-  { name : "Channel 24" },
-  { name : "Channel 25" },
-  { name : "Channel 26" },
-  { name : "Channel 27" },
-  { name : "Channel 28" },
-  { name : "Channel 29" },
-  { name : "Channel 30" },
-  { name : "Channel 31" },
-  { name : "Channel 32" },
-  { name : "Channel 33" },
-  { name : "Channel 34" },
-  { name : "Channel 35" },
-  { name : "Channel 36" },
-  { name : "Channel 37" },
-  { name : "Channel 38" },
-  { name : "Channel 39" },
-  { name : "Channel 40" }
-];
+  onMount(async () => {
+    const storedUser = sessionStorage.getItem('userID');
+
+    if (storedUser && storedUser !== 'undefined' && storedUser !== 'null') {
+      userID = parseInt(storedUser || '0');
+    } else {
+      let test = get(user);
+      userID = test.id;
+      sessionStorage.setItem('userID', userID);
+    }
+
+    const storedToken = sessionStorage.getItem('token');
+
+    if (storedToken && storedToken !== 'undefined' && storedToken !== 'null') {
+      token = storedToken;
+    } else {
+      let test = get(user);
+      token = test.token;
+      sessionStorage.setItem('token', token);
+    }
+
+    console.log(token);
+
+    try {
+      const response = await fetch('http://localhost:3333/chat/rooms', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      console.log(userID);
+
+      if (response.ok) {
+        const data = await response.json();
+        channelList = data.channels;
+      } else {
+        const data = await response.json();
+        console.log(data.message);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  });
+
+  let selectedChannel = null;
+  let channelList = [];
 
   function openModal() {
     isModalOpen = true;
@@ -121,6 +125,11 @@
             password: newChannelPassword,
           }),
         });
+        if (!response.ok)
+        {
+          const data = await response.json();
+          console.log(data.message)
+        }
         console.log(userID);
         console.log(newChannelName, newChannelType, newChannelPassword);
         closeModal();
@@ -164,7 +173,6 @@
           body: JSON.stringify({
             idUser: userID,
             roomName: joinChannelName,
-            type: joinChannelType,
             password: joinChannelPassword,
           }),
         });
@@ -174,7 +182,11 @@
           console.log(data.message)
         }
         console.log(userID);
-        console.log(joinChannelName, joinChannelType, joinChannelPassword);
+        console.log( JSON.stringify({
+            idUser: userID,
+            roomName: joinChannelName,
+            password: joinChannelPassword,
+          }));
         closeJoinModal();
         // Ajoutez ici la logique pour mettre à jour la liste des channels côté front-end
       }
@@ -417,6 +429,15 @@
     font-size: 12px;
     margin-top: 5px;
   }
+
+  .p-anim {
+    -moz-transition: color 2s;
+    color: #6E98B8;
+  }
+  .p-anim:hover {
+    color: #EDA11A;
+  }
+  </style>
 
   .p-anim {
     -moz-transition: color 2s;
