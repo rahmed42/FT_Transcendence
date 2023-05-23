@@ -135,6 +135,10 @@
 				<li class:selected={$page.url.pathname === '/config' ? 'page' : undefined}>
 					<a href="/config">~Config~</a>
 				</li>
+
+				<li class:selected={$page.url.pathname === '/social' ? 'page' : undefined}>
+					<a href="/social">~Social~</a>
+				</li>
 			{:else}
 				<li class:selected={$page.url.pathname === '/' ? 'page' : undefined}>
 					<a href="/">LOGIN</a>

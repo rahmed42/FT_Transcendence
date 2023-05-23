@@ -11,18 +11,51 @@ datasource db {
 }
 
 model User {
-  token String
-  jwtToken String @default("")
-  id Int @id
-  email String 
-  login String
-  first_name String
-  last_name String
-  large_pic String
-  medium_pic String
-  small_pic String
-  createAt DateTime @default(now())
-  updateAt DateTime @updatedAt
+  token                 String
+  jwtToken              String         @default("")
+  id                    Int            @id
+  email                 String
+  login                 String
+  first_name            String
+  last_name             String
+  large_pic             String
+  medium_pic            String
+  small_pic             String
+  createAt              DateTime       @default(now())
+  updateAt              DateTime       @updatedAt
+  friendRequestSent     Friend[]       @relation("FriendRequestSent")
+  friendRequestReceived Friend[]       @relation("FriendRequestReceived")
+  status                String         @default("offline")
+  stats                 Stats?
+  matchHistory          MatchHistory[]
+}
+
+model Stats {
+  id           Int      @id @default(autoincrement())
+  userId       Int      @unique
+  user         User     @relation(fields: [userId], references: [id])
+  wins         Int      @default(0)
+  losses       Int      @default(0)
+  ladderLevel  Int      @default(0)
+  achievements String[]
+}
+
+model MatchHistory {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  gameType  String
+  result    String
+  timestamp DateTime @default(now())
+}
+
+model Friend {
+  id            Int    @id @default(autoincrement())
+  requesterId   Int
+  requesteeId   Int
+  status        String @default("pending")
+  requesterUser User   @relation(fields: [requesterId], references: [id], name: "FriendRequestSent", onDelete: Cascade)
+  requesteeUser User   @relation(fields: [requesteeId], references: [id], name: "FriendRequestReceived", onDelete: Cascade)
 }
 
 model Data {
