@@ -19,6 +19,10 @@ export class ChatController {
     async inviteUser(@Body() body: ChatDtoAdminOperation) {
         return await this.ChatService.inviteUser(body);
     }
+    @Post ('removeInvite')
+    async removeInvite(@Body() body: ChatDtoAdminOperation) {
+        return await this.ChatService.removeInvite(body);
+    }
     @Post('kickUser')
     async kickUser(@Body() body: ChatDtoAdminOperation) {
         return await this.ChatService.kickUser(body);
@@ -26,6 +30,10 @@ export class ChatController {
     @Post('banUser')
     async banUser(@Body() body: ChatDtoAdminOperation) {
         return await this.ChatService.banUser(body);
+    }
+    @Post('unbanUser')
+    async unbanUser(@Body() body: ChatDtoAdminOperation) {
+        return await this.ChatService.unbanUser(body);
     }
     @Get('rooms')
     async getRooms(@Body() body : ChatDtoGetRoom) {
@@ -47,5 +55,15 @@ export class ChatController {
     {
         return await this.ChatService.giveAdmin(body);
     }
-    /* TODO MUTE,GIVE ADMIN, GIVE OWNER, BLOQUER (don't show other messages)    */
+    @Post('removeAdmin')
+    async removeAdmin(@Body() body: ChatDtoAdminOperation)
+    {
+        return await this.ChatService.removeAdmin(body);
+    }
+    @Post('giveOwner')
+    async giveOwner(@Body() body: ChatDtoAdminOperation)
+    {
+        return await this.ChatService.giveOwner(body);
+    }
+    /* TODO MUTE, BLOQUER (don't show other messages) */
 }

@@ -7,7 +7,6 @@ import * as argon from 'argon2';
 export class ChatService {
     constructor(private prisma: PrismaService) { }
     
-    
     async createRoom(body: ChatDtoCreateRoom) {
         const roomExists = await this.prisma.room.findFirst({
             where: {
@@ -538,7 +537,7 @@ export class ChatService {
                 },
             },
         });
-        return {"userId": user.id, "rooms" : roomsOfUser}
+        return {"rooms" : roomsOfUser}
     }
 
     async banUser(body: ChatDtoAdminOperation)
@@ -734,7 +733,52 @@ export class ChatService {
             },
         });
         if (isUserOwner) {
-            throw new BadRequestException('User is owner of room');
+            // change owner by the next admin or if no admin by the next user
+            let nextUser;
+            const nextAdmin = await this.prisma.room.findFirst({
+                where: {
+                    name: body.roomName,
+                    administrators: {
+                        some: {
+                            id: {
+                                not: body.idUser,
+                            },
+                        },
+                    },
+                },
+            });
+            if (!nextAdmin)
+            {
+                nextUser = await this.prisma.room.findFirst({
+                    where: {
+                        name: body.roomName,
+                        users: {
+                            some: {
+                                id: {
+                                    not: body.idUser,
+                                },
+                            },
+                        },
+                    },
+                });
+                if (!nextUser)
+                {
+                    await this.prisma.room.delete({
+                        where: {
+                            name: body.roomName,
+                        },
+                    });
+                    return { message: "Room successfully deleted" }
+                }
+            }
+            const updatatedRoom = await this.prisma.room.update({
+                where: {
+                    name: body.roomName,
+                },
+                data : {
+                    ownerId : nextUser.id,
+                }
+            });
         }
         const isUserAdmin = await this.prisma.room.findFirst({
             where: {
@@ -902,6 +946,401 @@ export class ChatService {
             },
         });
         return { message: "User successfully given admin" }
+    }
+    async removeAdmin(body: ChatDtoAdminOperation)
+    {
+        const admin = await this.prisma.user.findUnique({
+            where: {
+                id: body.idAdmin,
+            },
+        });
+        const user = await this.prisma.user.findUnique({
+            where: {
+                id: body.idUserToExecute,
+            },
+        });
+        if (!user) {
+            throw new BadRequestException('User does not exist');
+        }
+        if (!admin) {
+            throw new BadRequestException('Admin does not exist');
+        }
+        const room = await this.prisma.room.findUnique({
+            where: {
+                name: body.roomName,
+            },
+        });
+        if (!room) {
+            throw new BadRequestException('Room does not exist');
+        }
+        const isUserInRoom = await this.prisma.room.findFirst({
+            where: {
+                name: body.roomName,
+                users: {
+                    some: {
+                        id: body.idUserToExecute,
+                    },
+                },
+            },
+        });
+        if (!isUserInRoom) {
+            throw new BadRequestException('User not in room');
+        }
+        const isAdminAdmin = await this.prisma.room.findFirst({
+            where: {
+                name: body.roomName,
+                administrators: {
+                    some: {
+                        id: body.idAdmin,
+                    },
+                },
+            },
+        });
+        if (!isAdminAdmin) {
+            throw new BadRequestException('User is not admin');
+        }
+        const isUserAdmin = await this.prisma.room.findFirst({
+            where: {
+                name: body.roomName,
+                administrators: {
+                    some: {
+                        id: body.idUserToExecute,
+                    },
+                },
+            },
+        });
+        const isAdminOwner = await this.prisma.room.findFirst({
+            where: {
+                name: body.roomName,
+                owner: {
+                    id: body.idUserToExecute,
+                },
+            },
+        });
+        if (isAdminOwner) {
+            throw new BadRequestException('User is owner');
+        }
+        if (!isUserAdmin) {
+            throw new BadRequestException('User is not admin');
+        }
+        await this.prisma.room.update({
+            where: {
+                name: body.roomName,
+            },
+            data: {
+                administrators: {
+                    disconnect: {
+                        id: body.idUserToExecute,
+                    },
+                },
+            },
+        });
+        await this.prisma.user.update({
+            where: {
+                id: body.idUserToExecute,
+            },
+            data: {
+                administratedRooms: {
+                    disconnect: {
+                        name: body.roomName,
+                    },
+                },
+            },
+        });
+        return { message: "User successfully removed admin" }
+    }
+    async giveOwner(body: ChatDtoAdminOperation)
+    {
+        const owner = await this.prisma.user.findUnique({
+            where: {
+                id: body.idAdmin,
+            },
+        });
+        const user = await this.prisma.user.findUnique({
+            where: {
+                id: body.idUserToExecute,
+            },
+        });
+        if (!user) {
+            throw new BadRequestException('User does not exist');
+        }
+        if (!owner) {
+            throw new BadRequestException('Owner does not exist');
+        }
+        const room = await this.prisma.room.findUnique({
+            where: {
+                name: body.roomName,
+            },
+        });
+        if (!room) {
+            throw new BadRequestException('Room does not exist');
+        }
+        const isUserInRoom = await this.prisma.room.findFirst({
+            where: {
+                name: body.roomName,
+                users: {
+                    some: {
+                        id: body.idUserToExecute,
+                    },
+                },
+            },
+        });
+        if (!isUserInRoom) {
+            throw new BadRequestException('User not in room');
+        }
+        const isOwnerOwner = await this.prisma.room.findFirst({
+            where: {
+                name: body.roomName,
+                ownerId: body.idAdmin,
+            },
+        });
+        if (!isOwnerOwner) {
+            throw new BadRequestException('User is not owner');
+        }
+        const isUserOwner = await this.prisma.room.findFirst({
+            where: {
+                name: body.roomName,
+                ownerId: body.idUserToExecute,
+            },
+        });
+        const isUserAdmin = await this.prisma.room.findFirst({
+            where: {
+                name: body.roomName,
+                administrators: {
+                    some: {
+                        id: body.idUserToExecute,
+                    },
+                },
+            },
+        });
+        if (isUserOwner) {
+            throw new BadRequestException('User is already owner');
+        }
+        await this.prisma.room.update({
+            where: {
+                name: body.roomName,
+            },
+            data: {
+                ownerId: body.idUserToExecute,
+                administrators : (!isUserAdmin) ? {} : {
+                    connect: {
+                        id: body.idUserToExecute,
+                    },
+                }
+
+            },
+        });
+        await this.prisma.user.update({
+            where: {
+                id: body.idUserToExecute,
+            },
+            data: {
+                ownedRooms: {
+                    connect: {
+                        name: body.roomName,
+                    },
+                },
+                administratedRooms : (!isUserAdmin) ? {} : {
+                    connect: {
+                        name: body.roomName,
+                    },
+                },
+            },
+        });
+        await this.prisma.user.update({
+            where: {
+                id: body.idAdmin,
+            },
+            data: {
+                ownedRooms: {
+                    disconnect: {
+                        name: body.roomName,
+                    },
+                },
+                administratedRooms : {
+                    disconnect: {
+                        name: body.roomName,
+                    },
+                },
+            },
+        });
+        return { message: "User successfully given owner" }
+    }
+    async removeInvite(body: ChatDtoAdminOperation)
+    {
+        const admin = await this.prisma.user.findUnique({
+            where: {
+                id: body.idAdmin,
+            },
+        });
+        const user = await this.prisma.user.findUnique({
+            where: {
+                id: body.idUserToExecute,
+            },
+        });
+        if (!user) {
+            throw new BadRequestException('User does not exist');
+        }
+        if (!admin) {
+            throw new BadRequestException('User who remove invite does not exist');
+        }
+        const room = await this.prisma.room.findUnique({
+            where: {
+                name: body.roomName,
+            },
+        });
+        if (!room) {
+            throw new BadRequestException('Room does not exist');
+        }
+        const isUserInRoom = await this.prisma.room.findFirst({
+            where: {
+                name: body.roomName,
+                users: {
+                    some: {
+                        id: body.idUserToExecute,
+                    },
+                },
+            },
+        });
+        if (isUserInRoom) {
+            throw new BadRequestException('User has already accepted invitation in room');
+        }
+        const isUserInvited = await this.prisma.room.findFirst({
+            where: {
+                name: body.roomName,
+                invitedUsers: {
+                    some: {
+                        id: body.idUserToExecute,
+                    },
+                },
+            },
+        });
+        if (!isUserInvited) {
+            throw new BadRequestException('User is not invited in room');
+        }
+        if (body.idAdmin == body.idUserToExecute)
+        {
+            await this.prisma.room.update({
+                where: {
+                    name: body.roomName,
+                },
+                data: {
+                    invitedUsers: {
+                        disconnect: {
+                            id: body.idUserToExecute,
+                        },
+                    },
+                },
+            });
+            await this.prisma.user.update({
+                where: {
+                    id: body.idUserToExecute,
+                },
+                data: {
+                    invitedRooms: {
+                        disconnect: {
+                            name: body.roomName,
+                        },
+                    },
+                },
+            });
+            return { message: "User successfully removed invite" }
+        }
+        else
+        {
+            throw new BadRequestException('Only user can remove his own invite');
+        }
+    }
+    async unbanUser(body: ChatDtoAdminOperation)
+    {
+        const admin = await this.prisma.user.findUnique({
+            where: {
+                id: body.idAdmin,
+            },
+        });
+        const user = await this.prisma.user.findUnique({
+            where: {
+                id: body.idUserToExecute,
+            },
+        });
+        if (!user) {
+            throw new BadRequestException('User does not exist');
+        }
+        if (!admin) {
+            throw new BadRequestException('User who unban does not exist');
+        }
+        const room = await this.prisma.room.findUnique({
+            where: {
+                name: body.roomName,
+            },
+        });
+        if (!room) {
+            throw new BadRequestException('Room does not exist');
+        }
+        const isUserInRoom = await this.prisma.room.findFirst({
+            where: {
+                name: body.roomName,
+                users: {
+                    some: {
+                        id: body.idUserToExecute,
+                    },
+                },
+            },
+        });
+        if (isUserInRoom) {
+            throw new BadRequestException('User is in room');
+        }
+        const isUserBanned = await this.prisma.room.findFirst({
+            where: {
+                name: body.roomName,
+                bannedUsers: {
+                    some: {
+                        id: body.idUserToExecute,
+                    },
+                },
+            },
+        });
+        if (!isUserBanned) {
+            throw new BadRequestException('User is not banned in room');
+        }
+        const isAdminAdmin = await this.prisma.room.findFirst({
+            where: {
+                name: body.roomName,
+                administrators: {
+                    some: {
+                        id: body.idAdmin,
+                    },
+                },
+            },
+        });
+        if (!isAdminAdmin) {
+            throw new BadRequestException('User is not admin');
+        }
+        await this.prisma.room.update({
+            where: {
+                name: body.roomName,    
+            },
+            data: {
+                bannedUsers: {
+                    disconnect: {
+                        id: body.idUserToExecute,
+                    },
+                },
+            },
+        });
+        await this.prisma.user.update({
+            where: {
+                id: body.idUserToExecute,
+            },
+            data: {
+                bannedRooms: {
+                    disconnect: {
+                        name: body.roomName,
+                    },
+                },
+            },
+        });
+        return { message: "User successfully unbanned" }
     }
 }
 
