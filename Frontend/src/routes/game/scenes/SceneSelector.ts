@@ -4,8 +4,8 @@ import * as Phaser from "phaser"; // will import all the Phaser types
 
 //Style modern
 import ballStyle1 from '$lib/assets/style1/Ball.png';
-import myPaddleStyle1 from '$lib/assets/style1/Player.png';
-import opponentPaddleStyle1 from '$lib/assets/style1/Computer.png';
+import myPaddleStyle1 from '$lib/assets/style1/mypaddle.png';
+import opponentPaddleStyle1 from '$lib/assets/style1/otherpaddle.png';
 import boardStyle1 from '$lib/assets/style1/Board.png';
 
 export class GameSelector extends Phaser.Scene {
