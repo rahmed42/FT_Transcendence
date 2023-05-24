@@ -1,6 +1,11 @@
 import * as Phaser from "phaser"; // will import all the Phaser types
 
 // To import images in assets folder
+// Menu
+import backgroundMenu from '$lib/images/backArcade.jpg';
+import logo from '$lib/images/42PongLogo.png';
+import button from '$lib/assets/buttons/blue.png';
+
 //Style Default
 import boardDefault from '$lib/assets/default/backgroundDefault.png';
 import ballDefault from '$lib/assets/default/ballDefault.png';
@@ -37,8 +42,12 @@ export class GameSelector extends Phaser.Scene {
 	/* Optionnal constructor methods */
 	// preload basic assets
 	preload() {
-		// setting background color
-		this.cameras.main.setBackgroundColor(0x004C99)
+		// loading background
+		this.load.image('backgroundMenu', backgroundMenu);
+		this.load.image('logo', logo);
+
+		// loading button
+		this.load.image('button', button);
 
 		//Default style
 		this.load.image('ballDefault', ballDefault);
@@ -54,50 +63,64 @@ export class GameSelector extends Phaser.Scene {
 
 	// create game parts list
 	create() {
+		//Background
+		const background = this.add.image(0, 0, 'backgroundMenu');
+		background.setDisplaySize(this.cameras.main.width, this.cameras.main.height);
+		background.setOrigin(0, 0);
+
 		/* Phaser API Doc : https://newdocs.phaser.io/docs/3.60.0/Phaser.Types.GameObjects.Text */
 		// Text to display
-		const title = '42 PONG';
+		//const title = '42 PONG';
 		const centerX = this.cameras.main.centerX;
 		const centerY = this.cameras.main.centerY;
 		const spanY = centerY / 4;
 
+		const logo = this.add.image(centerX, spanY * 3, 'logo');
+		//logo.setScale(0.5);
+		logo.setOrigin(0.35, 0.5);
+
 		// Text style display
-		const titleText = this.add.text(centerX, spanY * 2, title, { font: '55px Arial', color: '#ffffff' });
+		//const titleText = this.add.text(centerX, spanY * 2, title, { font: '55px Arial', color: '#ffffff' });
 
 		// Define center of text object
-		titleText.setOrigin(0.5, 0.5);
+		//titleText.setOrigin(0.5, 0.5);
 
 		// adding game parts
 		for (let gameType in this.parts) {
 			if (this.parts.hasOwnProperty(gameType)) {
-				const index = parseInt(gameType) + 3; // index of the game part
+				const index = parseInt(gameType) + 4; // index of the game part
 				const selector = this.parts[gameType as keyof typeof this.parts]; // name of the game part
 
-				const button = this.add.text(
+				//button settings
+				const button = this.add.image(centerX, spanY * index, 'button');
+				button.setScale(0.5);
+				button.setOrigin(0.5, 0.5);
+
+				// setting the button as interactive
+				button.setInteractive();
+
+				// adding text on button
+				const buttonText = this.add.text(
 					centerX, spanY * index, // position of the text
-					`🏓 ${selector} 🏓`, // text
+					`${selector}`, // text
 					{ font: '32px Arial', color: '#ffffff' }); // text style
 
 				// Define the center of the text
-				button.setOrigin(0.5, 0.5);
-
-				// setting the text as interactive
-				button.setInteractive();
-
-				// Button style
-				button.setStyle({
-					backgroundColor: '#007fff',
-				});
+				buttonText.setOrigin(0.5, 0.5);
 
 				// Add a hover effect when the mouse is over the button
 				button.on('pointerover', () => {
-					button.setScale(0.90); // Change scale to reduce size effect
-					button.setStyle({ backgroundColor: '#0055ff' });
+					button.setScale(0.48); // Change scale to reduce size effect
+					buttonText.setScale(0.95);
+					// set text color to dark white
+					buttonText.setColor('#E8E8E8');
 				});
 
 				button.on('pointerout', () => {
-					button.setScale(1);
-					button.setStyle({ backgroundColor: '#007fff' });
+					button.setScale(0.5);
+					buttonText.setScale(1);
+					// set text color to white
+					buttonText.setColor('#FFFFFF');
 				});
 
 				// setting the text as clickable

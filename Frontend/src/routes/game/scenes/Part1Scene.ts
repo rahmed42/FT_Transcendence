@@ -181,7 +181,7 @@ export class Part1Scene extends Phaser.Scene {
 		background.setOrigin(0, 0);
 
 		// Display ball
-		this.ball = this.physics.add.image(400, 300, 'ballDefault');
+		this.ball = this.physics.add.image(this.cameras.main.centerX, this.cameras.main.centerY, 'ballDefault');
 		this.ball.setOrigin(0.5, 0.5);
 
 		// Display score
@@ -203,7 +203,7 @@ export class Part1Scene extends Phaser.Scene {
 			this.ball.setBounce(1);
 		}
 
-		this.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
+		this.input.on('pointermove', () => {
 			if (this.localPaddle)
 				this.localPaddle.destroy();
 
@@ -239,31 +239,31 @@ export class Part1Scene extends Phaser.Scene {
 			}
 		});
 
-
 		/* Adding Menu button */
-		// Adding Home menu button
-		const homeButton = this.add.text(this.cameras.main.centerX, 18, 'Menu', { font: '32px Arial', color: '#ffffff' });
-
-		// Define the center of the text
+		const homeButton = this.add.image(this.cameras.main.centerX, 25, 'button');
+		homeButton.setScale(0.4);
 		homeButton.setOrigin(0.5, 0.5);
 
 		// setting the text as interactive
 		homeButton.setInteractive();
 
-		// button style
-		homeButton.setStyle({
-			backgroundColor: '#007fff',
-		});
+		// adding text on button
+		const homeButtonText = this.add.text(this.cameras.main.centerX, 25, 'Menu', { font: '32px Arial', color: '#ffffff' });
+		homeButtonText.setOrigin(0.5, 0.5);
 
 		// Add a hover effect when the mouse is over the button
 		homeButton.on('pointerover', () => {
-			homeButton.setScale(0.90); // Change scale to reduce size effect
-			homeButton.setStyle({ backgroundColor: '#0055ff' });
+			homeButton.setScale(0.38); // Change scale to reduce size effect
+			homeButtonText.setScale(0.95);
+			// set text color to dark white
+			homeButtonText.setColor('#E8E8E8');
 		});
 
 		homeButton.on('pointerout', () => {
-			homeButton.setScale(1);
-			homeButton.setStyle({ backgroundColor: '#007fff' });
+			homeButton.setScale(0.4);
+			homeButtonText.setScale(1);
+			// set text color to white
+			homeButtonText.setColor('#FFFFFF');
 		});
 
 		// Add a pointerdown event to go back to the menu
@@ -301,10 +301,8 @@ export class Part1Scene extends Phaser.Scene {
 		/* Refresh Score */
 		if (this.myScoreText)
 			this.myScoreText.setText(this.myScore.toString());
-		// this.myScoreText.setText(this.myScore.toString());
 		if (this.opponentScoreText)
 			this.opponentScoreText.setText(this.opponentScore.toString());
-		// this.opponentScoreText.setText(this.opponentScore.toString());
 
 		if (this.ball) {
 			// set the ball to center
@@ -312,21 +310,13 @@ export class Part1Scene extends Phaser.Scene {
 			this.ball.y = this.cameras.main.centerY;
 
 			// Launch the ball to random direction
-			let velocityX = Phaser.Math.Between(300, 500);
-			let velocityY = Phaser.Math.Between(100, 350);
+			let velocityX = Phaser.Math.Between(300, 450);
+			let velocityY = Phaser.Math.Between(200, 350);
+
 			// random negative or positive
 			velocityX *= Math.random() < 0.5 ? 1 : -1;
 			velocityY *= Math.random() < 0.5 ? 1 : -1;
 			this.ball.setVelocity(velocityX, velocityY);
-
-			//test
-			//this.ball.setVelocity(300, 0); // to delete
-
-			// Refresh the score
-			if (this.myScoreText)
-				this.myScoreText.setText(this.myScore.toString());
-			if (this.opponentScoreText)
-				this.opponentScoreText.setText(this.opponentScore.toString());
 		}
 	}
 
