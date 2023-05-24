@@ -15,7 +15,7 @@ interface User {
 	updateAt: string;
 }
 
-export const user = writable<User>({
+export let user = writable<User>({
 	token: '',
 	jwtToken: '',
 	id: '',

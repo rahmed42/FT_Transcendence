@@ -1,7 +1,9 @@
 import {BadRequestException, Body, Controller, Get, Param, Post, UseGuards} from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { ChatDtoAdminOperation, ChatDtoCreateRoom, ChatDtoGetRoom, ChatDtoJoinRoom } from './dto';
+import { AuthGuard } from '@nestjs/passport';
 
+@UseGuards(AuthGuard('jwt'))
 @Controller('chat')
 export class ChatController {
     constructor(private readonly ChatService : ChatService) {}
@@ -36,9 +38,8 @@ export class ChatController {
         return await this.ChatService.unbanUser(body);
     }
     @Get('rooms')
-    async getRooms(@Body() body : ChatDtoGetRoom) {
-        return await this.ChatService.getRooms(body);
-    }
+    // async getRooms parameter is the Header with authorization bearer token
+     
     @Get('rooms/:name')
     async getRoom(@Param('name') roomName: string, @Body() body: ChatDtoGetRoom) {
         body.roomName = roomName;
@@ -64,6 +65,11 @@ export class ChatController {
     async giveOwner(@Body() body: ChatDtoAdminOperation)
     {
         return await this.ChatService.giveOwner(body);
+    }
+    @Post('blockUser')
+    async blockUser(@Body() body: ChatDtoAdminOperation)
+    {
+        
     }
     /* TODO MUTE, BLOQUER (don't show other messages) */
 }

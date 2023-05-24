@@ -1,8 +1,6 @@
 <script>
   import { user } from '../../stores/user';
-  import { onMount } from 'svelte';
-  import { get } from 'svelte/store';
-
+  import { afterUpdate } from 'svelte';
   let messageInput = '';
 
   let isInvalidType = false;
@@ -19,57 +17,42 @@
   let joinChannelName = '';
   let joinChannelType = '';
   let joinChannelPassword = '';
-  let userID;
-  let token;
+  
+  let channelList = [];
+  let selectedChannel = '';
+  let userID = '';
+  // get cookies and set jwtToken in svelte component
+  
 
-  onMount(async () => {
-    const storedUser = sessionStorage.getItem('userID');
 
-    if (storedUser && storedUser !== 'undefined' && storedUser !== 'null') {
-      userID = parseInt(storedUser || '0');
-    } else {
-      let test = get(user);
-      userID = test.id;
-      sessionStorage.setItem('userID', userID);
-    }
+  let jwtToken = ''; // Initialisez votre variable jwtToken avec la valeur appropriée
 
-    const storedToken = sessionStorage.getItem('token');
-
-    if (storedToken && storedToken !== 'undefined' && storedToken !== 'null') {
-      token = storedToken;
-    } else {
-      let test = get(user);
-      token = test.token;
-      sessionStorage.setItem('token', token);
-    }
-
-    console.log(token);
-
+afterUpdate(() => {
+  if (typeof document !== 'undefined') {
+    // Le code suivant sera exécuté uniquement côté client
+    const cookies = document.cookie;
     try {
-      const response = await fetch('http://localhost:3333/chat/rooms', {
+      fetch('http://localhost:3333/chat/rooms', {
         method: 'GET',
         headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-
-      console.log(userID);
-
-      if (response.ok) {
-        const data = await response.json();
-        channelList = data.channels;
-      } else {
-        const data = await response.json();
-        console.log(data.message);
-      }
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${jwtToken}`
+        },
+      })
+        .then(response => response.json())
+        .then(data => {
+          console.log(data);
+        })
+        .catch(error => {
+          console.log(error);
+        });
     } catch (error) {
-      console.error(error);
+      console.log(error);
     }
-  });
+  }
+});
 
-  let selectedChannel = null;
-  let channelList = [];
-
+  
   function openModal() {
     isModalOpen = true;
   }
@@ -116,7 +99,7 @@
         const response = await fetch('http://localhost:3333/chat/createRoom', {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json',
+            'Content-Type': 'application/json'
           },
           body: JSON.stringify({
             idUser: userID,
@@ -132,8 +115,8 @@
         }
         console.log(userID);
         console.log(newChannelName, newChannelType, newChannelPassword);
+        channelList.push({"name" :newChannelName})
         closeModal();
-        // Ajoutez ici la logique pour mettre à jour la liste des channels côté front-end
       }
     } else {
       isInvalidName = true;
