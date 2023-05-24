@@ -1,6 +1,9 @@
-<script>
+<script lang="ts">
   import { user } from '../../stores/user';
-  import { afterUpdate } from 'svelte';
+  import { onMount } from 'svelte';
+  import { get, type Writable } from 'svelte/store';
+  import { writable } from 'svelte/store';
+
   let messageInput = '';
 
   let isInvalidType = false;
@@ -17,42 +20,51 @@
   let joinChannelName = '';
   let joinChannelType = '';
   let joinChannelPassword = '';
-  
-  let channelList = [];
-  let selectedChannel = '';
-  let userID = '';
-  // get cookies and set jwtToken in svelte component
-  
+  let userID = 0;
+  let token = '';
 
+  onMount(async () => {
+    const storedUser = sessionStorage.getItem('userID');
 
-  let jwtToken = ''; // Initialisez votre variable jwtToken avec la valeur appropriée
+    if (storedUser && storedUser !== 'undefined' && storedUser !== 'null') {
+      userID = parseInt(storedUser || '0');
+    } else {
+      let test = get(user);
+      userID = parseInt(test.id);
+      sessionStorage.setItem('userID', JSON.stringify(userID));
+    }
+    token = sessionStorage.getItem('jwt') || '';
+  });
+  /*
 
-afterUpdate(() => {
-  if (typeof document !== 'undefined') {
-    // Le code suivant sera exécuté uniquement côté client
-    const cookies = document.cookie;
+    console.log(token);
+
     try {
-      fetch('http://localhost:3333/chat/rooms', {
+      const response = await fetch('http://localhost:3333/chat/rooms', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${jwtToken}`
-        },
-      })
-        .then(response => response.json())
-        .then(data => {
-          console.log(data);
-        })
-        .catch(error => {
-          console.log(error);
-        });
-    } catch (error) {
-      console.log(error);
-    }
-  }
-});
+          'Authorization' : 'Bearer ' + token
+        }
+      });
 
-  
+      console.log(userID);
+
+      if (response.ok) {
+        const data = await response.json();
+        channelList = data.channels;
+      } else {
+        const data = await response.json();
+        console.log(data.message);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  });*/
+
+  let selectedChannel = '';
+  let channelList = writable([]);
+
   function openModal() {
     isModalOpen = true;
   }
@@ -82,48 +94,59 @@ afterUpdate(() => {
   }
 
   async function createChannel() {
-    if (
-      newChannelName.trim() !== '' &&
-      newChannelName.length <= 10 &&
-      isValidChannelName(newChannelName)
-    ) {
-      if (newChannelType === '') {
-        isInvalidType = true;
-      } else {
-        if (newChannelType === 'protected') {
-          if (newChannelPassword.trim() === '') {
-            isInvalidPassword = true;
-            return;
-          }
-        }
-        const response = await fetch('http://localhost:3333/chat/createRoom', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            idUser: userID,
-            roomName: newChannelName,
-            type: newChannelType,
-            password: newChannelPassword,
-          }),
-        });
-        if (!response.ok)
-        {
-          const data = await response.json();
-          console.log(data.message)
-        }
-        console.log(userID);
-        console.log(newChannelName, newChannelType, newChannelPassword);
-        channelList.push({"name" :newChannelName})
-        closeModal();
-      }
+  if (
+    newChannelName.trim() !== '' &&
+    newChannelName.length <= 10 &&
+    isValidChannelName(newChannelName)
+  ) {
+    if (newChannelType === '') {
+      isInvalidType = true;
     } else {
-      isInvalidName = true;
+      if (newChannelType === 'protected') {
+        if (newChannelPassword.trim() === '') {
+          isInvalidPassword = true;
+          return;
+        }
+      }
+      const response = await fetch('http://localhost:3333/chat/createRoom', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + token
+        },
+        body: JSON.stringify({
+          idUser: userID,
+          roomName: newChannelName,
+          type: newChannelType,
+          password: newChannelPassword,
+        }),
+      });
+      if (!response.ok) {
+        const data = await response.json();
+        console.log(data.message)
+      } else if (response.ok) {
+        const updateResponse = await fetch('http://localhost:3333/chat/rooms', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+          }
+        });
+        if (updateResponse.ok) {
+          const updatedata = await updateResponse.json();
+          channelList = updatedata.channels;
+        }
+        closeModal();
+        // Ajoutez ici la logique pour mettre à jour la liste des channels côté front-end
+      }
     }
+  } else {
+    isInvalidName = true;
   }
+}
 
-  function isValidChannelName(name) {
+
+  function isValidChannelName(name: string) {
     for (let i = 0; i < name.length; i++) {
       const charCode = name.charCodeAt(i);
       if (charCode < 32 || charCode > 126) {
@@ -131,15 +154,14 @@ afterUpdate(() => {
       }
     }
     return true;
-  }
+  } 
 
   async function joinChannel() {
-    if (
-      joinChannelName.trim() !== '' &&
+    if (joinChannelName.trim() !== '' &&
       joinChannelName.length <= 10 &&
       isValidChannelName(joinChannelName)
-    ) {
-      if (joinChannelType === '') {
+      ) {
+      if (joinChannelType === '')
         isJoinInvalidType = true;
       } else {
         if (joinChannelType === 'protected') {
@@ -152,6 +174,7 @@ afterUpdate(() => {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'Authorization' : 'Bearer ' + token
           },
           body: JSON.stringify({
             idUser: userID,
@@ -164,25 +187,44 @@ afterUpdate(() => {
           const data = await response.json();
           console.log(data.message)
         }
+        else if (response.ok)
+        {
+          const updateResponse = await fetch('http://localhost:3333/chat/rooms', {
+          method: 'GET',
+          headers: {
+          'Content-Type': 'application/json',
+          'Authorization' : 'Bearer ' + token
+          }
+        });
+        if (updateResponse.ok) {
+          const updatedata = await updateResponse.json();
+          channelList = updatedata.channels;
+        }
+        closeJoinModal();
+        // Ajoutez ici la logique pour mettre à jour la liste des channels côté front-end
         console.log(userID);
         console.log( JSON.stringify({
             idUser: userID,
             roomName: joinChannelName,
             password: joinChannelPassword,
           }));
-        closeJoinModal();
-        // Ajoutez ici la logique pour mettre à jour la liste des channels côté front-end
-      }
-    } else {
+      }        
+    else {
       isJoinInvalidName = true;
     }
   }
-
+}
+  
   async function sendMessage() {
     console.log(messageInput);
     messageInput = '';
   }
 </script>
+
+<svelte:head>
+  <title>Chat</title>
+  <meta name="description" content="Chat Page" />
+</svelte:head>
 
 {#if isJoinModalOpen}
   <div class="modal">
@@ -216,10 +258,6 @@ afterUpdate(() => {
   </div>
 {/if}
 
-<svelte:head>
-  <title>Chat</title>
-  <meta name="description" content="Chat Page" />
-</svelte:head>
 
 <div class="container">
   <div class="sidebar">
@@ -229,7 +267,7 @@ afterUpdate(() => {
           <h2>{selectedChannel.name}</h2>
         </div>
       {/if}
-      {#if channelList !== null && channelList.length === 0}
+      {#if $channelList !== null && $channelList.length === 0}
         <p>No channels joined</p>
       {/if}
     </div>
@@ -240,7 +278,7 @@ afterUpdate(() => {
       Join Channel
     </button>
     {#if channelList !== null}
-      {#each channelList as channel}
+      {#each $channelList as channel}
         <button class="channel-button p-anim" on:click={() => joinChannel()}>
           {channel.name}
         </button>
