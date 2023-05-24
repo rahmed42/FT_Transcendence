@@ -1,7 +1,7 @@
 <script lang="ts">
   import { user } from '../../stores/user';
   import { onMount } from 'svelte';
-  import { get, type Writable } from 'svelte/store';
+  import { get } from 'svelte/store';
   import { writable } from 'svelte/store';
 
   let messageInput = '';
@@ -22,6 +22,7 @@
   let joinChannelPassword = '';
   let userID = 0;
   let token = '';
+  let channelList = writable<{name : string}[]>([]);
 
   onMount(async () => {
     const storedUser = sessionStorage.getItem('userID');
@@ -34,9 +35,23 @@
       sessionStorage.setItem('userID', JSON.stringify(userID));
     }
     token = sessionStorage.getItem('jwt') || '';
+
+    const response = await fetch('http://localhost:3333/chat/rooms', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization' : 'Bearer ' + token
+        }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        channelList.set(data.rooms);
+      } else {
+        const data = await response.json();
+        console.log(data.message);
+      }
   });
   /*
-
     console.log(token);
 
     try {
@@ -63,8 +78,6 @@
   });*/
 
   let selectedChannel = '';
-  let channelList = writable([]);
-
   function openModal() {
     isModalOpen = true;
   }
@@ -125,17 +138,9 @@
         const data = await response.json();
         console.log(data.message)
       } else if (response.ok) {
-        const updateResponse = await fetch('http://localhost:3333/chat/rooms', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + token
-          }
-        });
-        if (updateResponse.ok) {
-          const updatedata = await updateResponse.json();
-          channelList = updatedata.channels;
-        }
+          const newChannel = await response.json();
+          channelList.update(newChannel.room.name);
+          console.log(newChannel.room.name);
         closeModal();
         // Ajoutez ici la logique pour mettre à jour la liste des channels côté front-end
       }
@@ -264,7 +269,7 @@
     <div class="chat-area">
       {#if selectedChannel != null}
         <div class="channel-header">
-          <h2>{selectedChannel.name}</h2>
+          <h2>{selectedChannel}</h2>
         </div>
       {/if}
       {#if $channelList !== null && $channelList.length === 0}

@@ -530,14 +530,14 @@ export class ChatService {
             select : {
                 rooms : {
                     select : {
-                        id : true,
                         name : true,
-                        type : true,
                     },
                 },
             },
         });
-        return {"rooms" : roomsOfUser}
+        console.log(roomsOfUser)
+        // return only a [] of names
+        return roomsOfUser
     }
 
     async banUser(body: ChatDtoAdminOperation)

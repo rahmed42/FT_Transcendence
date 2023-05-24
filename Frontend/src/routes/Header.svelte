@@ -60,6 +60,7 @@
 			const data = await response.json();
 			if (data !== 'undefined') {
 				document.cookie = 'jwt=' + data.token;
+				sessionStorage.setItem('jwt', data.token);
 			}
 		}
 	}

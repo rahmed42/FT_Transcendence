@@ -1,12 +1,14 @@
-import {BadRequestException, Body, Controller, Get, Param, Post, UseGuards} from '@nestjs/common';
+import {BadRequestException, Body, Controller, Get, Param, Post, Req, UseGuards} from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { ChatDtoAdminOperation, ChatDtoCreateRoom, ChatDtoGetRoom, ChatDtoJoinRoom } from './dto';
 import { AuthGuard } from '@nestjs/passport';
+import { ExtractJwt } from 'passport-jwt';
+import { Request } from 'express';
+import { UserService } from 'src/user/user.service';
 
-@UseGuards(AuthGuard('jwt'))
 @Controller('chat')
 export class ChatController {
-    constructor(private readonly ChatService : ChatService) {}
+    constructor(private readonly ChatService : ChatService, private userService : UserService) {}
 
     @Post('createRoom')
     async createRoom(@Body() body: ChatDtoCreateRoom) {
@@ -38,7 +40,16 @@ export class ChatController {
         return await this.ChatService.unbanUser(body);
     }
     @Get('rooms')
-    // async getRooms parameter is the Header with authorization bearer token
+    async getRooms(@Req() req: Request) {
+        const jwt = ExtractJwt.fromAuthHeaderAsBearerToken()(req);
+        const userInfo = await this.userService.getInfo({jwt : jwt});
+        const id = (userInfo as { id: number, [key: string]: any }).id;
+        const body: ChatDtoGetRoom = {
+            idUser: id,
+            roomName: ''
+          };
+        return await this.ChatService.getRooms(body);
+    }
      
     @Get('rooms/:name')
     async getRoom(@Param('name') roomName: string, @Body() body: ChatDtoGetRoom) {
