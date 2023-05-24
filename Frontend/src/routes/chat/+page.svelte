@@ -437,12 +437,7 @@
   .p-anim:hover {
     color: #EDA11A;
   }
-  </style>
 
-  .p-anim {
-    -moz-transition: color 2s;
-    color: #6E98B8;
-  }
   .p-anim:hover {
     color: #EDA11A;
   }
