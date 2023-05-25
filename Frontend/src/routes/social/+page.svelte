@@ -41,11 +41,11 @@
 	  });
 	  await refreshData();
 	}
-  </script>
+</script>
   
-  <input type="number" bind:value={userId} placeholder="Your user id" />
-  
-  <section>
+<input type="number" bind:value={userId} placeholder="Your user id" />
+
+<section>
 	<h2>Pending friend requests</h2>
 	{#each pendingRequests as request (request.id)}
 	  <div>
@@ -54,18 +54,17 @@
 		<button on:click={() => rejectFriendRequest(request.id)}>Reject</button>
 	  </div>
 	{/each}
-  </section>
+</section>
   
-  <section>
+<section>
 	<h2>Your friends</h2>
 	{#each friends as friend (friend.id)}
-	  <p>{friend.first_name} {friend.last_name}</p>
+	  <p><a href={`/profile/${friend.id}`}>{friend.first_name} {friend.last_name}</a></p>
 	{/each}
-  </section>
+</section>
   
-  <section>
+<section>
 	<h2>Send a friend request</h2>
 	<input type="number" bind:value={requesteeId} placeholder="Friend's user id" />
 	<button on:click={sendFriendRequest}>Send friend request</button>
-  </section>
-  
+</section>
