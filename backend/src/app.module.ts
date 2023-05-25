@@ -7,10 +7,13 @@ import { JwtModule } from '@nestjs/jwt';
 import { UserController } from './user/user.controller';
 import { UserService } from './user/user.service';
 import { UserModule } from './user/user.module';
+import { SocialModule } from './social/social.module';
+import { SocialController } from './social/social.controller';
+import { SocialService } from './social/social.service';
 
 @Module({
-  imports: [AuthModule, PrismaModule, JwtModule, UserModule],
-  controllers: [AuthController, UserController],
-  providers: [AuthService, UserService],
+  imports: [AuthModule, PrismaModule, JwtModule, UserModule, SocialModule],
+  controllers: [AuthController, UserController, SocialController],
+  providers: [AuthService, UserService, SocialService],
 })
 export class AppModule {}

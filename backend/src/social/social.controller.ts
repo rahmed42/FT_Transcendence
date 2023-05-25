@@ -11,6 +11,11 @@ export class SocialController {
     return this.socialService.sendFriendRequest(body.requesterId, body.requesteeId);
   }
 
+  @Get('friend-requests/:userId')
+  async getFriendRequests(@Param('userId', ParseIntPipe) userId: number): Promise<any> {
+    return this.socialService.getFriendRequests(userId);
+  }
+
   @Patch('friend-request/:id/accept')
   async acceptFriendRequest(@Param('id', ParseIntPipe) id: number): Promise<any> {
     return this.socialService.acceptFriendRequest(id);

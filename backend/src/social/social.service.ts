@@ -38,6 +38,29 @@ export class SocialService {
     return friendRequest;
   }
 
+  async getFriendRequests(userId: number): Promise<any> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        // Include only the users who have sent friend requests to the current user
+        friendRequestReceived: { 
+          where: { status: 'pending' },
+          include: { requesterUser: true } 
+        },
+      },
+    });
+  
+    // Throw an error if the user does not exist
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+  
+    // Map the list to only include the friend requests
+    const pendingRequests = user.friendRequestReceived;
+  
+    return pendingRequests;
+  }  
+
   async acceptFriendRequest(friendRequestId: number): Promise<any> {
     // Throw an error if friendRequestId is not an integer
     if (!Number.isInteger(friendRequestId)) {
