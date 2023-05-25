@@ -13,19 +13,4 @@ export class AuthController {
 			const token = await this.authService.getUser(code);
 			return token;
 		}
-	@Post('google')
-		async add_2fa(@Body() requestBody: any ) {
-			console.log('IN BACKEND REQUEST->', requestBody);
-			// await this.authService.push_2fa(requestBody.checked)
-		}
 }	
-
-// @Controller('a')
-// export class UserController {
-// 	constructor(private authService: AuthService) {}
-// 	@Post('b')
-// 		async add_2fa(@Body() requestBody: any ) {
-// 			console.log(requestBody.checked);
-// 			// await this.authService.push_2fa(requestBody.checked)
-// 		}
-// }	

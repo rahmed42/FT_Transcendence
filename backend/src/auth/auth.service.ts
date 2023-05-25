@@ -87,10 +87,4 @@ export class AuthService {
             token,
         };
     }
-    async push_2fa(checked: any) {
-        console.log('in push_2fa fct ->', checked);
-        await this.prisma.authenticator.create({
-                data: checked,
-        })
-    }
 }

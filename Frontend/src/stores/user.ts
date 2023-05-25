@@ -36,3 +36,5 @@ interface login2Fa {
 export const log2Fa = writable<login2Fa>({
 	checked: false
 });
+
+export const checked = writable<false>;

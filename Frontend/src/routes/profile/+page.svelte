@@ -1,5 +1,20 @@
 <script lang="ts">
+	import { get } from 'svelte/store';
 	import { user } from '../../stores/user';
+	// import { checked } from '../../stores/user';
+	import { beforeUpdate, onMount } from 'svelte';
+
+	let checked = false;
+	  onMount(() => {
+    const storedValue = localStorage.getItem('checked');
+    checked = storedValue ? JSON.parse(storedValue) : false;
+  });
+
+  $: {
+    // Mise à jour du localStorage lorsque la variable checked change
+    localStorage.setItem('checked', JSON.stringify(checked));
+  }
+  console.log('final ->', checked);
 </script>
 
 <svelte:head>
@@ -15,6 +30,10 @@
 			Login : {$user.login}<br />
 			Email : {$user.email}
 		</p>
+		<label for="checkbox" class="checkbox-label">
+		<input type="checkbox" id="checkbox" bind:checked={checked}/>
+		Active 2FA Authentication
+		</label>
 	</div>
 </div>
 
