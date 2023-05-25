@@ -1,5 +1,4 @@
 <!-- Shared Header config file with navigation links -->
-
 <script lang="ts">
 	import { page } from '$app/stores';
 	import logo from '$lib/images/42PongLogo.png';

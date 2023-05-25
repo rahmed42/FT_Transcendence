@@ -51,6 +51,7 @@
 		"colyseus.js": "^0.15.0-preview.3",
 		"phaser": "^3.60.0",
 		"stable": "^0.1.8",
-		"svelte-particles": "^2.9.3"
+		"svelte-particles": "^2.9.3",
+		"tsparticles": "^2.9.3"
 	}
 }

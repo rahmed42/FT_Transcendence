@@ -277,7 +277,7 @@ export class Part1Scene extends Phaser.Scene {
 			if (this.opponentScoreText)
 				this.opponentScoreText.setText(this.opponentScore.toString());
 			this.setActiveScene("menu");
-			console.log(`Running game ${this.activeScene} : Menu`);
+			//console.log(`Running game ${this.activeScene} : Menu`);
 			this.game.scene.switch("part1", "menu");
 		});
 
