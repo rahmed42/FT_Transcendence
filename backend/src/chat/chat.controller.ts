@@ -41,27 +41,49 @@ export class ChatController {
     }
     @Get('rooms')
     async getRooms(@Req() req: Request) {
-        const jwt = ExtractJwt.fromAuthHeaderAsBearerToken()(req);
-        const userInfo = await this.userService.getInfo({jwt : jwt});
+        const userInfo = await this.userService.getInfo({jwt : ExtractJwt.fromAuthHeaderAsBearerToken()(req)});
         const id = (userInfo as { id: number, [key: string]: any }).id;
         const body: ChatDtoGetRoom = {
             idUser: id,
             roomName: ''
           };
         return await this.ChatService.getRooms(body);
-    }
-     
+    }   
     @Get('rooms/:name')
-    async getRoom(@Param('name') roomName: string, @Body() body: ChatDtoGetRoom) {
-        body.roomName = roomName;
+    async getRoom(@Param('name') roomName: string, @Req() req: Request) {
+        const userInfo = await this.userService.getInfo({jwt : ExtractJwt.fromAuthHeaderAsBearerToken()(req)});
+        const id = (userInfo as { id: number, [key: string]: any }).id;
+        const body: ChatDtoGetRoom = {
+            idUser: id,
+            roomName,
+          };
         return await this.ChatService.getRoomInfo(body);
+    }
+    @Get('privateRooms')
+    async getPrivateRooms(@Req() req: Request) {
+        const userInfo = await this.userService.getInfo({jwt : ExtractJwt.fromAuthHeaderAsBearerToken()(req)});
+        const id = (userInfo as { id: number, [key: string]: any }).id;
+        const body: ChatDtoGetRoom = {
+            idUser: id,
+            roomName: ''
+          };
+        return await this.ChatService.getPrivateRooms(body);
+    }
+    @Get('privateRooms/:name')
+    async getPrivateRoom(@Param('name') roomName: string, @Req() req: Request) {
+        const userInfo = await this.userService.getInfo({jwt : ExtractJwt.fromAuthHeaderAsBearerToken()(req)});
+        const id = (userInfo as { id: number, [key: string]: any }).id;
+        const body : ChatDtoGetRoom = {
+            roomName,
+            idUser : id,
+        }
+        return await this.ChatService.getPrivateRoomInfo(body);
     }
     @Post('leaveRoom')
     async leaveRoom(@Body() body: ChatDtoJoinRoom)
     {
         return await this.ChatService.leaveRoom(body);
     }
-
     @Post('giveAdmin')
     async giveAdmin(@Body() body: ChatDtoAdminOperation)
     {

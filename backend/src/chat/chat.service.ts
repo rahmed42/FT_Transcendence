@@ -1,7 +1,10 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { ChatDtoAdminOperation, ChatDtoCreateRoom, ChatDtoGetRoom, ChatDtoJoinRoom } from './dto';
+import { ChatDtoAdminOperation, ChatDtoCreateRoom, ChatDtoGetRoom, ChatDtoJoinRoom, PrivateChatDtoCreateMessage, PrivateChatDtoCreateRoom } from './dto';
 import * as argon from 'argon2';
+import { v4 as uuidv4 } from 'uuid';
+import { Gateway } from './websockets/gateway';
+
 
 @Injectable()
 export class ChatService {
@@ -64,7 +67,7 @@ export class ChatService {
                 mutedUsers: {},
             },
         });
-        const updatedUser = await this.prisma.user.update({
+       await this.prisma.user.update({
             where: {
                 id: body.idUser,
             },
@@ -212,9 +215,6 @@ export class ChatService {
         });
         return { room: updatedRoom, users: users.users, messages: messages.messages };
     }
-    
-    
-    
     
     async inviteUser(body: ChatDtoAdminOperation) {
         const room = await this.prisma.room.findUnique({
@@ -1341,5 +1341,200 @@ export class ChatService {
             },
         });
         return { message: "User successfully unbanned" }
+    }
+    async createPrivateRoom(body: PrivateChatDtoCreateRoom)
+    {
+        const uniqueId = uuidv4();
+        const user = await this.prisma.user.findUnique({
+            where: {
+                id: body.idUser,
+            },
+        });
+        if (!user)
+        {
+            throw new BadRequestException('User does not exist');
+        }
+        const user2 = await this.prisma.user.findUnique({
+            where: {
+                login: body.loginReceiver,
+            },
+        });
+        if (!user2)
+        {
+            throw new BadRequestException('User who try to send message does not exist');
+        }
+        const privateRoom = await this.prisma.privateRoom.create({
+            data : {
+                id: uniqueId,
+                users: {
+                    connect: [
+                        {
+                            id: body.idUser,
+                        },
+                        {
+                            id: user2.id,
+                        },
+                    ],
+                },
+            },
+        });
+        await this.prisma.user.update({
+            where: {
+                id: body.idUser,
+            },
+            data: {
+                privateRoom: {
+                    connect: {
+                        id: uniqueId,
+                    },
+                },
+            },
+        });
+        await this.prisma.user.update({
+            where: {
+                id: user2.id,
+            },
+            data: {
+                privateRoom: {
+                    connect: {
+                        id: uniqueId,
+                    },
+                },
+            },
+        });
+        return { message: "Private room successfully created" }
+    }
+    async addMessageToPrivateRoom(body : PrivateChatDtoCreateMessage)
+    {
+        const userReceiver = await this.prisma.user.findUnique({
+            where: {
+                login: body.loginReceiver,
+            },
+        });
+        const privateRoom = await this.prisma.privateRoom.findFirst({
+            where : {
+                users: {
+                    every: {
+                        id: {
+                            in: [body.idSender, userReceiver.id],
+                        },
+                    },
+                }
+            }
+        });
+        const message = await this.prisma.message.create({
+            data: {
+                content: body.content,
+                sender: {
+                    connect: {
+                        id: body.idSender,
+                    },
+                },
+                privateRoom: {
+                    connect: {
+                        id: privateRoom.id,
+                    },
+                },
+            },
+        });
+        await this.prisma.privateRoom.update({
+            where: {
+                id: privateRoom.id,
+            },
+            data: {
+                messages: {
+                    connect: {
+                        id: message.id,
+                    },
+                },
+            },
+        });
+        return { message: "Message successfully added" }
+    }
+    async getPrivateRooms(body: ChatDtoGetRoom)
+    {
+        const user = await this.prisma.user.findUnique({
+            where: {
+                id: body.idUser,
+            },
+        });
+        if (!user)
+        {
+            throw new BadRequestException('User does not exist');
+        }
+        const privateRooms = await this.prisma.privateRoom.findMany({
+            where: {
+                users: {
+                    some: {
+                        id: body.idUser,
+                    },
+                },
+            },
+            select: {
+                id : true,
+                users: {
+                    select: {
+                        id: true,
+                        login: true,
+                    },
+                },
+            }
+        });
+        return privateRooms;
+    }
+    async getPrivateRoomInfo(body: ChatDtoGetRoom)
+    {
+        if (!body.roomName)
+            throw new BadRequestException('Room name is required'); 
+        const privateRoom = await this.prisma.privateRoom.findFirst({
+            where: {
+                id: body.roomName,
+            },
+            select: {
+                id: true,
+                users : {
+                    select : {
+                        id: true,
+                        login: true,
+                    }
+                },
+                messages: {
+                    select : {
+                        content: true,
+                        sender: {
+                            select : {
+                                login: true,
+                            }
+                        },
+                    }
+                },
+            } 
+        });
+        if (!privateRoom)
+            throw new BadRequestException('Room does not exist');
+        const user = await this.prisma.user.findUnique({
+            where: {
+                id: body.idUser,
+            },
+        });
+        if (!user)
+        {
+            throw new BadRequestException('User does not exist');
+        }
+        const userInRoom = await this.prisma.privateRoom.findFirst({
+            where: {
+                id: body.roomName,
+                users: {
+                    some: {
+                        id: body.idUser,
+                    },
+                },
+            },
+        });
+        if (!userInRoom)
+        {
+            throw new BadRequestException('User is not in room');
+        }
+        return privateRoom;
     }
 }

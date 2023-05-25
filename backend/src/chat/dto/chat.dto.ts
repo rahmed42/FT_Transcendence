@@ -52,3 +52,26 @@ export class ChatDtoGetRoom
     @IsOptional()
     roomName : string;
 }
+
+export class PrivateChatDtoCreateRoom
+{
+    @IsNotEmpty()
+    @IsNumber()
+    idUser : number;
+
+    @IsNotEmpty()
+    loginReceiver : string;
+}
+
+export class PrivateChatDtoCreateMessage
+{
+    @IsNotEmpty()
+    @IsNumber()
+    idSender : number;
+
+    @IsNotEmpty()
+    loginReceiver : string;
+
+    @IsNotEmpty()
+    content : string;
+}

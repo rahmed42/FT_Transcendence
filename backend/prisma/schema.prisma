@@ -15,7 +15,7 @@ model User {
   jwtToken String @default("")
   id Int @id @unique
   email String 
-  login String
+  login String @unique
   first_name String
   last_name String
   large_pic String
@@ -24,13 +24,15 @@ model User {
   createAt DateTime @default(now())
   updateAt DateTime @updatedAt
   sentMessages   Message[] @relation("SentMessage")
-  receivedMessages Message[] @relation("ReceivedMessage")
   rooms Room[] @relation("RoomUser")
+  privateRoom PrivateRoom[] @relation("PrivateRoomUser")
   ownedRooms Room[] @relation("RoomOwner")
   invitedRooms Room[] @relation("RoomInvitedUser")
   administratedRooms Room[] @relation("RoomAdministrator")
   bannedRooms Room[] @relation("RoomBannedUser")
   mutedRooms Room[] @relation("RoomMutedUser")
+  blockedByUsers User[] @relation("BlockedUser")
+  blockedUsers User[] @relation("BlockedUser")
 }
 
 model Data {
@@ -44,7 +46,7 @@ model Room {
   type      String  @default("PUBLIC")
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
-  messages  Message[]
+  messages  Message[] 
   users     User[]   @relation("RoomUser")  
   owner    User @relation("RoomOwner", fields: [ownerId], references: [id])
   ownerId  Int
@@ -54,16 +56,23 @@ model Room {
   mutedUsers User[] @relation("RoomMutedUser")
 }
 
+model PrivateRoom {
+  id String @unique @id
+  users User[] @relation("PrivateRoomUser")
+  messages Message[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model Message {
   id             Int      @id @default(autoincrement())
   content        String
   sender         User     @relation("SentMessage", fields: [senderId], references: [id])
   senderId       Int
-  recipient      User?    @relation("ReceivedMessage", fields: [recipientId], references: [id])
-  recipientId    Int?
   room           Room?    @relation(fields: [roomId], references: [id])
   roomId         Int?
-  isPrivate      Boolean  @default(false)
+  privateRoom    PrivateRoom? @relation(fields: [privateRoomId], references: [id])
+  privateRoomId  String?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 }
