@@ -1,12 +1,9 @@
-// Particles configuration for the background
-export let particlesConfig =
-{
+export let particlesConfig = {
 	"particles": {
 	  "number": {
-		"value": 10,
+		"value": 20, // number of balls
 		"density": {
-		  "enable": false,
-		  "value_area": 4000
+		  "enable": false
 		}
 	  },
 	  "color": {
@@ -17,47 +14,32 @@ export let particlesConfig =
 		"stroke": {
 		  "width": 0,
 		  "color": "#000000"
-		},
+		}
 	  },
 	  "opacity": {
 		"value": 0.5,
-		"random": false,
-		"anim": {
-		  "enable": false,
-		  "speed": 1,
-		  "opacity_min": 0.1,
-		  "sync": false
-		}
+		"random": false
 	  },
 	  "size": {
-		"value": 20,
-		"random": false,
+		"value": 10, // balls max size
+		"random": true,
 		"anim": {
-		  "enable": true,
-		  "speed": 1,
-		  "size_min": 0.1,
-		  "sync": false
+		  "enable": false
 		}
 	  },
 	  "line_linked": {
-		"enable": true,
-		"distance": 400,
-		"color": "#c04141",
-		"opacity": 0.4,
-		"width": 1
+		"enable": false
 	  },
 	  "move": {
 		"enable": true,
-		"speed": 2,
+		"speed": 0.4, // speed of balls
 		"direction": "right",
 		"random": true,
 		"straight": false,
 		"out_mode": "bounce",
 		"bounce": true,
 		"attract": {
-		  "enable": true,
-		  "rotateX": 600,
-		  "rotateY": 1200
+		  "enable": false
 		}
 	  }
 	},
@@ -65,28 +47,27 @@ export let particlesConfig =
 	  "detect_on": "window",
 	  "events": {
 		"onhover": {
-		  "enable": true,
-		  "mode": "repulse"
+		  "enable": false
 		},
 		"resize": true
 	  },
 	  "modes": {
 		"grab": {
-		  "distance": 380,
+		  "distance": 200,
 		  "line_linked": {
 			"opacity": 1
 		  }
 		},
 		"bubble": {
-		  "distance": 400,
-		  "size": 20,
+		  "distance": 200,
+		  "size": 10,
 		  "duration": 2,
 		  "opacity": 8,
 		  "speed": 3
 		},
 		"repulse": {
-		  "distance": 200,
-		  "duration": 0.4
+		  "distance": 100,
+		  "duration": 0.2
 		},
 		"push": {
 		  "particles_nb": 4
@@ -96,4 +77,8 @@ export let particlesConfig =
 		}
 	  }
 	},
+	"fps_limit": 15, // Limit FPS
+	"detect_retina": false,
+	"pause_on_blur": true,
+	"pause_on_visibility_hidden": true
   };
