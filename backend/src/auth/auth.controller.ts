@@ -13,4 +13,9 @@ export class AuthController {
 			const token = await this.authService.getUser(code);
 			return token;
 		}
+	@Post('settings')
+		async save_settings(@Body() body: any, @Req() request: Request) {
+	 		const token = request.cookies;
+	 		await this.authService.push_settings(body, token)
+	 	}
 }	

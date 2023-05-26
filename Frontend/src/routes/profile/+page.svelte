@@ -1,20 +1,23 @@
 <script lang="ts">
-	import { get } from 'svelte/store';
 	import { user } from '../../stores/user';
-	// import { checked } from '../../stores/user';
-	import { beforeUpdate, onMount } from 'svelte';
 
 	let checked = false;
-	  onMount(() => {
-    const storedValue = localStorage.getItem('checked');
-    checked = storedValue ? JSON.parse(storedValue) : false;
-  });
 
-  $: {
-    // Mise à jour du localStorage lorsque la variable checked change
-    localStorage.setItem('checked', JSON.stringify(checked));
-  }
-  console.log('final ->', checked);
+	function handleChange () {
+		console.log('Valeure de checked -> ', checked);
+	}
+	async function save_settings() {
+		const response = await fetch('http://localhost:3333/auth/settings', {
+			method: 'POST',
+			credentials: 'include',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({
+				check: checked,
+			}),
+		});
+	}
 </script>
 
 <svelte:head>
@@ -31,9 +34,10 @@
 			Email : {$user.email}
 		</p>
 		<label for="checkbox" class="checkbox-label">
-		<input type="checkbox" id="checkbox" bind:checked={checked}/>
+		<input type="checkbox" id="checkbox" bind:checked={checked} on:change={handleChange}/>
 		Active 2FA Authentication
 		</label>
+	<button on:click={save_settings}>Save settings</button>
 	</div>
 </div>
 

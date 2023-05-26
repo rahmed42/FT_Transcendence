@@ -23,6 +23,7 @@ model User {
   small_pic String
   createAt DateTime @default(now())
   updateAt DateTime @updatedAt
+  two_fa Boolean @default(false)
 }
 model Authenticator {
   checked Boolean @unique
