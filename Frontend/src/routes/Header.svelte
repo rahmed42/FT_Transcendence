@@ -17,7 +17,8 @@
 		medium_pic: '',
 		small_pic: '',
 		createAt: '',
-		updateAt: ''
+		updateAt: '',
+		two_fa: false,
 	};
 
 	// onMount is called when the component is mounted in the DOM
@@ -78,6 +79,8 @@
 			user.set(userInfo);
 		}
 
+		if (userInfo.two_fa === true)
+			console.log('THIS IS FUCKING TRUE');
 		// redirect to login Page if not log
 		if ((!userInfo.login || userInfo.login === '') && window.location.pathname !== '/')
 			window.location.href = '/';
@@ -98,7 +101,8 @@
 			medium_pic: '',
 			small_pic: '',
 			createAt: '',
-			updateAt: ''
+			updateAt: '',
+			two_fa: false,
 		});
 		// Clear the cookie
 		document.cookie = 'jwt=;';

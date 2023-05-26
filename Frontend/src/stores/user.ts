@@ -12,6 +12,7 @@ interface User {
 	small_pic: string;
 	createAt: string;
 	updateAt: string;
+	two_fa: boolean;
 }
 
 export const user = writable<User>({
@@ -26,7 +27,8 @@ export const user = writable<User>({
 	medium_pic: '',
 	small_pic: '',
 	createAt: '',
-	updateAt: ''
+	updateAt: '',
+	two_fa: false,
 });
 
 interface login2Fa {
