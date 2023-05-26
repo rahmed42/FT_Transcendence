@@ -18,7 +18,7 @@
 				type: Phaser.CANVAS,
 				// Set the fps to 60
 				fps: {
-					target: 60,
+					target: 30,
 					forceSetTimeOut: true,
 					smoothStep: true
 				},

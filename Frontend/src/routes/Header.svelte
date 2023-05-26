@@ -1,5 +1,4 @@
 <!-- Shared Header config file with navigation links -->
-
 <script lang="ts">
 	import { page } from '$app/stores';
 	import logo from '$lib/images/42PongLogo.png';
@@ -222,18 +221,6 @@
 		position: relative;
 		height: 100%;
 	}
-
-	/* li[aria-current='page']::before {
-		--size: 6px;
-		content: '';
-		width: 0;
-		height: 0;
-		position: absolute;
-		top: 0;
-		left: calc(50% - var(--size));
-		border: var(--size) solid transparent;
-		border-top: var(--size) solid var(--color-theme-1);
-	} */
 
 	nav a {
 		display: flex;
