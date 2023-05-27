@@ -6,8 +6,7 @@
 	import Particles from 'svelte-particles';
 	import { loadFull } from 'tsparticles';
 
-	import { particlesConfig } from './particles'
-
+	import { particlesConfig } from './particles';
 
 	let onParticlesLoaded = (event: CustomEvent) => {
 		const particlesContainer = event.detail.particles;
@@ -59,13 +58,13 @@
 </div>
 
 <style>
-
 	.app {
-	  display: flex;
-	  flex-direction: column;
-	  position: relative;
-	  background: transparent;
-	  color : white;
+		display: flex;
+		flex-direction: column;
+		position: relative;
+		background: transparent;
+		color: white;
+		overflow: auto;
 	}
 
 	main {
@@ -82,8 +81,8 @@
 	footer {
 		display: flex;
 		flex-direction: column;
-		justify-content: center;
 		align-items: center;
+		justify-content: center;
 		padding: 12px;
 	}
 </style>

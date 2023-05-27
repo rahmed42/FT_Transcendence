@@ -131,14 +131,6 @@
 
 		<!-- Navigation links -->
 		{#if userInfo.login}
-			<li class:selected={$page.url.pathname === '/chat' ? 'page' : undefined}>
-				{#if $page.url.pathname === '/chat'}
-					<a href="/chat" class="active">Chat</a>
-				{:else}
-					<a href="/chat">Chat</a>
-				{/if}
-			</li>
-
 			<li class:selected={$page.url.pathname === '/game' ? 'page' : undefined}>
 				{#if $page.url.pathname === '/game'}
 					<a href="/game" class="active">Game</a>
@@ -149,9 +141,25 @@
 
 			<li class:selected={$page.url.pathname === '/config' ? 'page' : undefined}>
 				{#if $page.url.pathname === '/config'}
-					<a href="/config" class="active">Config</a>
+					<a href="/config" class="active">Setup</a>
 				{:else}
-					<a href="/config">Config</a>
+					<a href="/config">Setup</a>
+				{/if}
+			</li>
+
+			<li class:selected={$page.url.pathname === '/social' ? 'page' : undefined}>
+				{#if $page.url.pathname === '/social'}
+					<a href="/social" class="active">Friends</a>
+				{:else}
+					<a href="/social">Friends</a>
+				{/if}
+			</li>
+
+			<li class:selected={$page.url.pathname === '/chat' ? 'page' : undefined}>
+				{#if $page.url.pathname === '/chat'}
+					<a href="/chat" class="active">Chat</a>
+				{:else}
+					<a href="/chat">Chat</a>
 				{/if}
 			</li>
 		{/if}
@@ -207,10 +215,6 @@
 		border-right: 1px solid #bbb;
 		height: 100%;
 	}
-
-	/* li:last-child {
-		border-right: true;
-	} */
 
 	li a {
 		display: flex;

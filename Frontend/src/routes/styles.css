@@ -26,7 +26,6 @@ body {
   }
 
 
-
 /* Font Layout */
 h1,
 h2,
@@ -60,8 +59,6 @@ h2 {
 }
 
 /* Layout of the page */
-
-
 .text-column {
 	display: flex;
 	max-width: 48rem;
@@ -81,10 +78,6 @@ button {
 button:focus:not(:focus-visible) {
 	outline: none;
 }
-
-/* li.selected {
-	//Add styles for sleected list items
-} */
 
 /* Increase the font size for large screens more than 720p */
 @media (min-width: 720px) {
