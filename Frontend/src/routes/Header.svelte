@@ -110,43 +110,77 @@
 
 <header>
 	<ul>
+		<!-- Home button Logo  -->
 		{#if userInfo.login}
 			<li class:selected={$page.url.pathname === '/home' ? 'page' : undefined}>
-				<a class="active" href="/home"><img src={logo} alt="Logo 42Pong" /></a>
+				{#if $page.url.pathname === '/home'}
+					<a class="active" href="/home"><img src={logo} alt="Logo 42Pong" /></a>
+				{:else}
+					<a href="/home"><img src={logo} alt="Logo 42Pong" /></a>
+				{/if}
 			</li>
 		{:else}
 			<li style="float: left; border-left: none;">
-				<a class="active" href="/"><img src={logo} alt="Logo 42Pong" /></a>
+				{#if $page.url.pathname === '/'}
+					<a class="active" href="/"><img src={logo} alt="Logo 42Pong" /></a>
+				{:else}
+					<a href="/"><img src={logo} alt="Logo 42Pong" /></a>
+				{/if}
 			</li>
 		{/if}
 
+		<!-- Navigation links -->
 		{#if userInfo.login}
 			<li class:selected={$page.url.pathname === '/chat' ? 'page' : undefined}>
-				<a href="/chat">Chat</a>
+				{#if $page.url.pathname === '/chat'}
+					<a href="/chat" class="active">Chat</a>
+				{:else}
+					<a href="/chat">Chat</a>
+				{/if}
 			</li>
 
 			<li class:selected={$page.url.pathname === '/game' ? 'page' : undefined}>
-				<a href="/game">Game</a>
+				{#if $page.url.pathname === '/game'}
+					<a href="/game" class="active">Game</a>
+				{:else}
+					<a href="/game">Game</a>
+				{/if}
 			</li>
 
 			<li class:selected={$page.url.pathname === '/config' ? 'page' : undefined}>
-				<a href="/config">Config</a>
+				{#if $page.url.pathname === '/config'}
+					<a href="/config" class="active">Config</a>
+				{:else}
+					<a href="/config">Config</a>
+				{/if}
 			</li>
 		{/if}
 
+		<!-- User menu -->
 		{#if userInfo.login}
 			<li class:selected={$page.url.pathname === '/' ? 'page' : undefined}>
 				<a href="/" on:click={handleLogOut}>Logout</a>
 			</li>
 			<li class:selected={$page.url.pathname === '/profile' ? 'page' : undefined}>
-				<a href="/profile">
-					{userInfo.login}
-					<img
-						src={userInfo.small_pic}
-						alt={`Picture of ${userInfo.login}`}
-						style="max-height: 2em; width: auto; margin-left:0.5em"
-					/>
-				</a>
+				{#if $page.url.pathname === '/profile'}
+					<a href="/profile" class="active">
+						{userInfo.login}
+						<img
+							src={userInfo.small_pic}
+							alt={`Picture of ${userInfo.login}`}
+							style="max-height: 2em; width: auto; margin-left:0.5em"
+						/>
+					</a>
+				{:else}
+					<a href="/profile">
+						{userInfo.login}
+						<img
+							src={userInfo.small_pic}
+							alt={`Picture of ${userInfo.login}`}
+							style="max-height: 2em; width: auto; margin-left:0.5em"
+						/>
+					</a>
+				{/if}
 			</li>
 		{/if}
 	</ul>
@@ -205,7 +239,7 @@
 	}
 
 	li a:hover:not(.active) {
-		background-color: #111;
+		background-color: #386ade;
 	}
 
 	.active {
