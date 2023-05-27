@@ -35,7 +35,7 @@
 		</p>
 		<label for="checkbox" class="checkbox-label">
 		<input type="checkbox" id="checkbox" bind:checked={checked} on:change={handleChange}/>
-		Active 2FA Authentication
+		Active 2FA Authentication <br /> <br />
 		</label>
 	<button on:click={save_settings}>Save settings</button>
 	</div>
@@ -46,5 +46,18 @@
 		display: flex;
 		justify-content: center;
 		align-items: center;
+	}
+	button {
+		background-color: #007fff;
+		color: #fff;
+		font-size: 1.2rem;
+		padding: 1rem 2rem;
+		border: none;
+		border-radius: 15px;
+		cursor: pointer;
+	}
+
+	button:hover {
+		background-color: #0055ff;
 	}
 </style>

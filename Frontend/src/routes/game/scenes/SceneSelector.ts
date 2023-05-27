@@ -77,7 +77,7 @@ export class GameSelector extends Phaser.Scene {
 
 		const logo = this.add.image(centerX, spanY * 3, 'logo');
 		//logo.setScale(0.5);
-		logo.setOrigin(0.33, 0.5);
+		logo.setOrigin(0.4, 0.5);
 
 		// Text style display
 		//const titleText = this.add.text(centerX, spanY * 2, title, { font: '55px Arial', color: '#ffffff' });
