@@ -1,6 +1,5 @@
 import { Room, Client } from "colyseus";
 import { Part1State, Player } from "./Part1State";
-// import { Part1State, Player } from "./Part1State";
 
 export class Part1Room extends Room<Part1State> {
 

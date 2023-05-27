@@ -7,7 +7,7 @@ export class Part1Scene extends Phaser.Scene {
 	room: Room | undefined;
 
 	// Players
-	// playerEntities: { [sessionId: string]: Phaser.Types.Physics.Arcade.ImageWithDynamicBody } = {};
+	playerEntities: { [sessionId: string]: Phaser.Types.Physics.Arcade.ImageWithDynamicBody } = {};
 
 	// mouse pointer
 	pointer: Phaser.Input.Pointer | undefined;
@@ -21,13 +21,10 @@ export class Part1Scene extends Phaser.Scene {
 	};
 
 	// Set Paddle
-	// localPaddle: Phaser.GameObjects.Rectangle | undefined;
 	localPaddle: Phaser.Types.Physics.Arcade.ImageWithDynamicBody | undefined;
-	// remotePaddle: Phaser.GameObjects.Rectangle | undefined;
 	remotePaddle: Phaser.Types.Physics.Arcade.ImageWithDynamicBody | undefined;
 
 	// Set Ball
-	// ball: Phaser.Physics.Arcade.Image | undefined; //Phaser.GameObjects.Rectangle |undefined;
 	ball: Phaser.Types.Physics.Arcade.ImageWithDynamicBody | undefined;
 
 	// Score
@@ -78,18 +75,47 @@ export class Part1Scene extends Phaser.Scene {
 
 	async create() {
 		this.gameInit();
+
+		// connect to the room
+		await this.connect();
+
+		// listen for new players in the room
+		this.gameListeners();
 	}
 
 	// 	/* Methods */
-	gameListeners(): void {
-		// connect with the room
-		// await this.connect();
+	// Connect with the room
+	async connect() {
+		// add connection status text
+		const connectionStatusText = this.add
+			.text(400, 300, "Trying to connect with the server...")
+			.setStyle({ color: "#ff0000" })
+			.setPadding(4)
 
-		// listen for new players
+		const client = new Client(BACKEND_URL);
+
+		try {
+			this.room = await client.joinOrCreate("part1_room", {});
+			console.log("Connected to room:", this.room.name);
+
+			// connection successful!
+			connectionStatusText.destroy();
+
+		} catch (e) {
+			// couldn't connect
+			connectionStatusText.text = "Could not connect with the server.";
+		}
+	}
+
+	gameListeners(): void {
+
+
+		// // listen for new players
 		// this.room.state.players.onAdd((player, sessionId) => {
 		// 	console.log("New player joined with sessionId ", player, sessionId);
 
-		// 	const entity = this.physics.add.image(player.x, player.y, 'ship_0001');
+
+		// 	const entity = this.physics.add.image(player.x, player.y, 'paddleDefault');
 
 		// 	// keep a reference of it on `playerEntities`
 		// 	this.playerEntities[sessionId] = entity;
@@ -105,68 +131,69 @@ export class Part1Scene extends Phaser.Scene {
 		// 	});
 		// });
 
-		// 	// Listen for new players
-		// 	this.room.state.players.onAdd((player, sessionId) => {
-		// 		/* Player one */
-		// 		// create a new player entity
-		// 		const entity = this.physics.add.image(player.x, player.y, 'myPaddle');
+			// Listen for new players
+			this.room.state.players.onAdd((player, sessionId) => {
+				/* Player one */
+				// create a new player entity
+				const entity = this.physics.add.image(player.x, player.y, 'myPaddle');
 
-		// 		// keep a reference of it on `playerEntities`
-		// 		this.playerEntities[sessionId] = entity;
+				// keep a reference of it on `playerEntities`
+				this.playerEntities[sessionId] = entity;
 
-		// 		// listening for server updates we need all the new coordinates at once with .onChange()
-		// 		player.onChange(() => {
-		// 			// update local position immediately
-		// 			entity.x = player.x;
-		// 			entity.y = player.y;
-		// 		});
+				// listening for server updates we need all the new coordinates at once with .onChange()
+				player.onChange(() => {
+					// update local position immediately
+					entity.x = player.x;
+					entity.y = player.y;
+				});
 
-		// 		/* Player two */
-		// 		// create second player entity
-		// 		const opponentEntity = this.physics.add.image(player.x, player.y, 'opponentPaddle');
+				/* Player two */
+				// create second player entity
+				const opponentEntity = this.physics.add.image(player.x, player.y, 'opponentPaddle');
 
-		// 		// keep a reference of it on `playerEntities`
-		// 		this.playerEntities[sessionId] = opponentEntity;
+				// keep a reference of it on `playerEntities`
+				this.playerEntities[sessionId] = opponentEntity;
 
-		// 		// listening for server updates we need all the new coordinates at once with .onChange()
-		// 		player.onChange(() => {
-		// 			// update local position immediately
-		// 			opponentEntity.x = player.x;
-		// 			opponentEntity.y = player.y;
-		// 		});
+				// listening for server updates we need all the new coordinates at once with .onChange()
+				player.onChange(() => {
+					// update local position immediately
+					opponentEntity.x = player.x;
+					opponentEntity.y = player.y;
+				});
 
-		// 		// listen for ball updates
-		// 		this.room.state.ball.onChange(() => {
-		// 			// update local position immediately
-		// 			ball.x = this.room.state.ball.x;
-		// 			ball.y = this.room.state.ball.y;
-		// 		});
+				// // listen for ball updates
+				// this.room.state.ball.onChange(() => {
+				// 	// update local position immediately
+				// 	ball.x = this.room.state.ball.x;
+				// 	ball.y = this.room.state.ball.y;
+				// });
 
-		// 		// listen for score updates
-		// 		this.room.state.score.onChange(() => {
-		// 			// update local position immediately
-		// 			scoreText.setText(`Score: ${this.room.state.score.player1} - ${this.room.state.score.player2}`);
-		// 		});
+				// // listen for score updates
+				// this.room.state.score.onChange(() => {
+				// 	// update local position immediately
+				// 	scoreText.setText(`Score: ${this.room.state.score.player1} - ${this.room.state.score.player2}`);
+				// });
 
-		// 		// listen for game over
-		// 		this.room.state.gameOver.onChange(() => {
-		// 			// update local position immediately
-		// 			if (this.room.state.gameOver) {
-		// 				gameOverText.setText(`Game Over!`);
-		// 			}
-		// 		});
+				// // listen for game over
+				// this.room.state.gameOver.onChange(() => {
+				// 	// update local position immediately
+				// 	if (this.room.state.gameOver) {
+				// 		gameOverText.setText(`Game Over!`);
+				// 	}
+				// });
 
-		// 		// Removing disconnected players
-		// 		// remove local reference when entity is removed from the server
-		// 		this.room.state.players.onRemove((player, sessionId) => {
-		// 			const entity = this.playerEntities[sessionId];
-		// 			if (entity) {
-		// 				// destroy entity
-		// 				entity.destroy();
-		// 				// clear local reference
-		// 				delete this.playerEntities[sessionId]
-		// 			}
-		// 		});
+				// Removing disconnected players
+				// remove local reference when entity is removed from the server
+				this.room.state.players.onRemove((player, sessionId) => {
+					const entity = this.playerEntities[sessionId];
+					if (entity) {
+						// destroy entity
+						entity.destroy();
+						// clear local reference
+						delete this.playerEntities[sessionId]
+					}
+				});
+			});
 
 		// 		// Camera settings
 		// 		this.cameras.main.setBounds(0, 0, 800, 600);
@@ -227,7 +254,7 @@ export class Part1Scene extends Phaser.Scene {
 			this.localPaddle.setCollideWorldBounds(true);
 			this.localPaddle.setImmovable(true);
 
-			this.remotePaddle = this.physics.add.image(this.cameras.main.width - paddle.x, paddle.pos, 'paddleDefault');
+			this.remotePaddle = this.physics.add.image(this.cameras.main.width - paddle.x, this.cameras.main.centerY, 'paddleDefault');
 			this.remotePaddle.setOrigin(0.5, 0.5);
 			this.remotePaddle.setCollideWorldBounds(true);
 			this.remotePaddle.setImmovable(true);
@@ -342,28 +369,6 @@ export class Part1Scene extends Phaser.Scene {
 		}
 	}
 
-	// Connect with the room
-	async connect() {
-		// add connection status text
-		const connectionStatusText = this.add
-			.text(0, 0, "Trying to connect with the server...")
-			.setStyle({ color: "#ff0000" })
-			.setPadding(4)
-
-		const client = new Client(BACKEND_URL);
-
-		try {
-			this.room = await client.joinOrCreate("part1_room", {});
-
-			// connection successful!
-			connectionStatusText.destroy();
-
-		} catch (e) {
-			// couldn't connect
-			connectionStatusText.text = "Could not connect with the server.";
-		}
-	}
-
 	/**
 	 * At every update() tick, we are going to update the
 	 * local inputPayload, and send it as a message to the server.
@@ -386,8 +391,8 @@ export class Part1Scene extends Phaser.Scene {
 				this.resetBall();
 		}
 		// send pointer to the server
-		// this.inputPayload.pointerX = this.pointer.x;
-		// this.inputPayload.pointerY = this.pointer.y;
-		// this.room.send(0, this.inputPayload);
+		this.inputPayload.pointerX = this.pointer.x;
+		this.inputPayload.pointerY = this.pointer.y;
+		this.room.send(0, this.inputPayload);
 	}
 }
