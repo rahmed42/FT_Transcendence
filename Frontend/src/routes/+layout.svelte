@@ -15,7 +15,7 @@
 		// (from the core library) methods like play, pause, refresh, start, stop
 
 		// the tsParticles instance is stored in the particlesContainer object
-		console.log('Particles loaded', particlesContainer);
+		// console.log('Particles loaded', particlesContainer);
 	};
 
 	let particlesInit = async (main: any) => {
@@ -24,7 +24,7 @@
 		// starting from v2 you can add only the features you need reducing the bundle size
 		await loadFull(main);
 
-		console.log('tsParticles initialized');
+		// console.log('tsParticles initialized');
 	};
 </script>
 

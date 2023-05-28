@@ -2,39 +2,26 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import logo from '$lib/images/42PongLogo.png';
-	import { user } from '../stores/user';
 	import { beforeUpdate, onMount } from 'svelte';
+	import { setUser, user, resetUser, type User } from '../stores/user';
 
-	let userInfo = {
-		token: '',
-		jwtToken: '',
-		id: '',
-		email: '',
-		login: '',
-		first_name: '',
-		last_name: '',
-		large_pic: '',
-		medium_pic: '',
-		small_pic: '',
-		createAt: '',
-		updateAt: '',
-		two_fa: false
-	};
+	let currentUser: User | undefined;
 
 	// onMount is called when the component is mounted in the DOM
 	onMount(async () => {
 		if (typeof window !== 'undefined') {
 			// Subscribe to the user store
 			const unsubscribe = user.subscribe((value) => {
-				// update userInfo with last user value at store changes
-				userInfo = value;
+				// update currentUser with last user value at store changes
+				currentUser = value;
+				console.log(user, value);
 			});
 
 			const code = new URLSearchParams(window.location.search).get('code');
 			if (code) {
 				await getToken(code);
 			}
-			// HERE NEED TO CHECK IS THERE IS A JWT IN THE COOKIE, IS YES, DON'T DO GETUSERINFO
+			// HERE NEED TO CHECK IF THERE IS A JWT IN THE COOKIE, IF YES, DON'T DO GETUSERINFO
 			await getUserInfo();
 
 			// Clean up the subscription on unmount
@@ -45,8 +32,8 @@
 	});
 
 	beforeUpdate(async () => {
-		// redirect to home Page if log and on login Page
-		if ((userInfo.login || userInfo.login !== '') && window.location.pathname === '/')
+		// redirect to home Page if logged in and on login Page
+		if (currentUser && currentUser.login && window.location.pathname === '/')
 			window.location.href = '/home';
 	});
 
@@ -74,35 +61,21 @@
 		const contentType = response.headers.get('Content-Type');
 		if (contentType && contentType.includes('application/json')) {
 			// Get the JSON data from the response
-			const userInfo = await response.json();
+			const data = await response.json();
 			// update the user store
-			user.set(userInfo);
+			setUser(data);
 		}
 
-		if (userInfo.two_fa === true) console.log('THIS IS FUCKING TRUE');
-		// redirect to login Page if not log
-		if ((!userInfo.login || userInfo.login === '') && window.location.pathname !== '/')
+		if (currentUser && currentUser.two_fa === true) console.log('THIS IS FUCKING TRUE');
+		// redirect to login Page if not logged in
+		if ((!currentUser || !currentUser.login) && window.location.pathname !== '/')
 			window.location.href = '/';
 	}
 
 	// Logout process - if LOGOUT button is clicked
 	function handleLogOut() {
 		// Clear the user store
-		user.set({
-			token: '',
-			jwtToken: '',
-			id: '',
-			email: '',
-			login: '',
-			first_name: '',
-			last_name: '',
-			large_pic: '',
-			medium_pic: '',
-			small_pic: '',
-			createAt: '',
-			updateAt: '',
-			two_fa: false
-		});
+		resetUser();
 		// Clear the cookie
 		document.cookie = 'jwt=;';
 	}
@@ -111,7 +84,7 @@
 <header>
 	<ul>
 		<!-- Home button Logo  -->
-		{#if userInfo.login}
+		{#if  currentUser && currentUser.login}
 			<li class:selected={$page.url.pathname === '/home' ? 'page' : undefined}>
 				{#if $page.url.pathname === '/home'}
 					<a class="active" href="/home"><img src={logo} alt="Logo 42Pong" /></a>
@@ -130,7 +103,7 @@
 		{/if}
 
 		<!-- Navigation links -->
-		{#if userInfo.login}
+		{#if currentUser && currentUser.login}
 			<li class:selected={$page.url.pathname === '/game' ? 'page' : undefined}>
 				{#if $page.url.pathname === '/game'}
 					<a href="/game" class="active">Game</a>
@@ -165,26 +138,26 @@
 		{/if}
 
 		<!-- User menu -->
-		{#if userInfo.login}
+		{#if currentUser && currentUser.login}
 			<li class:selected={$page.url.pathname === '/' ? 'page' : undefined}>
 				<a href="/" on:click={handleLogOut}>Logout</a>
 			</li>
 			<li class:selected={$page.url.pathname === '/profile' ? 'page' : undefined}>
 				{#if $page.url.pathname === '/profile'}
 					<a href="/profile" class="active">
-						{userInfo.login}
+						{currentUser.login}
 						<img
-							src={userInfo.small_pic}
-							alt={`Picture of ${userInfo.login}`}
+							src={currentUser.small_pic}
+							alt={`Picture of ${currentUser.login}`}
 							style="max-height: 2em; width: auto; margin-left:0.5em"
 						/>
 					</a>
 				{:else}
 					<a href="/profile">
-						{userInfo.login}
+						{currentUser.login}
 						<img
-							src={userInfo.small_pic}
-							alt={`Picture of ${userInfo.login}`}
+							src={currentUser.small_pic}
+							alt={`Picture of ${currentUser.login}`}
 							style="max-height: 2em; width: auto; margin-left:0.5em"
 						/>
 					</a>
