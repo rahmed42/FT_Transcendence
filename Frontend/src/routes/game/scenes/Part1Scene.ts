@@ -1,7 +1,10 @@
 import Phaser, { Textures } from "phaser";
 import { Room, Client } from "colyseus.js";
 import { BACKEND_URL } from "../backend";
-import { user } from '../../../stores/user';
+import { user, type User } from '../../../stores/user';
+
+// User getter
+let currentUser: User | undefined;
 
 //Style Default
 import boardDefault from '$lib/assets/default/backgroundDefault.png';
@@ -65,6 +68,12 @@ export class Part1Scene extends Phaser.Scene {
 		// Initialize the game state
 		this.myScore = 0;
 		this.opponentScore = 0;
+
+		const unsubscribe = user.subscribe((value) => {
+			// update currentUser with last user value at store changes
+			currentUser = value;
+			console.log(user, value);
+		});
 	}
 
 	// set the active scene
@@ -82,8 +91,8 @@ export class Part1Scene extends Phaser.Scene {
 
 	async create() {
 		//Get player name
-		if (user.login !== undefined)
-			this.myName = user.login;
+		if (currentUser && currentUser.login)
+			this.myName = currentUser.login;
 		else
 			this.myName = "Player";
 		this.gameInit();
@@ -92,7 +101,7 @@ export class Part1Scene extends Phaser.Scene {
 		await this.connect();
 
 		// listen for new players in the room
-		// this.gameListeners();
+		this.gameListeners();
 	}
 
 	// 	/* Methods */
@@ -118,10 +127,12 @@ export class Part1Scene extends Phaser.Scene {
 			// 	this.startGame();
 			// });
 
-			// check the number of players in the room
-			// if (this.room.state.players.size >= 2) {
-			// 	this.startGame();
-			// }
+			//check the number of players in the room
+			console.log(`We have ${this.room.state.players.size} players connected !`)
+			if (this.room.state.players.size >= 2) {
+				console.log("all players connected : start game")
+				this.startGame();
+			}
 
 		} catch (e) {
 			// couldn't connect
@@ -138,6 +149,7 @@ export class Part1Scene extends Phaser.Scene {
 		// Listen for new players
 		// console.log(sessionId, player);
 		this.room.state.players.onAdd((player, sessionId) => {
+			// const { first_name } = currentUser;
 			if (this.room && this.room.state.players.size <= 2) {
 				const entity = this.physics.add.image(player.x, player.y, 'myPaddle');
 

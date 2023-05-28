@@ -18,31 +18,7 @@ export interface User {
 }
 
 // Create a store with a default value
-export const user = writable<User>({
-	token: '',
-	jwtToken: '',
-	id: '',
-	email: '',
-	login: '',
-	first_name: '',
-	last_name: '',
-	large_pic: '',
-	medium_pic: '',
-	small_pic: '',
-	createAt: '',
-	updateAt: '',
-	two_fa: false,
-});
-
-// Export functions to update the store
-export function setUser(value: User) {
-	user.set(value);
-}
-
-// export function updateUser(updateFn: (value: User) => User) {
-// 	user.update(updateFn);
-// }
-
+export const user = writable<User>({} as User);
 export function resetUser() {
 	user.set({
 		token: '',
@@ -60,6 +36,13 @@ export function resetUser() {
 		two_fa: false,
 	});
 }
+resetUser();
+
+// Export functions to update the store
+export function setUser(value: User) {
+	user.set(value);
+}
+
 
 // Interface for login2Fa
 export interface Login2Fa {
