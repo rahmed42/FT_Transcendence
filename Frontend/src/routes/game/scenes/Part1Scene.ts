@@ -53,7 +53,7 @@ export class Part1Scene extends Phaser.Scene {
 	activeScene: string;
 
 	// Player Name
-	myName: string;
+	myName: string | undefined;
 
 	// Constructor of the scene
 	constructor() {
@@ -72,7 +72,6 @@ export class Part1Scene extends Phaser.Scene {
 		const unsubscribe = user.subscribe((value) => {
 			// update currentUser with last user value at store changes
 			currentUser = value;
-			console.log(user, value);
 		});
 	}
 
@@ -151,6 +150,8 @@ export class Part1Scene extends Phaser.Scene {
 		this.room.state.players.onAdd((player, sessionId) => {
 			// const { first_name } = currentUser;
 			if (this.room && this.room.state.players.size <= 2) {
+				console.log("1 player in Game");
+
 				const entity = this.physics.add.image(player.x, player.y, 'myPaddle');
 
 				// keep a reference of it on `playerEntities`
@@ -166,12 +167,23 @@ export class Part1Scene extends Phaser.Scene {
 				// set the remote paddle to follow the second player.
 				if (this.room.state.players.size === 2) {
 					// create remote paddle
-					const remotePlayer = this.getRemotePlayer();
+					console.log("2 players in Game");
+					let remotePlayer;
+					console.log(player.sessionId, this.room.sessionId);
+					if (player.sessionId !== this.room.sessionId) {
+						console.log("remote player is the current player", this.room.sessionId);
+						remotePlayer = player;
+					} else {
+						console.log("remote player is the other player", this.room.sessionId);
+						remotePlayer = this.room.state.players.get(this.room.sessionId === "0" ? "1" : "0");
+					}
 					if (remotePlayer) {
-						this.createRemotePaddle(remotePlayer);
+						console.log("remote ", remotePlayer);
+						// this.createRemotePaddle(remotePlayer);
 					}
 				}
-			}
+			} else
+				console.log("Room is FULL");
 		});
 
 		// Listen for removed players
@@ -186,18 +198,18 @@ export class Part1Scene extends Phaser.Scene {
 
 				// stop game if one player left
 				if (this.room.state.players.size === 1) {
-					this.stopGame();
+					// this.stopGame();
 				}
 			}
 		});
 
-		// Listen for paddle updates from server
-		this.room.state.paddle.onChange(() => {
-			const remotePlayer = this.getRemotePlayer();
-			if (remotePlayer && this.remotePaddle) {
-				this.remotePaddle.y = remotePlayer.y;
-			}
-		});
+		// // Listen for paddle updates from server
+		// this.room.state.paddle.onChange(() => {
+		// 	const remotePlayer = this.getRemotePlayer();
+		// 	if (remotePlayer && this.remotePaddle) {
+		// 		this.remotePaddle.y = remotePlayer.y;
+		// 	}
+		// });
 
 		//   // Listen for ball updates from server
 		//   this.room.state.ball.onChange(() => {
@@ -328,7 +340,7 @@ export class Part1Scene extends Phaser.Scene {
 			if (this.opponentScoreText)
 				this.opponentScoreText.setText(this.opponentScore.toString());
 			this.setActiveScene("menu");
-			//console.log(`Running game ${this.activeScene} : Menu`);
+			console.log(`Running game ${this.activeScene} : Menu`);
 			this.game.scene.switch("part1", "menu");
 		});
 
