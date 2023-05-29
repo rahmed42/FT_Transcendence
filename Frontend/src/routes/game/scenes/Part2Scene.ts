@@ -58,7 +58,7 @@ export class Part2Scene extends Phaser.Scene {
 
 		// Initialize the room
 		this.room = new Room("Modern");
-		console.log("Init %s Pong Room", this.room.name);
+		// console.log("Init %s Pong Room", this.room.name);
 
 		// Initialize the game state
 		this.myScore = 0;

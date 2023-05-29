@@ -61,7 +61,7 @@ export class Part1Scene extends Phaser.Scene {
 
 		// Initialize the room
 		this.room = new Room("Original");
-		console.log("Init %s Pong Room", this.room.name);
+		// console.log("Init %s Pong Room", this.room.name);
 
 		// Initialize the game state
 		this.myScore = 0;
@@ -119,14 +119,6 @@ export class Part1Scene extends Phaser.Scene {
 			// connection successful!
 			connectionStatusText.destroy();
 
-			// Wait to have 2 players in the room to begin
-			if (this.room.state.players.size >= 2) {
-				console.log("all players connected : start game")
-				this.room.onMessage("start", () => {
-					this.startMatch();
-				});
-			}
-
 			// // Listen to state changes in the room
 			// this.room.state.players.onAdd = (player, sessionId) => {
 			// 	console.log("New player joined: ", sessionId);
@@ -180,10 +172,10 @@ export class Part1Scene extends Phaser.Scene {
 			return;
 		}
 
+
 		// Listen for new players
 		this.room.state.players.onAdd((player, sessionId) => {
 			if (this.room && this.room.state.players.size <= 2) {
-				console.log("1 player in Game");
 				// const entity = this.localPaddle!;
 
 				// keep a reference of it on `playerEntities`
@@ -195,14 +187,18 @@ export class Part1Scene extends Phaser.Scene {
 					// entity.y = player.y;
 				});
 
+				if (this.room.state.players.size === 1) {
+					// console.log("1 player in Game");
+					this.startButtonText("🏓 Start Game", false);
+				}
 				// set the remote paddle to follow the second player.
-				if (this.room.state.players.size === 2) {
-					console.log("2 players in Game, sessionId %s - Player info", this.room.sessionId, player);
+				else if (this.room.state.players.size === 2) {
 					if (player) {
-						console.log("remote player info : ", player);
+						// console.log("2 players in Game, sessionId %s - Player info", this.room.sessionId, player);
 						// create remote paddle
 						// this.createRemotePaddle(player);
 					}
+					this.startButtonText("🏓 Start Game 🏓", true);
 				}
 			}
 			// else
@@ -221,7 +217,7 @@ export class Part1Scene extends Phaser.Scene {
 				}
 				// Kick the last player
 				if (this.room.state.players.size === 1) {
-					alert("The other player left ! \nBack to the menu");
+					alert("The other player left ! Back to the menu...");
 					this.setActiveScene("menu");
 					// Stop the current scene (part1)
 					this.scene.stop('part1');
@@ -274,6 +270,7 @@ export class Part1Scene extends Phaser.Scene {
 		// Display ball
 		this.ball = this.physics.add.image(this.cameras.main.centerX, this.cameras.main.centerY, 'ballDefault');
 		this.ball.setOrigin(0.5, 0.5);
+		this.ball.setVisible(false);
 
 		// Display score
 		this.myScoreText = this.add.text(this.cameras.main.centerX / 2, 40, '0', { fontSize: '60px', color: 'white' });
@@ -381,30 +378,7 @@ export class Part1Scene extends Phaser.Scene {
 		});
 
 		//Adding start button for the Game
-		this.startButton = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, 'Start Game', { font: '64px Arial', color: '#ffffff' });
-		this.startButton.setOrigin(0.5, 0.5);
-		this.startButton.setInteractive();
-
-		// console.log(this.room.state.players.size)
-		// if (this.room.state.players.size === 1)
-		// {
-		// 	this.startButton = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, '🟢 Start Game', { font: '64px Arial', color: '#ffffff' });
-		// 	this.startButton.setOrigin(0.5, 0.5);
-		// 	this.startButton.setInteractive();
-		// }
-		// 	else if (this.room.state.players.size === 2) {
-		// 	this.startButton = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, '🟢 Start Game 🟢', { font: '64px Arial', color: '#ffffff' });
-		// 	this.startButton.setOrigin(0.5, 0.5);
-		// 	this.startButton.setInteractive();
-			this.startButton.on("pointerdown", () => {
-				// Start the game
-				if (this.startButton) {
-					this.startButton.setVisible(false);
-					this.startButton.disableInteractive();
-				}
-				this.startMatch();
-			});
-		// }
+		this.startButtonText("Start Game", false);
 	}
 
 	// leaving room
@@ -447,7 +421,49 @@ export class Part1Scene extends Phaser.Scene {
 		this.opponentScore = 0;
 
 		// Reset ball
-		this.resetBall();
+		this.countDown();
+	}
+
+	countDown(): void {
+		//Count from 3 to 0 each second
+		this.startButtonText("3", false);
+		//wait 1 second
+		this.time.delayedCall(1000, () => {
+			this.startButtonText("2", false);
+			//wait 1 second
+			this.time.delayedCall(1000, () => {
+				this.startButtonText("1", false);
+				//wait 1 second
+				this.time.delayedCall(1000, () => {
+					this.startButtonText("GO!", false);
+					//wait 1 second
+					this.time.delayedCall(1000, () => {
+						this.startButton?.destroy();
+						this.ball?.setVisible(true);
+						this.resetBall();
+					});
+				});
+			});
+		});
+	}
+
+	startButtonText(text: string, clickable: boolean): void {
+		this.startButton?.destroy();
+		this.startButton = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, text, { font: '64px Arial', color: '#2b0bbc' });
+		this.startButton.setOrigin(0.5, 0.5);
+		if (clickable) {
+			this.startButton.setInteractive();
+			this.startButton.on("pointerdown", () => {
+				// Start the game
+				if (this.startButton) {
+					this.startButton.setVisible(false);
+					this.startButton.disableInteractive();
+				}
+				this.startMatch();
+			});
+		}
+		else
+			this.startButton.disableInteractive();
 	}
 
 	resetGame(): void {
@@ -455,12 +471,14 @@ export class Part1Scene extends Phaser.Scene {
 		if (this.ball) {
 			this.resetBall();
 			this.ball.setVelocity(0);
+			this.ball.setVisible(false);
 		}
+		this.startButtonText("Start Game", true);
 		// Show start button
-		if (this.startButton) {
-			this.startButton.setVisible(true);
-			this.startButton.setInteractive();
-		}
+		// if (this.startButton) {
+		// 	this.startButton.setVisible(true);
+		// 	this.startButton.setInteractive();
+		// }
 	}
 
 	// 	/**
