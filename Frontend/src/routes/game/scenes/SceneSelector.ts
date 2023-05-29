@@ -23,6 +23,12 @@ export class GameSelector extends Phaser.Scene {
 		this.activeScene = 'selectorScene';
 	}
 
+	/* Methods */
+	// run the game part selected by the user
+	runScene(sceneName: string) {
+		this.game.scene.switch('menu', sceneName); // switch to the game part selected
+	}
+
 	// set the active scene
 	setActiveScene(sceneName: string) {
 		this.activeScene = sceneName;
@@ -104,16 +110,12 @@ export class GameSelector extends Phaser.Scene {
 				// setting the text as clickable
 				button.on("pointerdown", () => { // set the event when the text is clicked
 					this.setActiveScene(`part${gameType}`); // set the active scene
-					// console.log(`Running game ${this.activeScene} : ${selector} Pong`);
+					console.log(`Running game ${this.activeScene} : ${selector} Pong`);
 					this.runScene(this.activeScene); // run the scene
 				});
 			}
 		}
 	}
 
-	/* Methods */
-	// run the game part selected by the user
-	runScene(sceneName: string) {
-		this.game.scene.switch('menu', sceneName); // switch to the game part selected
-	}
+
 }
