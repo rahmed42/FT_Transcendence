@@ -47,7 +47,7 @@
 
 	// Fonction onDestroy - appelée lorsque le composant est détruit
 	onDestroy(() => {
-		console.log('Leaving Game');
+		// console.log('Leaving Game');
 		if (selectedGame) {
 			selectedGame = null; // Remettez selectedGame à null après le nettoyage
 		}

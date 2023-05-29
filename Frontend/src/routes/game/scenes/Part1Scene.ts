@@ -114,7 +114,7 @@ export class Part1Scene extends Phaser.Scene {
 
 		try {
 			this.room = await client.joinOrCreate("Original", {});
-			console.log("%s - Connected to room: %s", this.myName, this.room.name);
+			console.log("User : %s - Connected to game : %s", this.myName, this.room.name);
 
 			// connection successful!
 			connectionStatusText.destroy();
@@ -221,7 +221,7 @@ export class Part1Scene extends Phaser.Scene {
 					this.setActiveScene("menu");
 					// Stop the current scene (part1)
 					this.scene.stop('part1');
-					console.log(`Going back to ${this.activeScene}`);
+					// console.log(`Going back to ${this.activeScene}`);
 					// Start the menu scene
 					this.scene.start('menu')
 					this.leave(this.room);
@@ -371,7 +371,7 @@ export class Part1Scene extends Phaser.Scene {
 			this.setActiveScene("menu");
 			// Stop the current scene (part1)
 			this.scene.stop('part1');
-			console.log(`Going back to ${this.activeScene}`);
+			// console.log(`Going back to ${this.activeScene}`);
 			// Start the menu scene
 			this.scene.start('menu')
 			this.leave(this.room);
@@ -388,7 +388,7 @@ export class Part1Scene extends Phaser.Scene {
 			room.leave();
 		}
 		// Redirect to the main menu or perform any necessary actions
-		console.log('Leaving room');
+		// console.log('Leaving room');
 	}
 
 	// Game logics
@@ -425,18 +425,15 @@ export class Part1Scene extends Phaser.Scene {
 	}
 
 	countDown(): void {
-		//Count from 3 to 0 each second
+		//Count from 3 to 0 each second then pop & reset the ball
 		this.startButtonText("3", false);
 		//wait 1 second
 		this.time.delayedCall(1000, () => {
 			this.startButtonText("2", false);
-			//wait 1 second
 			this.time.delayedCall(1000, () => {
 				this.startButtonText("1", false);
-				//wait 1 second
 				this.time.delayedCall(1000, () => {
 					this.startButtonText("GO!", false);
-					//wait 1 second
 					this.time.delayedCall(1000, () => {
 						this.startButton?.destroy();
 						this.ball?.setVisible(true);
@@ -450,6 +447,7 @@ export class Part1Scene extends Phaser.Scene {
 	startButtonText(text: string, clickable: boolean): void {
 		this.startButton?.destroy();
 		this.startButton = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, text, { font: '64px Arial', color: '#2b0bbc' });
+		this.startButton.setBackgroundColor('#000000');
 		this.startButton.setOrigin(0.5, 0.5);
 		if (clickable) {
 			this.startButton.setInteractive();

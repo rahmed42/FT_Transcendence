@@ -21,6 +21,7 @@ export class GameSelector extends Phaser.Scene {
 		// console.log("SceneSelector constructor");
 		super({ key: "menu", active: true });
 		this.activeScene = 'selectorScene';
+
 	}
 
 	/* Methods */
