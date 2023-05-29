@@ -120,7 +120,6 @@ export class Part1Scene extends Phaser.Scene {
 			connectionStatusText.destroy();
 
 			// Wait to have 2 players in the room to begin
-			console.log(`Connected`);
 			if (this.room.state.players.size >= 2) {
 				console.log("all players connected : start game")
 				this.room.onMessage("start", () => {
@@ -222,7 +221,7 @@ export class Part1Scene extends Phaser.Scene {
 				}
 				// Kick the last player
 				if (this.room.state.players.size === 1) {
-					alert("Other player left, reset the game ! ");
+					alert("The other player left ! \nBack to the menu");
 					this.setActiveScene("menu");
 					// Stop the current scene (part1)
 					this.scene.stop('part1');
@@ -337,6 +336,8 @@ export class Part1Scene extends Phaser.Scene {
 		const homeButton = this.add.image(this.cameras.main.centerX, 25, 'button');
 		homeButton.setScale(0.4);
 		homeButton.setOrigin(0.5, 0.5);
+		//set menu button semi transparent
+
 
 		// setting the text as interactive
 		homeButton.setInteractive();
@@ -379,19 +380,31 @@ export class Part1Scene extends Phaser.Scene {
 			this.leave(this.room);
 		});
 
-		// Adding start button for the Game
+		//Adding start button for the Game
 		this.startButton = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, 'Start Game', { font: '64px Arial', color: '#ffffff' });
 		this.startButton.setOrigin(0.5, 0.5);
 		this.startButton.setInteractive();
 
-		this.startButton.on("pointerdown", () => {
-			// Start the game
-			if (this.startButton) {
-				this.startButton.setVisible(false);
-				this.startButton.disableInteractive();
-			}
-			this.startMatch();
-		});
+		// console.log(this.room.state.players.size)
+		// if (this.room.state.players.size === 1)
+		// {
+		// 	this.startButton = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, '🟢 Start Game', { font: '64px Arial', color: '#ffffff' });
+		// 	this.startButton.setOrigin(0.5, 0.5);
+		// 	this.startButton.setInteractive();
+		// }
+		// 	else if (this.room.state.players.size === 2) {
+		// 	this.startButton = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, '🟢 Start Game 🟢', { font: '64px Arial', color: '#ffffff' });
+		// 	this.startButton.setOrigin(0.5, 0.5);
+		// 	this.startButton.setInteractive();
+			this.startButton.on("pointerdown", () => {
+				// Start the game
+				if (this.startButton) {
+					this.startButton.setVisible(false);
+					this.startButton.disableInteractive();
+				}
+				this.startMatch();
+			});
+		// }
 	}
 
 	// leaving room

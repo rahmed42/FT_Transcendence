@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { afterUpdate, onDestroy } from 'svelte';
+	import { afterUpdate, onDestroy, onMount } from 'svelte';
 	import Phaser from 'phaser';
 	import { GameSelector } from './scenes/SceneSelector';
 	import { Part1Scene } from './scenes/Part1Scene';
@@ -9,9 +9,9 @@
 	let game: Phaser.Game | null = null;
 
 	// Fonction afterUpdate - appelée après la mise à jour du composant
-	afterUpdate(() => {
+	onMount(() => {
 		// At first render, selectedGame and game are null
-		if (!selectedGame && !game) {
+		if (!selectedGame || !game) {
 			//Init Phaser and start the game
 			game = new Phaser.Game({
 				// CANVAS Rendering to be faster

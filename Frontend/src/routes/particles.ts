@@ -32,7 +32,7 @@ export let particlesConfig = {
 	  },
 	  "move": {
 		"enable": true,
-		"speed": 0.4, // speed of balls
+		"speed": 0.6, // speed of balls
 		"direction": "right",
 		"random": true,
 		"straight": false,
@@ -78,7 +78,7 @@ export let particlesConfig = {
 	  }
 	},
 	"fps_limit": 15, // Limit FPS
-	"detect_retina": false,
+	"detect_retina": true,
 	"pause_on_blur": true,
 	"pause_on_visibility_hidden": true
   };

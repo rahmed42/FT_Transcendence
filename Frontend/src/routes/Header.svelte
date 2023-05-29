@@ -9,6 +9,8 @@
 
 	// onMount is called when the component is mounted in the DOM
 	onMount(async () => {
+		//await loading all page before starting
+		await new Promise((resolve) => setTimeout(resolve, 1000));
 		if (typeof window !== 'undefined') {
 			// Subscribe to the user store
 			const unsubscribe = user.subscribe((value) => {
