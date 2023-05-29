@@ -80,6 +80,9 @@ export class Part2Scene extends Phaser.Scene {
 	}
 
 	async create() {
+		// Define camera size
+		this.cameras.main = this.cameras.add(0, 0, this.game.config.width, this.game.config.height, false, 'Modern');
+
 		this.gameInit();
 	}
 

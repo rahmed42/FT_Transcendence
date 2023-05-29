@@ -87,6 +87,9 @@ export class Part1Scene extends Phaser.Scene {
 	}
 
 	async create() {
+		// Define camera size
+		this.cameras.main = this.cameras.add(0, 0, this.game.config.width, this.game.config.height, false, 'Original');
+
 		//Get player name
 		if (currentUser && currentUser.login)
 			this.myName = currentUser.login;
@@ -217,14 +220,12 @@ export class Part1Scene extends Phaser.Scene {
 				}
 				// Kick the last player
 				if (this.room.state.players.size === 1) {
+					this.leave(this.room);
 					alert("The other player left ! Back to the menu...");
 					this.setActiveScene("menu");
-					// Stop the current scene (part1)
-					this.scene.stop('part1');
 					// console.log(`Going back to ${this.activeScene}`);
-					// Start the menu scene
+					this.scene.stop('part1');
 					this.scene.start('menu')
-					this.leave(this.room);
 				}
 			}
 		});

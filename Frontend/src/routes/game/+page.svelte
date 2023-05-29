@@ -9,7 +9,7 @@
 	let game: Phaser.Game | null = null;
 
 	// Fonction afterUpdate - appelée après la mise à jour du composant
-	onMount(() => {
+	afterUpdate(() => {
 		// At first render, selectedGame and game are null
 		if (!selectedGame || !game) {
 			//Init Phaser and start the game
