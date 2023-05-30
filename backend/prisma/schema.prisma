@@ -23,6 +23,14 @@ model User {
   small_pic String
   createAt DateTime @default(now())
   updateAt DateTime @updatedAt
+  sentMessages   Message[] @relation("SentMessage")
+  receivedMessages Message[] @relation("ReceivedMessage")
+  rooms Room[] @relation("RoomUser")
+  ownedRooms Room[] @relation("RoomOwner")
+  invitedRooms Room[] @relation("RoomInvitedUser")
+  administratedRooms Room[] @relation("RoomAdministrator")
+  bannedRooms Room[] @relation("RoomBannedUser")
+  mutedRooms Room[] @relation("RoomMutedUser")
   two_fa Boolean @default(false)
 }
 model Authenticator {
@@ -31,4 +39,35 @@ model Authenticator {
 
 model Data {
   code String @unique
+}
+
+model Room {
+  id        Int       @id @default(autoincrement())
+  name      String    @unique
+  password  String?
+  type      String  @default("PUBLIC")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  messages  Message[]
+  users     User[]   @relation("RoomUser")  
+  owner    User @relation("RoomOwner", fields: [ownerId], references: [id])
+  ownerId  Int
+  invitedUsers User[] @relation("RoomInvitedUser")
+  administrators User[] @relation("RoomAdministrator")
+  bannedUsers User[] @relation("RoomBannedUser")
+  mutedUsers User[] @relation("RoomMutedUser")
+}
+
+model Message {
+  id             Int      @id @default(autoincrement())
+  content        String
+  sender         User     @relation("SentMessage", fields: [senderId], references: [id])
+  senderId       Int
+  recipient      User?    @relation("ReceivedMessage", fields: [recipientId], references: [id])
+  recipientId    Int?
+  room           Room?    @relation(fields: [roomId], references: [id])
+  roomId         Int?
+  isPrivate      Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }
