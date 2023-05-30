@@ -1,5 +1,7 @@
 <script>
 	import { onMount } from 'svelte';
+	import { notification } from '../../stores/notificationStore.js';
+
   
 	let pendingRequests = [];
 	let friends = [];
@@ -34,12 +36,24 @@
 	}
   
 	async function sendFriendRequest() {
-	  await fetch('http://localhost:3333/social/friend-request', { 
+	  const res = await fetch('http://localhost:3333/social/friend-request', {
 		method: 'POST', 
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify({ requesterLogin: userLogin, requesteeLogin }) 
 	  });
-	  return refreshData();
+	  
+	  if (res.ok) { // Check if the request was successful
+		notification.set('Friend request sent successfully!'); // Set a success message
+		setTimeout(() => {
+    	  notification.set(''); // Reset the notification message after 5 seconds
+    	}, 5000);
+		await refreshData();
+	  } else {
+		notification.set('Failed to send friend request!'); // Set an error message
+		setTimeout(() => {
+     	  notification.set(''); // Reset the notification message after 5 seconds
+   		}, 5000);
+	  }
 	}
 </script>
   
@@ -49,7 +63,7 @@
 	<h2>Pending friend requests</h2>
 	{#each pendingRequests as request (request.id)}
 	  <div>
-		<p>{request.requester.first_name} wants to be your friend.</p>
+		<p>{request.requester.login} wants to be your friend.</p>
 		<button on:click={() => acceptFriendRequest(request.id)}>Accept</button>
 		<button on:click={() => rejectFriendRequest(request.id)}>Reject</button>
 	  </div>
@@ -67,4 +81,7 @@
 	<h2>Send a friend request</h2>
 	<input type="text" bind:value={requesteeLogin} placeholder="Friend's user login" />
 	<button on:click={sendFriendRequest}>Send friend request</button>
+	{#if $notification} <!-- Display the notification message if it exists -->
+		<p>{$notification}</p>
+	{/if}
 </section>
