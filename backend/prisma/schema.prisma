@@ -14,7 +14,7 @@ model User {
   token String
   jwtToken String @default("")
   id Int @id @unique
-  email String 
+  email String
   login String @unique
   first_name String
   last_name String
@@ -32,7 +32,11 @@ model User {
   bannedRooms Room[] @relation("RoomBannedUser")
   mutedRooms Room[] @relation("RoomMutedUser")
   blockedByUsers User[] @relation("BlockedUser")
-  blockedUsers User[] @relation("BlockedUser") 
+  blockedUsers User[] @relation("BlockedUser")
+  two_fa Boolean @default(false)
+}
+model Authenticator {
+  checked Boolean @unique
 }
 
 model Data {
@@ -46,8 +50,8 @@ model Room {
   type      String  @default("PUBLIC")
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
-  messages  Message[] 
-  users     User[]   @relation("RoomUser")  
+  messages  Message[]
+  users     User[]   @relation("RoomUser")
   owner    User @relation("RoomOwner", fields: [ownerId], references: [id])
   ownerId  Int
   invitedUsers User[] @relation("RoomInvitedUser")

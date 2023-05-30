@@ -1,11 +1,40 @@
 <script lang="ts">
   import { user } from '../../stores/user';
-  import { onMount } from 'svelte';
+  import { onDestroy, onMount } from 'svelte';
   import { get } from 'svelte/store';
   import { writable } from 'svelte/store';
+  import io from 'socket.io-client';
+  import type { Socket } from 'socket.io';
+  import { userName } from '../stores';
 
   let messageInput = '';
-
+  let messages = [
+    //"tamere la gitane qui radotte du saucisson pleins la bouche de potiron polochon petoqu de la nana dd'en bas ninanana ça va comme ça les pyjamas poupoupou ça va comme ça nananana ça va comme ça ça gaz pour toi meme pas mais wtf pourquoi il met pas tout au meme endroit zebiah ouai ok c'st chelou ce bailOK KOKOKOKOKOKOK MOMOMOMOMO TOTOTOTOTOKKO &#x200"
+    { content: " ", username: "manu", user: true },
+    { content: " ", username: "ange", user: false },
+    { content: "ton pere", username: "manu", user: true },
+    { content: "la choucroute", username: "Tim", user: false },
+    { content: "ton frere", username: "manu", user: true },
+    { content: "le gitan", username: "Rabah", user: false },
+    { content: "ta soeur", username: "Dorian", user: false },
+    { content: "la madeleine", username: "manu", user: true },
+    { content: "2-2 sa mere", username: "manu", user: true },
+    { content: "la pute", username: "Joseph", user: false },
+    { content: "Suuuuuh", username: "Louis", user: false },
+    { content: "CR7!!!", username: "Mathéo", user: false },
+    { content: "tamere", username: "manu", user: true },
+    { content: "le saucisson", username: "ange", user: false },
+    { content: "ton pere", username: "manu", user: true },
+    { content: "la choucroute", username: "Tim", user: false },
+    { content: "ton frere", username: "manu", user: true },
+    { content: "le gitan", username: "Rabah", user: false },
+    { content: "ta soeur", username: "Dorian", user: false },
+    { content: "la madeleine", username: "manu", user: true },
+    { content: "2-2 sa mere", username: "manu", user: true },
+    { content: "la pute", username: "Joseph", user: false },
+    { content: "Suuuuuh", username: "Louis", user: false },
+    { content: "CR7!!!", username: "Mathéo", user: false }
+  ];
   let isInvalidType = false;
   let isInvalidName = false;
   let isInvalidPassword = false;
@@ -22,9 +51,15 @@
   let joinChannelPassword = '';
   let userID = 0;
   let token = '';
-  let channelList = writable<{name : string}[]>([]);
+  let channelList = writable<{ name: string }[]>([]);
+  let userList = writable<{ login: string }[]>([]);
+  let socket: Socket;
+  let error: string = '';
+  let selectedChannel = '';
+  let selectedUser = '';
 
   onMount(async () => {
+    //const socket = io('http://localhost:3333');
     const storedUser = sessionStorage.getItem('userID');
 
     if (storedUser && storedUser !== 'undefined' && storedUser !== 'null') {
@@ -37,47 +72,21 @@
     token = sessionStorage.getItem('jwt') || '';
 
     const response = await fetch('http://localhost:3333/chat/rooms', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization' : 'Bearer ' + token
-        }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        channelList.set(data.rooms);
-      } else {
-        const data = await response.json();
-        console.log(data.message);
-      }
-  });
-  /*
-    console.log(token);
-
-    try {
-      const response = await fetch('http://localhost:3333/chat/rooms', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization' : 'Bearer ' + token
-        }
-      });
-
-      console.log(userID);
-
-      if (response.ok) {
-        const data = await response.json();
-        channelList = data.channels;
-      } else {
-        const data = await response.json();
-        console.log(data.message);
-      }
-    } catch (error) {
-      console.error(error);
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + token,
+      },
+    });
+    if (response.ok) {
+      const data = await response.json();
+      channelList.set(data.rooms);
+    } else {
+      const data = await response.json();
+      console.log(data.message);
     }
-  });*/
+  });
 
-  let selectedChannel = '';
   function openModal() {
     isModalOpen = true;
   }
@@ -107,48 +116,52 @@
   }
 
   async function createChannel() {
-  if (
-    newChannelName.trim() !== '' &&
-    newChannelName.length <= 10 &&
-    isValidChannelName(newChannelName)
-  ) {
-    if (newChannelType === '') {
-      isInvalidType = true;
-    } else {
-      if (newChannelType === 'protected') {
-        if (newChannelPassword.trim() === '') {
-          isInvalidPassword = true;
-          return;
+    try {
+      if (
+        newChannelName.trim() !== '' &&
+        newChannelName.length <= 10 &&
+        isValidChannelName(newChannelName)
+      ) {
+        if (newChannelType === '') {
+          isInvalidType = true;
+        } else {
+          if (newChannelType === 'protected') {
+            if (newChannelPassword.trim() === '') {
+              isInvalidPassword = true;
+              return;
+            }
+          }
+          const response = await fetch('http://localhost:3333/chat/createRoom', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: 'Bearer ' + token,
+            },
+            body: JSON.stringify({
+              idUser: userID,
+              roomName: newChannelName,
+              type: newChannelType,
+              password: newChannelPassword,
+            }),
+          });
+          if (!response.ok) {
+            const data = await response.json();
+            throw new Error(data.message);
+          } else if (response.ok) {
+            const newChannel = await response.json();
+            channelList.update(channelList => [...channelList, { name: newChannel.room.name }]);
+            console.log(newChannel.room.name);
+            closeModal();
+          }
         }
+      } else {
+        isInvalidName = true;
       }
-      const response = await fetch('http://localhost:3333/chat/createRoom', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + token
-        },
-        body: JSON.stringify({
-          idUser: userID,
-          roomName: newChannelName,
-          type: newChannelType,
-          password: newChannelPassword,
-        }),
-      });
-      if (!response.ok) {
-        const data = await response.json();
-        console.log(data.message)
-      } else if (response.ok) {
-          const newChannel = await response.json();
-          channelList.update(newChannel.room.name);
-          console.log(newChannel.room.name);
-        closeModal();
-        // Ajoutez ici la logique pour mettre à jour la liste des channels côté front-end
-      }
+    } catch (err) {
+      if (err instanceof Error)
+        alert(err.message);
     }
-  } else {
-    isInvalidName = true;
   }
-}
 
 
   function isValidChannelName(name: string) {
@@ -159,70 +172,91 @@
       }
     }
     return true;
-  } 
+  }
 
+  function selectUser(user: string) {
+    // Logique de sélection de l'utilisateur
+    console.log('Utilisateur sélectionné:', user);
+  }
   async function joinChannel() {
-    if (joinChannelName.trim() !== '' &&
-      joinChannelName.length <= 10 &&
-      isValidChannelName(joinChannelName)
+    try {
+      if (joinChannelName.trim() !== '' &&
+        joinChannelName.length <= 10 &&
+        isValidChannelName(joinChannelName)
       ) {
-      if (joinChannelType === '')
-        isJoinInvalidType = true;
+        if (joinChannelType === '') {
+          isJoinInvalidType = true;
+        } else {
+          if (joinChannelType === 'protected') {
+            if (joinChannelPassword.trim() === '') {
+              isJoinInvalidPassword = true;
+              return;
+            }
+          }
+          const response = await fetch('http://localhost:3333/chat/joinRoom', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: 'Bearer ' + token,
+            },
+            body: JSON.stringify({
+              idUser: userID,
+              roomName: joinChannelName,
+              password: joinChannelPassword,
+            }),
+          });
+          if (!response.ok) {
+            const data = await response.json();
+            throw new Error(data.message);
+          }
+          else if (response.ok) {
+            const newChannel = await response.json();
+            channelList.update(channelList => [...channelList, { name: newChannel.room.name }]);
+            socket.emit('joinRoom', { roomId: newChannel.room.id, userId: userID });
+            console.log(newChannel.room.name);
+          }
+          closeJoinModal();
+        }
       } else {
-        if (joinChannelType === 'protected') {
-          if (joinChannelPassword.trim() === '') {
-            isJoinInvalidPassword = true;
-            return;
-          }
-        }
-        const response = await fetch('http://localhost:3333/chat/joinRoom', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization' : 'Bearer ' + token
-          },
-          body: JSON.stringify({
-            idUser: userID,
-            roomName: joinChannelName,
-            password: joinChannelPassword,
-          }),
-        });
-        if (!response.ok)
-        {
-          const data = await response.json();
-          console.log(data.message)
-        }
-        else if (response.ok)
-        {
-          const updateResponse = await fetch('http://localhost:3333/chat/rooms', {
-          method: 'GET',
-          headers: {
-          'Content-Type': 'application/json',
-          'Authorization' : 'Bearer ' + token
-          }
-        });
-        if (updateResponse.ok) {
-          const updatedata = await updateResponse.json();
-          channelList = updatedata.channels;
-        }
-        closeJoinModal();
-        // Ajoutez ici la logique pour mettre à jour la liste des channels côté front-end
-        console.log(userID);
-        console.log( JSON.stringify({
-            idUser: userID,
-            roomName: joinChannelName,
-            password: joinChannelPassword,
-          }));
-      }        
-    else {
-      isJoinInvalidName = true;
+        isJoinInvalidName = true;
+      }
+    } catch (err) {
+      if (err instanceof Error)
+        alert(err.message);
     }
   }
-}
-  
+
   async function sendMessage() {
     console.log(messageInput);
     messageInput = '';
+  }
+
+  async function getChannel(channel: string) {
+    try {
+      selectedChannel = channel;
+      const response = await fetch('http://localhost:3333/chat/rooms/' + selectedChannel, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + token,
+        },
+      });
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message);
+      } else if (response.ok) {
+        const newChannel = await response.json();
+        if (newChannel)
+        {
+          userList.set(newChannel.users);
+          console.log(JSON.stringify(get(userList), null, 2))
+        }
+       }
+    }
+    catch (err) {
+      if (err instanceof Error)
+        alert(err.message);
+    }
   }
 </script>
 
@@ -262,8 +296,6 @@
     </div>
   </div>
 {/if}
-
-
 <div class="container">
   <div class="sidebar">
     <div class="chat-area">
@@ -284,18 +316,43 @@
     </button>
     {#if channelList !== null}
       {#each $channelList as channel}
-        <button class="channel-button p-anim" on:click={() => joinChannel()}>
+        <button class="channel-button p-anim" on:click={() => getChannel(channel.name)}>
           {channel.name}
         </button>
       {/each}
     {/if}
   </div>
-  <div class="chat-area">
-    <div class="messages"></div>
+  <div class="chat-area" style="max-height: 800px">
+    <div class="messages">
+      {#each messages as message}
+        {#if message.user}
+          <div class="message-container">
+            <p class="message-utilisateur"> <strong> {message.username} </strong> </p>
+            <p class="message-utilisateur">{message.content}</p>
+          </div>
+        {:else}
+          <div class="message-container">
+            <p class="message-autre-utilisateur"> <strong> {message.username} </strong> </p>
+            <p class="message-autre-utilisateur">{message.content}</p>
+          </div>
+        {/if}
+      {/each}
+    </div>
     <div class="input-area">
       <input bind:value={messageInput} type="text" placeholder="Type here..." />
       <button on:click={sendMessage}>Send</button>
     </div>
+  </div>
+  <div class="user-list">
+    <h3 class="user-list-title">User List</h3>
+    {#if $userList !== null && $userList.length === 0}
+      <p>No users online</p>
+    {/if}
+    {#each $userList as user}
+      <button class="user-button p-anim" on:click={() => selectUser(user.login)}>
+        {user.login}
+      </button>
+    {/each}
   </div>
 
   {#if isModalOpen}
@@ -377,9 +434,12 @@
     height: 100vh;
     max-height: 100vh;
     overflow-y: auto;
+    border-right: 1px solid #ccc; /* Ajout de la bordure */
+    padding-right: 10px; /* Ajout des marges intérieures */
   }
 
-  .channel-button {
+  .channel-button,
+  .user-button {
     display: block;
     width: 100%;
     padding: 10px;
@@ -409,8 +469,10 @@
     flex-grow: 1;
     display: flex;
     flex-direction: column;
+    overflow: auto;
+    max-height: 700px;
   }
-
+  
   .messages {
     flex-grow: 1;
     overflow-y: auto;
@@ -421,11 +483,6 @@
     justify-content: space-between;
     padding: 10px;
     border-top: 1px solid #ccc;
-  }
-
-  .input-area input {
-    flex-grow: 1;
-    margin-right: 10px;
   }
 
   .modal {
@@ -456,15 +513,36 @@
     margin-top: 5px;
   }
 
-  .p-anim {
-    -moz-transition: color 2s;
-    color: #6E98B8;
+  .user-list {
+    width: 200px;
+    padding: 10px;
+    height: 100vh;
+    max-height: 100vh;
+    overflow-y: auto;
+    border-left: 1px solid #ccc; /* Ajout de la bordure */
+    padding-left: 10px; /* Ajout des marges intérieures */
   }
-  .p-anim:hover {
-    color: #EDA11A;
+
+  .message-utilisateur {
+    text-align: right;
+    color: red;
+  }
+
+  .message-autre-utilisateur{
+    text-align: left;
+    color: blue;
+  }
+
+  .user-list-title {
+    text-align: center;
+  }
+  
+  .p-anim {
+    transition: color 2s;
+    color: #6E98B8;
   }
 
   .p-anim:hover {
     color: #EDA11A;
   }
-  </style>
+</style>

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { afterUpdate, onDestroy } from 'svelte';
+	import { afterUpdate, onDestroy, onMount } from 'svelte';
 	import Phaser from 'phaser';
 	import { GameSelector } from './scenes/SceneSelector';
 	import { Part1Scene } from './scenes/Part1Scene';
@@ -11,14 +11,14 @@
 	// Fonction afterUpdate - appelée après la mise à jour du composant
 	afterUpdate(() => {
 		// At first render, selectedGame and game are null
-		if (!selectedGame && !game) {
+		if (!selectedGame || !game) {
 			//Init Phaser and start the game
 			game = new Phaser.Game({
 				// CANVAS Rendering to be faster
 				type: Phaser.CANVAS,
 				// Set the fps to 60
 				fps: {
-					target: 60,
+					target: 30,
 					forceSetTimeOut: true,
 					smoothStep: true
 				},
@@ -47,7 +47,7 @@
 
 	// Fonction onDestroy - appelée lorsque le composant est détruit
 	onDestroy(() => {
-		console.log('Leaving Game');
+		// console.log('Leaving Game');
 		if (selectedGame) {
 			selectedGame = null; // Remettez selectedGame à null après le nettoyage
 		}
