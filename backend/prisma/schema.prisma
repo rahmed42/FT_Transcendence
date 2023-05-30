@@ -32,7 +32,7 @@ model User {
   bannedRooms Room[] @relation("RoomBannedUser")
   mutedRooms Room[] @relation("RoomMutedUser")
   blockedByUsers User[] @relation("BlockedUser")
-  blockedUsers User[] @relation("BlockedUser")
+  blockedUsers User[] @relation("BlockedUser") 
 }
 
 model Data {
