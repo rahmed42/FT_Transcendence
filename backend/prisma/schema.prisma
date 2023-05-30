@@ -13,7 +13,7 @@ datasource db {
 model User {
   token String
   jwtToken String @default("")
-  id Int @id
+  id Int @unique
   email String 
   login String
   first_name String
@@ -31,6 +31,10 @@ model User {
   administratedRooms Room[] @relation("RoomAdministrator")
   bannedRooms Room[] @relation("RoomBannedUser")
   mutedRooms Room[] @relation("RoomMutedUser")
+  two_fa Boolean @default(false)
+}
+model Authenticator {
+  checked Boolean @unique
 }
 
 model Data {

@@ -86,6 +86,8 @@ https://www.twilio.com/blog/svelte-stores-share-data-between-components
 
 
 **** Front tips ****
+CSS : https://www.w3schools.com/howto/howto_css_responsive_header.asp
+
 Add particles
 https://dev.to/tsparticles/tsparticles-easily-add-highly-customizable-particles-animations-to-your-website-3l2g
 
