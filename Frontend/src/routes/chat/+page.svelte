@@ -5,7 +5,6 @@
   import { writable } from 'svelte/store';
   import io from 'socket.io-client';
   import type { Socket } from 'socket.io';
-  import { userName } from '../stores';
 
   let messageInput = '';
   let messages = [
@@ -53,13 +52,26 @@
   let token = '';
   let channelList = writable<{ name: string }[]>([]);
   let userList = writable<{ login: string }[]>([]);
-  let socket: Socket;
   let error: string = '';
   let selectedChannel = '';
   let selectedUser = '';
-
-  onMount(async () => {
-    //const socket = io('http://localhost:3333');
+    onMount(async () => {
+	const socket = io('http://localhost:3333', {
+		transports: ['websocket'],
+		auth: {
+		token: sessionStorage.getItem('jwt'),
+		},
+	});
+	socket.on('connect', () => {
+	  console.log('connected');
+	});
+	socket.on('disconnect', () => {
+	  console.log('disconnected');
+	});
+	socket.on('newRoomMessage', (data: any) => {
+	  console.log(data);
+	});
+	socket.emit("newMessage", {content : "salam"})
     const storedUser = sessionStorage.getItem('userID');
 
     if (storedUser && storedUser !== 'undefined' && storedUser !== 'null') {
@@ -248,8 +260,8 @@
         const newChannel = await response.json();
         if (newChannel)
         {
-          userList.set(newChannel.users);
-          console.log(JSON.stringify(get(userList), null, 2))
+          	userList.set(newChannel.users);
+         	console.log(JSON.stringify(get(userList), null, 2))
         }
        }
     }
@@ -472,7 +484,7 @@
     overflow: auto;
     max-height: 700px;
   }
-  
+
   .messages {
     flex-grow: 1;
     overflow-y: auto;
@@ -536,7 +548,7 @@
   .user-list-title {
     text-align: center;
   }
-  
+
   .p-anim {
     transition: color 2s;
     color: #6E98B8;

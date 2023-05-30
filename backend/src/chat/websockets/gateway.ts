@@ -15,8 +15,8 @@ export class Gateway implements OnModuleInit {
 
     onModuleInit() {
         this.server.on('connection', (socket) => {
-            console.log(socket.id)
-        });
+			console.log("New connection from socket io ", socket.id)
+		});
     }
 
     async sendMessageToRoom(roomName: string, content: string, idSender: number) {
@@ -92,7 +92,6 @@ export class Gateway implements OnModuleInit {
                 },
             },
         });
-        // use /chat/createPrivateRoom POST
         if (!privateRoom)
         {
             await this.chatService.createPrivateRoom({idUser : idSender, loginReceiver: loginReceiver })

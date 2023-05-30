@@ -534,9 +534,7 @@ export class ChatService {
                 },
             },
         });
-        console.log(roomsOfUser)
-        // return only a [] of names
-        return roomsOfUser
+        return roomsOfUser;
     }
 
     async banUser(body: ChatDtoAdminOperation)
@@ -1358,7 +1356,7 @@ export class ChatService {
                 login: body.loginReceiver,
             },
         });
-        if (!user2)
+        if (!user2 || !user2.id)
         {
             throw new BadRequestException('User who try to send message does not exist');
         }

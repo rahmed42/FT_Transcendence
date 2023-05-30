@@ -15,7 +15,7 @@ export class UserService {
                         id: decode.id,
                     },
                 })
-                console.log(user);
+                //console.log(user);
                 return user;
             }
         }
