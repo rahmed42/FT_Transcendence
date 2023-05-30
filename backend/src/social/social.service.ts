@@ -9,6 +9,11 @@ export class SocialService {
     if(requesterLogin === requesteeLogin){
       throw new Error('Cannot send friend request to yourself');
     }
+    
+    // Check that both logins are defined
+    if(!requesterLogin || !requesteeLogin){
+      throw new Error('Invalid user login');
+    }
 
     const requester = await this.prisma.user.findUnique({ where: { login: requesterLogin }});
     const requestee = await this.prisma.user.findUnique({ where: { login: requesteeLogin }});
