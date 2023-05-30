@@ -3,13 +3,11 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { ChatDtoAdminOperation, ChatDtoCreateRoom, ChatDtoGetRoom, ChatDtoJoinRoom, PrivateChatDtoCreateMessage, PrivateChatDtoCreateRoom } from './dto';
 import * as argon from 'argon2';
 import { v4 as uuidv4 } from 'uuid';
-import { Gateway } from './websockets/gateway';
-
 
 @Injectable()
 export class ChatService {
     constructor(private prisma: PrismaService) { }
-    
+
     async createRoom(body: ChatDtoCreateRoom) {
         const roomExists = await this.prisma.room.findFirst({
             where: {
@@ -53,6 +51,7 @@ export class ChatService {
                         id: body.idUser,
                     }
                 },
+				ownerId : body.idUser,
                 invitedUsers: {
                     connect: {
                         id: body.idUser,
@@ -98,15 +97,15 @@ export class ChatService {
         return { room: room }
     }
 
-    
-    
+
+
     async joinRoom(body: ChatDtoJoinRoom) {
-        const room = await this.prisma.room.findUnique({
+        const room = await this.prisma.room.findFirst({
             where: {
                 name: body.roomName,
             }
         });
-        const user = await this.prisma.user.findUnique({
+        const user = await this.prisma.user.findFirst({
             where: {
                 id: body.idUser,
             }
@@ -166,7 +165,7 @@ export class ChatService {
         if (isBan) {
             throw new BadRequestException('User is banned from room');
         }
-        const updatedUser = await this.prisma.user.update({
+        await this.prisma.user.update({
             where: {
                 id: body.idUser,
             },
@@ -196,8 +195,8 @@ export class ChatService {
             },
         });
         delete updatedRoom.password;
-        // select users table 
-        const users = await this.prisma.room.findUnique({
+        // select users table
+        const users = await this.prisma.room.findFirst({
             where: {
                 name: body.roomName,
             },
@@ -205,7 +204,7 @@ export class ChatService {
                 users: true,
             },
         });
-        const messages = await this.prisma.room.findUnique({
+        const messages = await this.prisma.room.findFirst({
             where: {
                 name: body.roomName,
             },
@@ -215,9 +214,9 @@ export class ChatService {
         });
         return { room: updatedRoom, users: users.users, messages: messages.messages };
     }
-    
+
     async inviteUser(body: ChatDtoAdminOperation) {
-        const room = await this.prisma.room.findUnique({
+        const room = await this.prisma.room.findFirst({
             where: {
                 name: body.roomName,
             }
@@ -225,7 +224,7 @@ export class ChatService {
         if (!room) {
             throw new BadRequestException('Room does not exist');
         }
-        const admin = await this.prisma.user.findUnique({
+        const admin = await this.prisma.user.findFirst({
             where: {
                 id: body.idAdmin,
             }
@@ -233,7 +232,7 @@ export class ChatService {
         if (!admin) {
             throw new BadRequestException('User does not exist');
         }
-        const toInvite = await this.prisma.user.findUnique({
+        const toInvite = await this.prisma.user.findFirst({
             where: {
                 id: body.idUserToExecute,
             }
@@ -295,7 +294,7 @@ export class ChatService {
         return { message: "User successfully invited" }
     }
     async kickUser(body: ChatDtoAdminOperation) {
-        const room = await this.prisma.room.findUnique({
+        const room = await this.prisma.room.findFirst({
             where: {
                 name: body.roomName,
             },
@@ -303,7 +302,7 @@ export class ChatService {
         if (!room) {
             throw new BadRequestException('Room does not exist');
         }
-        const admin = await this.prisma.user.findUnique({
+        const admin = await this.prisma.user.findFirst({
             where: {
                 id: body.idAdmin,
             },
@@ -311,7 +310,7 @@ export class ChatService {
         if (!admin) {
             throw new BadRequestException('User does not exist');
         }
-        const toKick = await this.prisma.user.findUnique({
+        const toKick = await this.prisma.user.findFirst({
             where: {
                 id: body.idUserToExecute,
             },
@@ -430,11 +429,11 @@ export class ChatService {
         });
         return { message: "User successfully kicked " }
     }
-    
-    
-    
+
+
+
     async getRoomInfo(body: ChatDtoGetRoom) {
-        const room = await this.prisma.room.findUnique({
+        const room = await this.prisma.room.findFirst({
             where: {
                 name: body.roomName,
             }
@@ -442,7 +441,7 @@ export class ChatService {
         if (!room) {
             throw new BadRequestException('Room does not exist');
         }
-        const user = await this.prisma.user.findUnique({
+        const user = await this.prisma.user.findFirst({
             where: {
                 id: body.idUser,
             },
@@ -464,7 +463,7 @@ export class ChatService {
             throw new BadRequestException('User not in room');
         }
         //select roominfo with users administrators message and mutedusers but without password and token in user table
-        const roomInfo = await this.prisma.room.findUnique({
+        const roomInfo = await this.prisma.room.findFirst({
             where: {
                 name: body.roomName,
             },
@@ -514,16 +513,16 @@ export class ChatService {
 
     async getRooms(body: ChatDtoGetRoom)
     {
-        const user = await this.prisma.user.findUnique({
+        const user = await this.prisma.user.findFirst({
             where: {
                 id: body.idUser,
             },
         });
-        if (!user) 
+        if (!user)
         {
             throw new BadRequestException('User does not exist');
         }
-        const roomsOfUser = await this.prisma.user.findUnique({
+        const roomsOfUser = await this.prisma.user.findFirst({
             where: {
                 id: body.idUser,
             },
@@ -542,7 +541,7 @@ export class ChatService {
 
     async banUser(body: ChatDtoAdminOperation)
     {
-        const admin = await this.prisma.user.findUnique({
+        const admin = await this.prisma.user.findFirst({
             where: {
                 id: body.idAdmin,
             },
@@ -550,7 +549,7 @@ export class ChatService {
         if (!admin) {
             throw new BadRequestException('User does not exist');
         }
-        const toBan = await this.prisma.user.findUnique({
+        const toBan = await this.prisma.user.findFirst({
             where: {
                 id: body.idUserToExecute,
             },
@@ -558,7 +557,7 @@ export class ChatService {
         if (!toBan) {
             throw new BadRequestException('User to ban does not exist');
         }
-        const room = await this.prisma.room.findUnique({
+        const room = await this.prisma.room.findFirst({
             where: {
                 name: body.roomName,
             },
@@ -697,7 +696,7 @@ export class ChatService {
     }
     async leaveRoom(body: ChatDtoJoinRoom)
     {
-        const user = await this.prisma.user.findUnique({
+        const user = await this.prisma.user.findFirst({
             where: {
                 id: body.idUser,
             },
@@ -705,7 +704,7 @@ export class ChatService {
         if (!user) {
             throw new BadRequestException('User does not exist');
         }
-        const room = await this.prisma.room.findUnique({
+        const room = await this.prisma.room.findFirst({
             where: {
                 name: body.roomName,
             },
@@ -839,7 +838,7 @@ export class ChatService {
                 },
                 administratedRooms: isUserAdmin ? {} : {
                     disconnect: {
-                        name: body.roomName,    
+                        name: body.roomName,
                     },
                 },
                 mutedRooms: isUserMuted ? {} : {
@@ -858,12 +857,12 @@ export class ChatService {
     }
     async giveAdmin(body: ChatDtoAdminOperation)
     {
-        const admin = await this.prisma.user.findUnique({
+        const admin = await this.prisma.user.findFirst({
             where: {
                 id: body.idAdmin,
             },
         });
-        const user = await this.prisma.user.findUnique({
+        const user = await this.prisma.user.findFirst({
             where: {
                 id: body.idUserToExecute,
             },
@@ -874,7 +873,7 @@ export class ChatService {
         if (!admin) {
             throw new BadRequestException('Admin does not exist');
         }
-        const room = await this.prisma.room.findUnique({
+        const room = await this.prisma.room.findFirst({
             where: {
                 name: body.roomName,
             },
@@ -949,12 +948,12 @@ export class ChatService {
     }
     async removeAdmin(body: ChatDtoAdminOperation)
     {
-        const admin = await this.prisma.user.findUnique({
+        const admin = await this.prisma.user.findFirst({
             where: {
                 id: body.idAdmin,
             },
         });
-        const user = await this.prisma.user.findUnique({
+        const user = await this.prisma.user.findFirst({
             where: {
                 id: body.idUserToExecute,
             },
@@ -965,7 +964,7 @@ export class ChatService {
         if (!admin) {
             throw new BadRequestException('Admin does not exist');
         }
-        const room = await this.prisma.room.findUnique({
+        const room = await this.prisma.room.findFirst({
             where: {
                 name: body.roomName,
             },
@@ -1051,12 +1050,12 @@ export class ChatService {
     }
     async giveOwner(body: ChatDtoAdminOperation)
     {
-        const owner = await this.prisma.user.findUnique({
+        const owner = await this.prisma.user.findFirst({
             where: {
                 id: body.idAdmin,
             },
         });
-        const user = await this.prisma.user.findUnique({
+        const user = await this.prisma.user.findFirst({
             where: {
                 id: body.idUserToExecute,
             },
@@ -1067,7 +1066,7 @@ export class ChatService {
         if (!owner) {
             throw new BadRequestException('Owner does not exist');
         }
-        const room = await this.prisma.room.findUnique({
+        const room = await this.prisma.room.findFirst({
             where: {
                 name: body.roomName,
             },
@@ -1168,12 +1167,12 @@ export class ChatService {
     }
     async removeInvite(body: ChatDtoAdminOperation)
     {
-        const admin = await this.prisma.user.findUnique({
+        const admin = await this.prisma.user.findFirst({
             where: {
                 id: body.idAdmin,
             },
         });
-        const user = await this.prisma.user.findUnique({
+        const user = await this.prisma.user.findFirst({
             where: {
                 id: body.idUserToExecute,
             },
@@ -1184,7 +1183,7 @@ export class ChatService {
         if (!admin) {
             throw new BadRequestException('User who remove invite does not exist');
         }
-        const room = await this.prisma.room.findUnique({
+        const room = await this.prisma.room.findFirst({
             where: {
                 name: body.roomName,
             },
@@ -1253,12 +1252,12 @@ export class ChatService {
     }
     async unbanUser(body: ChatDtoAdminOperation)
     {
-        const admin = await this.prisma.user.findUnique({
+        const admin = await this.prisma.user.findFirst({
             where: {
                 id: body.idAdmin,
             },
         });
-        const user = await this.prisma.user.findUnique({
+        const user = await this.prisma.user.findFirst({
             where: {
                 id: body.idUserToExecute,
             },
@@ -1269,7 +1268,7 @@ export class ChatService {
         if (!admin) {
             throw new BadRequestException('User who unban does not exist');
         }
-        const room = await this.prisma.room.findUnique({
+        const room = await this.prisma.room.findFirst({
             where: {
                 name: body.roomName,
             },
@@ -1318,7 +1317,7 @@ export class ChatService {
         }
         await this.prisma.room.update({
             where: {
-                name: body.roomName,    
+                name: body.roomName,
             },
             data: {
                 bannedUsers: {
@@ -1345,7 +1344,7 @@ export class ChatService {
     async createPrivateRoom(body: PrivateChatDtoCreateRoom)
     {
         const uniqueId = uuidv4();
-        const user = await this.prisma.user.findUnique({
+        const user = await this.prisma.user.findFirst({
             where: {
                 id: body.idUser,
             },
@@ -1354,7 +1353,7 @@ export class ChatService {
         {
             throw new BadRequestException('User does not exist');
         }
-        const user2 = await this.prisma.user.findUnique({
+        const user2 = await this.prisma.user.findFirst({
             where: {
                 login: body.loginReceiver,
             },
@@ -1406,7 +1405,7 @@ export class ChatService {
     }
     async addMessageToPrivateRoom(body : PrivateChatDtoCreateMessage)
     {
-        const userReceiver = await this.prisma.user.findUnique({
+        const userReceiver = await this.prisma.user.findFirst({
             where: {
                 login: body.loginReceiver,
             },
@@ -1453,7 +1452,7 @@ export class ChatService {
     }
     async getPrivateRooms(body: ChatDtoGetRoom)
     {
-        const user = await this.prisma.user.findUnique({
+        const user = await this.prisma.user.findFirst({
             where: {
                 id: body.idUser,
             },
@@ -1485,7 +1484,7 @@ export class ChatService {
     async getPrivateRoomInfo(body: ChatDtoGetRoom)
     {
         if (!body.roomName)
-            throw new BadRequestException('Room name is required'); 
+            throw new BadRequestException('Room name is required');
         const privateRoom = await this.prisma.privateRoom.findFirst({
             where: {
                 id: body.roomName,
@@ -1508,11 +1507,11 @@ export class ChatService {
                         },
                     }
                 },
-            } 
+            }
         });
         if (!privateRoom)
             throw new BadRequestException('Room does not exist');
-        const user = await this.prisma.user.findUnique({
+        const user = await this.prisma.user.findFirst({
             where: {
                 id: body.idUser,
             },

@@ -7,7 +7,7 @@ import { ChatService } from "src/chat/chat.service";
 
 @WebSocketGateway()
 export class Gateway implements OnModuleInit {
-    
+
     constructor(private prisma: PrismaService, private chatService : ChatService) {}
 
     @WebSocketServer()
@@ -20,14 +20,14 @@ export class Gateway implements OnModuleInit {
     }
 
     async sendMessageToRoom(roomName: string, content: string, idSender: number) {
-        const room = await this.prisma.room.findUnique({
+        const room = await this.prisma.room.findFirst({
             where : {
                 name: roomName,
             }
         })
         if (!room)
             return;
-        const user = await this.prisma.user.findUnique({
+        const user = await this.prisma.user.findFirst({
             where : {
                 id: idSender,
             },
@@ -35,7 +35,7 @@ export class Gateway implements OnModuleInit {
         if (!user)
             return ;
         const userInRoom = await  this.prisma.user.findFirst({
-            where : 
+            where :
             {
                 id: idSender,
                 rooms: {
@@ -66,14 +66,14 @@ export class Gateway implements OnModuleInit {
         })
     }
     async sendPrivateMessage(idSender: number, loginReceiver: string, content: string) {
-        const user = await this.prisma.user.findUnique({
+        const user = await this.prisma.user.findFirst({
             where : {
                 id: idSender,
             }
         })
         if (!user)
             return ;
-        const userReceiver = await this.prisma.user.findUnique({
+        const userReceiver = await this.prisma.user.findFirst({
             where : {
                 login: loginReceiver,
             }

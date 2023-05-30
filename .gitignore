@@ -1,4 +1,5 @@
 .DS_Store
+.gitignore
 .vscode/*.log
 .vscode/*.json
 *.dSYM
@@ -9,3 +10,5 @@
 
 #Tests
 /game
+
+node_modules/

@@ -48,7 +48,7 @@ export class ChatController {
             roomName: ''
           };
         return await this.ChatService.getRooms(body);
-    }   
+    }
     @Get('rooms/:name')
     async getRoom(@Param('name') roomName: string, @Req() req: Request) {
         const userInfo = await this.userService.getInfo({jwt : ExtractJwt.fromAuthHeaderAsBearerToken()(req)});
@@ -102,7 +102,12 @@ export class ChatController {
     @Post('blockUser')
     async blockUser(@Body() body: ChatDtoAdminOperation)
     {
-        
+
     }
     /* TODO MUTE, BLOQUER (don't show other messages) */
+//     @Post('unblockUser')
+// 	async unblockUser(@Body() body: ChatDtoAdminOperation)
+// 	{
+// 		return await this.ChatService.unblockUser(body);
+// 	}
 }
