@@ -87,4 +87,16 @@ export class AuthService {
             token,
         };
     }
+    async push_settings(body: any, tokenObject: { jwt: string }) {
+        const user = this.jwt.decode(tokenObject.jwt);
+        if (typeof user === 'object')
+        await this.prisma.user.update({
+            where: {
+                id: user.id,
+            },
+            data: {
+                two_fa: body.check,
+            },
+        })
+    }
 }

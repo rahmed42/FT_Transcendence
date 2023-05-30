@@ -2,13 +2,7 @@ import Phaser, { Textures } from "phaser";
 import { Room, Client } from "colyseus.js";
 import { BACKEND_URL } from "../backend";
 
-//Style modern
-import boardStyle1 from '$lib/assets/style1/Board.png';
-import ballStyle1 from '$lib/assets/style1/Ball.png';
-import myPaddleStyle1 from '$lib/assets/style1/mypaddle.png';
-import opponentPaddleStyle1 from '$lib/assets/style1/otherpaddle.png';
-
-export class Part2Scene extends Phaser.Scene {
+export class Part1Scene extends Phaser.Scene {
 	//room reference
 	room: Room | undefined;
 
@@ -53,12 +47,12 @@ export class Part2Scene extends Phaser.Scene {
 	// Constructor of the scene
 	constructor() {
 		// active false to prevent the scene from starting automatically
-		super({ key: "part2", active: false });
-		this.activeScene = 'Part2Scene';
+		super({ key: "part1", active: false });
+		this.activeScene = 'Part1Scene';
 
 		// Initialize the room
-		this.room = new Room("Modern");
-		// console.log("Init %s Pong Room", this.room.name);
+		this.room = new Room("part1_room");
+		console.log(this.room);
 
 		// Initialize the game state
 		this.myScore = 0;
@@ -70,19 +64,19 @@ export class Part2Scene extends Phaser.Scene {
 		this.activeScene = sceneName;
 	}
 
-	// preload basic assets
-	preload() {
-		//Style Modern1
-		this.load.image('ballStyle1', ballStyle1);
-		this.load.image('myPaddleStyle1', myPaddleStyle1);
-		this.load.image('opponentPaddleStyle1', opponentPaddleStyle1);
-		this.load.image('boardStyle1', boardStyle1);
-	}
+	// // preload basic assets
+	// preload() {
+	// 	// Adding background color
+	// 	// this.cameras.main.setBackgroundColor(0x000000);
+
+	//load game assets
+	// 	// // preload pong assets
+	// 	// this.load.image('ball', '../assets/style1/Ball.png');
+	// 	// this.load.image('myPaddle', '../assets/style1/Player.png');
+	// 	// this.load.image('opponentPaddle', '../assets/style1/Computer.png');
+	// }
 
 	async create() {
-		// Define camera size
-		this.cameras.main = this.cameras.add(0, 0, this.game.config.width, this.game.config.height, false, 'Modern');
-
 		this.gameInit();
 	}
 
@@ -182,12 +176,12 @@ export class Part2Scene extends Phaser.Scene {
 	gameInit(): void {
 		/* SETUP STYLES */
 		// Display styled background
-		const background = this.add.image(0, 0, 'boardStyle1');
+		const background = this.add.image(0, 0, 'boardDefault');
 		background.setDisplaySize(this.cameras.main.width, this.cameras.main.height);
 		background.setOrigin(0, 0);
 
 		// Display ball
-		this.ball = this.physics.add.image(this.cameras.main.centerX, this.cameras.main.centerY, 'ballStyle1');
+		this.ball = this.physics.add.image(this.cameras.main.centerX, this.cameras.main.centerY, 'ballDefault');
 		this.ball.setOrigin(0.5, 0.5);
 
 		// Display score
@@ -221,19 +215,19 @@ export class Part2Scene extends Phaser.Scene {
 				posY = this.pointer.y;
 			else
 				posY = this.cameras.main.centerY;
+
 			// Display Paddle and set bounds
 			const paddle = {
 				'x': 20,
 				'y': 100,
 				'pos': posY,
 			};
-
-			this.localPaddle = this.physics.add.image(paddle.x, paddle.pos, 'myPaddleStyle1');
+			this.localPaddle = this.physics.add.image(paddle.x, paddle.pos, 'paddleDefault');
 			this.localPaddle.setOrigin(0.5, 0.5);
 			this.localPaddle.setCollideWorldBounds(true);
 			this.localPaddle.setImmovable(true);
 
-			this.remotePaddle = this.physics.add.image(this.cameras.main.width - paddle.x, paddle.pos, 'opponentPaddleStyle1');
+			this.remotePaddle = this.physics.add.image(this.cameras.main.width - paddle.x, paddle.pos, 'paddleDefault');
 			this.remotePaddle.setOrigin(0.5, 0.5);
 			this.remotePaddle.setCollideWorldBounds(true);
 			this.remotePaddle.setImmovable(true);
@@ -245,11 +239,9 @@ export class Part2Scene extends Phaser.Scene {
 			}
 		});
 
-
 		/* Adding Menu button */
 		const homeButton = this.add.image(this.cameras.main.centerX, 25, 'button');
 		homeButton.setScale(0.4);
-
 		homeButton.setOrigin(0.5, 0.5);
 
 		// setting the text as interactive
@@ -285,8 +277,8 @@ export class Part2Scene extends Phaser.Scene {
 			if (this.opponentScoreText)
 				this.opponentScoreText.setText(this.opponentScore.toString());
 			this.setActiveScene("menu");
-			//console.log(`Running game ${this.activeScene} : Menu`);
-			this.game.scene.switch("part2", "menu");
+			console.log(`Running game ${this.activeScene} : Menu`);
+			this.game.scene.switch("part1", "menu");
 		});
 
 		// Adding start button for the Game
@@ -309,10 +301,8 @@ export class Part2Scene extends Phaser.Scene {
 		/* Refresh Score */
 		if (this.myScoreText)
 			this.myScoreText.setText(this.myScore.toString());
-		// this.myScoreText.setText(this.myScore.toString());
 		if (this.opponentScoreText)
 			this.opponentScoreText.setText(this.opponentScore.toString());
-		// this.opponentScoreText.setText(this.opponentScore.toString());
 
 		if (this.ball) {
 			// set the ball to center
@@ -320,21 +310,13 @@ export class Part2Scene extends Phaser.Scene {
 			this.ball.y = this.cameras.main.centerY;
 
 			// Launch the ball to random direction
-			let velocityX = Phaser.Math.Between(300, 500);
-			let velocityY = Phaser.Math.Between(100, 350);
+			let velocityX = Phaser.Math.Between(300, 450);
+			let velocityY = Phaser.Math.Between(200, 350);
+
 			// random negative or positive
 			velocityX *= Math.random() < 0.5 ? 1 : -1;
 			velocityY *= Math.random() < 0.5 ? 1 : -1;
 			this.ball.setVelocity(velocityX, velocityY);
-
-			//test
-			//this.ball.setVelocity(300, 0); // to delete
-
-			// Refresh the score
-			if (this.myScoreText)
-				this.myScoreText.setText(this.myScore.toString());
-			if (this.opponentScoreText)
-				this.opponentScoreText.setText(this.opponentScore.toString());
 		}
 	}
 
@@ -371,7 +353,7 @@ export class Part2Scene extends Phaser.Scene {
 		const client = new Client(BACKEND_URL);
 
 		try {
-			this.room = await client.joinOrCreate("part2_room", {});
+			this.room = await client.joinOrCreate("part1_room", {});
 
 			// connection successful!
 			connectionStatusText.destroy();

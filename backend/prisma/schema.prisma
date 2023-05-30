@@ -33,6 +33,10 @@ model User {
   mutedRooms Room[] @relation("RoomMutedUser")
   blockedByUsers User[] @relation("BlockedUser")
   blockedUsers User[] @relation("BlockedUser")
+  two_fa Boolean @default(false)
+}
+model Authenticator {
+  checked Boolean @unique
 }
 
 model Data {
