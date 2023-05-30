@@ -3,18 +3,18 @@
   
 	let pendingRequests = [];
 	let friends = [];
-	let userId;
-	let requesteeId;
+	let userLogin;
+	let requesteeLogin;
   
-	$: userId && refreshData();
+	$: userLogin && refreshData();
   
 	async function refreshData() {
-	  pendingRequests = await getFriendRequests(userId);
-	  friends = await getFriendList(userId);
+	  pendingRequests = await getFriendRequests(userLogin);
+	  friends = await getFriendList(userLogin);
 	}
   
-	async function getFriendRequests(userId) {
-	  const res = await fetch(`http://localhost:3333/social/friend-requests/${userId}`);
+	async function getFriendRequests(userLogin) {
+	  const res = await fetch(`http://localhost:3333/social/friend-requests/${userLogin}`);
 	  return await res.json();
 	}
   
@@ -28,8 +28,8 @@
 	  await refreshData();
 	}
   
-	async function getFriendList(userId) {
-	  const res = await fetch(`http://localhost:3333/social/friend-list/${userId}`);
+	async function getFriendList(userLogin) {
+	  const res = await fetch(`http://localhost:3333/social/friend-list/${userLogin}`);
 	  return await res.json();
 	}
   
@@ -37,19 +37,19 @@
 	  await fetch('http://localhost:3333/social/friend-request', { 
 		method: 'POST', 
 		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify({ requesterId: userId, requesteeId }) 
+		body: JSON.stringify({ requesterLogin: userLogin, requesteeLogin }) 
 	  });
-	  await refreshData();
+	  return refreshData();
 	}
 </script>
   
-<input type="number" bind:value={userId} placeholder="Your user id" />
+<input type="text" bind:value={userLogin} placeholder="Your user login" />
 
 <section>
 	<h2>Pending friend requests</h2>
 	{#each pendingRequests as request (request.id)}
 	  <div>
-		<p>{request.requesterUser.first_name} wants to be your friend.</p>
+		<p>{request.requester.first_name} wants to be your friend.</p>
 		<button on:click={() => acceptFriendRequest(request.id)}>Accept</button>
 		<button on:click={() => rejectFriendRequest(request.id)}>Reject</button>
 	  </div>
@@ -59,12 +59,12 @@
 <section>
 	<h2>Your friends</h2>
 	{#each friends as friend (friend.id)}
-	  <p><a href={`/profile/${friend.id}`}>{friend.first_name} {friend.last_name}</a></p>
+	  <p><a href={`/profile/${friend.friend.login}`}>{friend.friend.login}</a></p>
 	{/each}
 </section>
   
 <section>
 	<h2>Send a friend request</h2>
-	<input type="number" bind:value={requesteeId} placeholder="Friend's user id" />
+	<input type="text" bind:value={requesteeLogin} placeholder="Friend's user login" />
 	<button on:click={sendFriendRequest}>Send friend request</button>
 </section>

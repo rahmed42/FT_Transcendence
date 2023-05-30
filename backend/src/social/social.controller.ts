@@ -1,6 +1,7 @@
-import { Controller, Post, Body, Param, Patch, Get, ParseIntPipe } from '@nestjs/common';
+import { Controller, Post, Body, Param, Patch, Get } from '@nestjs/common';
 import { SocialService } from './social.service';
 import { FriendRequestDto } from './dto/friend-request.dto';
+import { ParseIntPipe } from '@nestjs/common';
 
 @Controller('social')
 export class SocialController {
@@ -8,12 +9,12 @@ export class SocialController {
 
   @Post('friend-request')
   async sendFriendRequest(@Body() body: FriendRequestDto): Promise<any> {
-    return this.socialService.sendFriendRequest(body.requesterId, body.requesteeId);
+    return this.socialService.sendFriendRequest(body.requesterLogin, body.requesteeLogin);
   }
 
-  @Get('friend-requests/:userId')
-  async getFriendRequests(@Param('userId', ParseIntPipe) userId: number): Promise<any> {
-    return this.socialService.getFriendRequests(userId);
+  @Get('friend-requests/:userLogin')
+  async getFriendRequests(@Param('userLogin') userLogin: string): Promise<any> {
+    return this.socialService.getFriendRequests(userLogin);
   }
 
   @Patch('friend-request/:id/accept')
@@ -26,8 +27,8 @@ export class SocialController {
     return this.socialService.rejectFriendRequest(id);
   }
 
-  @Get('friend-list/:userId')
-  async getFriendList(@Param('userId', ParseIntPipe) userId: number): Promise<any> {
-    return this.socialService.getFriendList(userId);
+  @Get('friend-list/:userLogin')
+  async getFriendList(@Param('userLogin') userLogin: string): Promise<any> {
+    return this.socialService.getFriendList(userLogin);
   }
 }

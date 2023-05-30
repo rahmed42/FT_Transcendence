@@ -15,7 +15,7 @@ model User {
   jwtToken              String         @default("")
   id                    Int            @id
   email                 String
-  login                 String
+  login                 String         @unique
   first_name            String
   last_name             String
   large_pic             String
@@ -50,12 +50,12 @@ model MatchHistory {
 }
 
 model Friend {
-  id            Int    @id @default(autoincrement())
-  requesterId   Int
-  requesteeId   Int
-  status        String @default("pending")
-  requesterUser User   @relation(fields: [requesterId], references: [id], name: "FriendRequestSent", onDelete: Cascade)
-  requesteeUser User   @relation(fields: [requesteeId], references: [id], name: "FriendRequestReceived", onDelete: Cascade)
+  id          Int    @id @default(autoincrement())
+  requesterId Int
+  requesteeId Int
+  status      String @default("pending")
+  requester   User   @relation(fields: [requesterId], references: [id], name: "FriendRequestSent", onDelete: Cascade)
+  requestee   User   @relation(fields: [requesteeId], references: [id], name: "FriendRequestReceived", onDelete: Cascade)
 }
 
 model Data {

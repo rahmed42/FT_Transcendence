@@ -1,13 +1,9 @@
-import { IsInt, IsNotEmpty, Min } from 'class-validator';
+import { IsNotEmpty } from 'class-validator';
 
 export class FriendRequestDto {
-  @IsInt()
   @IsNotEmpty()
-  @Min(1)
-  requesterId: number;
+  requesterLogin: string;
 
-  @IsInt()
   @IsNotEmpty()
-  @Min(1)
-  requesteeId: number;
+  requesteeLogin: string;
 }
