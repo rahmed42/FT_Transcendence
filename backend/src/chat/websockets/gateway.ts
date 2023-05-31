@@ -20,7 +20,9 @@ export class Gateway implements OnModuleInit {
     }
 
     async sendMessageToRoom(roomName: string, content: string, idSender: number) {
-        const room = await this.prisma.room.findFirst({
+        if (!idSender || !roomName || !content)
+			return ;
+		const room = await this.prisma.room.findFirst({
             where : {
                 name: roomName,
             }
@@ -66,7 +68,9 @@ export class Gateway implements OnModuleInit {
         })
     }
     async sendPrivateMessage(idSender: number, loginReceiver: string, content: string) {
-        const user = await this.prisma.user.findFirst({
+        if (!idSender || !loginReceiver || !content)
+			return ;
+		const user = await this.prisma.user.findFirst({
             where : {
                 id: idSender,
             }

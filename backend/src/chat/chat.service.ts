@@ -3,6 +3,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { ChatDtoAdminOperation, ChatDtoBlockUser, ChatDtoCreateRoom, ChatDtoGetRoom, ChatDtoJoinRoom, PrivateChatDtoCreateMessage, PrivateChatDtoCreateRoom } from './dto';
 import * as argon from 'argon2';
 import { v4 as uuidv4 } from 'uuid';
+import { Room } from 'colyseus';
 
 @Injectable()
 export class ChatService {
@@ -42,11 +43,6 @@ export class ChatService {
                 type: body.type,
                 messages: {},
                 users: {
-                    connect: {
-                        id: body.idUser,
-                    }
-                },
-                owner: {
                     connect: {
                         id: body.idUser,
                     }
@@ -1594,5 +1590,126 @@ export class ChatService {
 			},
 		});
 		return { message: "User successfully unblocked" }
+	}
+	async muteUser(body: ChatDtoAdminOperation)
+	{
+		const user = await this.prisma.user.findFirst({
+			where: {
+				id: body.idAdmin,
+			},
+		});
+		if (!user)
+			throw new BadRequestException('User does not exist');
+		const userToMute = await this.prisma.user.findFirst({
+			where: {
+				login: body.loginUserToExecute,
+			},
+		});
+		const room = await this.prisma.room.findFirst({
+			where: {
+				name: body.roomName,
+			},
+		});
+		if (!room)
+			throw new BadRequestException('Room does not exist');
+		if (!userToMute)
+			throw new BadRequestException('User to mute does not exist');
+		if (user.id == userToMute.id)
+			throw new BadRequestException('You cannot mute yourself');
+		const isAlreadyMuted = await this.prisma.user.findFirst({
+			where: {
+				login: body.loginUserToExecute,
+				mutedRooms: {
+					some: {
+						name: body.roomName,
+					},
+				},
+			},
+		});
+		if (isAlreadyMuted)
+			throw new BadRequestException('User is already muted');
+		const isUserAdmin = await this.prisma.user.findFirst({
+			where: {
+				id: body.idAdmin,
+				administratedRooms: {
+					some: {
+						name: body.roomName,
+					},
+				},
+			},
+		});
+		if (!isUserAdmin)
+			throw new BadRequestException('You are not admin of this room');
+		if (room.ownerId == userToMute.id)
+			throw new BadRequestException('You cannot mute owner of the room');
+		await this.prisma.user.update({
+			where: {
+				login: body.loginUserToExecute,
+			},
+			data: {
+				mutedRooms: {
+					connect: {
+						name: body.roomName,
+					},
+				},
+			},
+		});
+		return { message: "User successfully muted" }
+	}
+	async unmuteUser(body: ChatDtoAdminOperation)
+	{
+		const user = await this.prisma.user.findFirst({
+			where: {
+				id: body.idAdmin,
+			},
+		});
+		if (!user)
+			throw new BadRequestException('User does not exist');
+		const userToUnmute = await this.prisma.user.findFirst({
+			where: {
+				login: body.loginUserToExecute,
+			},
+		});
+		const isUserAdmin = await this.prisma.user.findFirst({
+			where: {
+				id: body.idAdmin,
+				administratedRooms: {
+					some: {
+						name: body.roomName,
+					},
+				},
+			},
+		});
+		if (!isUserAdmin)
+			throw new BadRequestException('You are not admin of this room');
+		if (!userToUnmute)
+			throw new BadRequestException('User to unmute does not exist');
+		if (user.id == userToUnmute.id)
+			throw new BadRequestException('You cannot unmute yourself');
+		const isMuted = await this.prisma.user.findFirst({
+			where: {
+				login: body.loginUserToExecute,
+				mutedRooms: {
+					some: {
+						name: body.roomName,
+					},
+				},
+			},
+		});
+		if (!isMuted)
+			throw new BadRequestException('User is not muted');
+		await this.prisma.user.update({
+			where: {
+				login: body.loginUserToExecute,
+			},
+			data: {
+				mutedRooms: {
+					disconnect: {
+						name: body.roomName,
+					},
+				},
+			},
+		});
+		return { message: "User successfully unmuted" }
 	}
 }

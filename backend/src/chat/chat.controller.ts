@@ -109,6 +109,16 @@ export class ChatController {
 	{
 		return await this.ChatService.unblockUser(body);
 	}
+	@Post('muteUser')
+	async muteUser(@Body() body: ChatDtoAdminOperation)
+	{
+		return await this.ChatService.muteUser(body);
+	}
+	@Post('unmuteUser')
+	async unmuteUser(@Body() body: ChatDtoAdminOperation)
+	{
+		return await this.ChatService.unmuteUser(body);
+	}
     /* TODO MUTE */
-//     @Post('unblockUser')
+
 }
