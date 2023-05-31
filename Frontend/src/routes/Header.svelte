@@ -23,8 +23,8 @@
 			if (code) {
 				await getToken(code);
 			}
-			// HERE NEED TO CHECK IF THERE IS A JWT IN THE COOKIE, IF YES, DON'T DO GETUSERINFO
-			await getUserInfo();
+			if (checkJwtCookie())
+				await getUserInfo();
 
 			// Clean up the subscription on unmount
 			return () => {
@@ -54,6 +54,24 @@
 			}
 		}
 	}
+
+	function checkJwtCookie() {
+		const cookies = document.cookie.split(';');
+
+		for (let i = 0; i < cookies.length; i++) {
+			const cookie = cookies[i].trim();
+
+			if (cookie.startsWith('jwt=')) {
+			const jwtValue = cookie.substring(4);
+
+			if (jwtValue.length > 0) {
+				console.log('There is a cookie value');
+				return true;
+			}
+		}
+	}
+	return false;
+}
 
 	async function getUserInfo() {
 		// Fetch user informations from the server

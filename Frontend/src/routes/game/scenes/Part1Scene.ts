@@ -192,7 +192,7 @@ export class Part1Scene extends Phaser.Scene {
 
 				if (this.room.state.players.size === 1) {
 					// console.log("1 player in Game");
-					this.startButtonText("🏓 Start Game", false);
+					this.startButtonText("🟢 Start Game 🔴", false);
 				}
 				// set the remote paddle to follow the second player.
 				else if (this.room.state.players.size === 2) {
@@ -201,7 +201,7 @@ export class Part1Scene extends Phaser.Scene {
 						// create remote paddle
 						// this.createRemotePaddle(player);
 					}
-					this.startButtonText("🏓 Start Game 🏓", true);
+					this.startButtonText("🟢 Start Game 🟢", true);
 				}
 			}
 			// else
