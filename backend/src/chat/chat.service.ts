@@ -3,7 +3,6 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { ChatDtoAdminOperation, ChatDtoBlockUser, ChatDtoCreateRoom, ChatDtoGetRoom, ChatDtoJoinRoom, PrivateChatDtoCreateMessage, PrivateChatDtoCreateRoom } from './dto';
 import * as argon from 'argon2';
 import { v4 as uuidv4 } from 'uuid';
-import { Room } from 'colyseus';
 
 @Injectable()
 export class ChatService {
@@ -1711,5 +1710,100 @@ export class ChatService {
 			},
 		});
 		return { message: "User successfully unmuted" }
+	}
+	async changePassword(body: ChatDtoJoinRoom)
+	{
+		const user = await this.prisma.user.findFirst({
+			where: {
+				id: body.idUser,
+			},
+		});
+		if (!user)
+			throw new BadRequestException('User does not exist');
+		const room = await this.prisma.room.findFirst({
+			where: {
+				name: body.roomName,
+			},
+		});
+		if (!room)
+			throw new BadRequestException('Room does not exist');
+		const isUserAdmin = await this.prisma.user.findFirst({
+			where: {
+				id: body.idUser,
+				administratedRooms: {
+					some: {
+						name: body.roomName,
+					},
+				},
+			},
+		});
+		if (!isUserAdmin)
+			throw new BadRequestException('You are not admin of this room');
+		if (room.type == "public")
+			throw new BadRequestException('You cannot change password of public room');
+		if (room.type == "private")
+			throw new BadRequestException('You cannot change password of private room');
+		if (body.password == null || body.password == '')
+			throw new BadRequestException('Password cannot be empty');
+		const hash = await argon.hash(body.password);
+		await this.prisma.room.update({
+			where: {
+				name: body.roomName,
+			},
+			data: {
+				password: hash,
+			},
+		});
+		return { message: "Password successfully changed" }
+
+
+	}
+	async changeRoomType(body: ChatDtoCreateRoom)
+	{
+		const user = await this.prisma.user.findFirst({
+			where: {
+				id: body.idUser,
+			},
+		});
+		if (!user)
+			throw new BadRequestException('User does not exist');
+		const room = await this.prisma.room.findFirst({
+			where: {
+				name: body.roomName,
+			},
+		});
+		if (!room)
+			throw new BadRequestException('Room does not exist');
+		const isUserAdmin = await this.prisma.user.findFirst({
+			where: {
+				id: body.idUser,
+				administratedRooms: {
+					some: {
+						name: body.roomName,
+					},
+				},
+			},
+		});
+		if (!isUserAdmin)
+			throw new BadRequestException('You are not admin of this room');
+		if (body.type == "public" || body.type == "private")
+		{
+			body.password = '';
+		}
+		if (room.type == body.type)
+			throw new BadRequestException('Room is already ' + body.type);
+		else if (body.type == "protected" && (body.password == null || body.password == ''))
+			throw new BadRequestException('Password cannot be empty');
+		const hash = await argon.hash(body.password);
+		await this.prisma.room.update({
+			where: {
+				name: body.roomName,
+			},
+			data: {
+				type: body.type,
+				password: hash,
+			},
+		});
+		return { message: "Room type successfully changed" }
 	}
 }

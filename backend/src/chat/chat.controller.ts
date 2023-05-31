@@ -1,7 +1,6 @@
-import {BadRequestException, Body, Controller, Get, Param, Post, Req, UseGuards} from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Req, UseGuards} from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { ChatDtoAdminOperation, ChatDtoBlockUser, ChatDtoCreateRoom, ChatDtoGetRoom, ChatDtoJoinRoom } from './dto';
-import { AuthGuard } from '@nestjs/passport';
 import { ExtractJwt } from 'passport-jwt';
 import { Request } from 'express';
 import { UserService } from 'src/user/user.service';
@@ -119,6 +118,14 @@ export class ChatController {
 	{
 		return await this.ChatService.unmuteUser(body);
 	}
-    /* TODO MUTE */
-
+	@Post('changePassword')
+	async changePassword(@Body() body: ChatDtoJoinRoom)
+	{
+		return await this.ChatService.changePassword(body);
+	}
+	@Post('changeRoomType')
+	async changeRoomType(@Body() body: ChatDtoCreateRoom)
+	{
+		return await this.ChatService.changeRoomType(body);
+	}
 }
