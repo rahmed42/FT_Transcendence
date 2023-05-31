@@ -9,7 +9,7 @@
   let messageInput = '';
   let messages = [
     //"tamere la gitane qui radotte du saucisson pleins la bouche de potiron polochon petoqu de la nana dd'en bas ninanana ça va comme ça les pyjamas poupoupou ça va comme ça nananana ça va comme ça ça gaz pour toi meme pas mais wtf pourquoi il met pas tout au meme endroit zebiah ouai ok c'st chelou ce bailOK KOKOKOKOKOKOK MOMOMOMOMO TOTOTOTOTOKKO &#x200"
-    { content: " ", username: "manu", user: true },
+    { content: "tamere la gitane qui radotte du saucisson pleins la bouche de potiron polochon petoqu de la nana dd'en bas ninanana ça va comme ça les pyjamas poupoupou ça va comme ça nananana ça va comme ça ça gaz pour toi meme pas mais wtf pourquoi il met pas tout au meme endroit zebiah ouai ok c'st chelou ce bailOK KOKOKOKOKOKOK MOMOMOMOMO TOTOTOTOTOKKO &#x200", username: "manu", user: true },
     { content: " ", username: "ange", user: false },
     { content: "ton pere", username: "manu", user: true },
     { content: "la choucroute", username: "Tim", user: false },
@@ -55,25 +55,26 @@
   let error: string = '';
   let selectedChannel = '';
   let selectedUser = '';
-    onMount(async () => {
-	const socket = io('http://localhost:3333', {
-		transports: ['websocket'],
-		auth: {
-		token: sessionStorage.getItem('jwt'),
-		},
-	});
-	socket.on('connect', () => {
-	  console.log('connected');
-	});
-	socket.on('disconnect', () => {
-	  console.log('disconnected');
-	});
-	socket.on('newRoomMessage', (data: any) => {
-	  console.log(data);
-	});
-	socket.emit("newMessage", {content : "salam"})
+  onMount(async () => {
+    /*const socket = io('http://localhost:3333', {
+      transports: ['websocket'],
+      auth: {
+        token: sessionStorage.getItem('jwt'),
+      },
+    });
+    socket.on('connect', () => {
+      console.log('connected');
+    });
+    socket.on('disconnect', () => {
+      console.log('disconnected');
+    });
+    socket.on('newRoomMessage', (data: any) => {
+      console.log(data);
+    });
+    socket.emit("newMessage", {content : "salam"})
     const storedUser = sessionStorage.getItem('userID');
-
+    */
+    let storedUser = sessionStorage.getItem('userID');
     if (storedUser && storedUser !== 'undefined' && storedUser !== 'null') {
       userID = parseInt(storedUser || '0');
     } else {
@@ -224,7 +225,7 @@
           else if (response.ok) {
             const newChannel = await response.json();
             channelList.update(channelList => [...channelList, { name: newChannel.room.name }]);
-            socket.emit('joinRoom', { roomId: newChannel.room.id, userId: userID });
+            //socket.emit('joinRoom', { roomId: newChannel.room.id, userId: userID });
             console.log(newChannel.room.name);
           }
           closeJoinModal();
@@ -261,7 +262,11 @@
         if (newChannel)
         {
           	userList.set(newChannel.users);
-         	console.log(JSON.stringify(get(userList), null, 2))
+            //j'aimerais check la réponse du back, si mon userID est admin, alors j'aimerais mettre un bouton pour les admins
+            //pour toutes les options d'administrateur, et si c'est pas un admin, alors j'aimerais pas qu'il y ai de bouton
+            //pour les options d'administrateur
+
+            console.log(newChannel);
         }
        }
     }
@@ -338,12 +343,12 @@
     <div class="messages">
       {#each messages as message}
         {#if message.user}
-          <div class="message-container">
+          <div class="message-container-user">
             <p class="message-utilisateur"> <strong> {message.username} </strong> </p>
             <p class="message-utilisateur">{message.content}</p>
           </div>
         {:else}
-          <div class="message-container">
+          <div class="message-container-other">
             <p class="message-autre-utilisateur"> <strong> {message.username} </strong> </p>
             <p class="message-autre-utilisateur">{message.content}</p>
           </div>
@@ -445,7 +450,6 @@
     padding: 10px;
     height: 100vh;
     max-height: 100vh;
-    overflow-y: auto;
     border-right: 1px solid #ccc; /* Ajout de la bordure */
     padding-right: 10px; /* Ajout des marges intérieures */
   }
@@ -510,7 +514,7 @@
   }
 
   .modal-content {
-    background-color: #fff;
+    background-color: #5446da;
     padding: 20px;
     border-radius: 4px;
   }
@@ -520,7 +524,7 @@
   }
 
   .error-message {
-    color: red;
+    color: rgb(184, 200, 65);
     font-size: 12px;
     margin-top: 5px;
   }
@@ -530,20 +534,43 @@
     padding: 10px;
     height: 100vh;
     max-height: 100vh;
-    overflow-y: auto;
     border-left: 1px solid #ccc; /* Ajout de la bordure */
     padding-left: 10px; /* Ajout des marges intérieures */
   }
 
-  .message-utilisateur {
-    text-align: right;
-    color: red;
+  .message-container-user {
+    max-width: 60%; /* Limiter la largeur du message */
+    margin: 1px; /* Ajouter de l'espace autour du message */
+    padding: 1px; /* Ajouter de l'espace à l'intérieur du message */
+    border-radius: 20px; /* Arrondir les coins */
+    background-color: #f0f0f0; /* Couleur de fond de la bulle de message */
+    margin-left: 50%; /* Add margin to push the bubble to the right */
+    border-top-right-radius: 0; /* Make the right top corner sharp */
+    direction: rtl;
+    word-wrap: break-word;
   }
 
-  .message-autre-utilisateur{
-    text-align: left;
-    color: blue;
-  }
+.message-container-other {
+    max-width: 60%; /* Limiter la largeur du message */
+    margin: 1px; /* Ajouter de l'espace autour du message */
+    padding: 1px; /* Ajouter de l'espace à l'intérieur du message */
+    border-radius: 20px; /* Arrondir les coins */
+    background-color: #f0f0f0; /* Couleur de fond de la bulle de message */
+    direction: ltr;
+    margin-right: 50%; /* Add margin to push the bubble to the right */
+    border-top-left-radius: 0; /* Make the left top corner sharp */
+    word-wrap: break-word;  }
+
+.message-utilisateur {
+    align-self: flex-end;
+    color: black; /* Couleur du texte */
+}
+
+.message-autre-utilisateur {
+    align-self: flex-start;
+    color: black; /* Couleur du texte */
+}
+
 
   .user-list-title {
     text-align: center;
