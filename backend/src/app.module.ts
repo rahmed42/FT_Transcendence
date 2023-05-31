@@ -7,10 +7,14 @@ import { JwtModule } from '@nestjs/jwt';
 import { UserController } from './user/user.controller';
 import { UserService } from './user/user.service';
 import { UserModule } from './user/user.module';
+import { ChatModule } from './chat/chat.module';
+import { ChatController } from './chat/chat.controller';
+import { ChatService } from './chat/chat.service';
+import { GatewayModule } from './chat/websockets/gateway.module';
 
 @Module({
-  imports: [AuthModule, PrismaModule, JwtModule, UserModule],
-  controllers: [AuthController, UserController],
-  providers: [AuthService, UserService],
+  imports: [AuthModule, PrismaModule, JwtModule, UserModule, ChatModule, GatewayModule],
+  controllers: [AuthController, UserController, ChatController],
+  providers: [AuthService, UserService, ChatService],
 })
 export class AppModule {}
