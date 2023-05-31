@@ -1,17 +1,17 @@
 import { IsNotEmpty, IsOptional, IsNumber } from 'class-validator';
 
-export class ChatDtoCreateRoom 
+export class ChatDtoCreateRoom
 {
     @IsNotEmpty()
     @IsNumber()
     idUser : number;
-    
+
     @IsNotEmpty()
     roomName: string;
 
     @IsOptional()
     password: string;
-    
+
     @IsNotEmpty()
     type: string;
 
@@ -40,10 +40,10 @@ export class ChatDtoAdminOperation
     roomName : string;
 
     @IsNotEmpty()
-    idUserToExecute : number;
+    loginUserToExecute : string;
 }
 
-export class ChatDtoGetRoom 
+export class ChatDtoGetRoom
 {
     @IsNotEmpty()
     @IsNumber()
@@ -74,4 +74,14 @@ export class PrivateChatDtoCreateMessage
 
     @IsNotEmpty()
     content : string;
+}
+
+
+export class ChatDtoBlockUser {
+	@IsNotEmpty()
+	@IsNumber()
+	idUser : number;
+
+	@IsNotEmpty()
+	loginUserToBlock : string
 }

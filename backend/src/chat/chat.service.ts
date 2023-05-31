@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { ChatDtoAdminOperation, ChatDtoCreateRoom, ChatDtoGetRoom, ChatDtoJoinRoom, PrivateChatDtoCreateMessage, PrivateChatDtoCreateRoom } from './dto';
+import { ChatDtoAdminOperation, ChatDtoBlockUser, ChatDtoCreateRoom, ChatDtoGetRoom, ChatDtoJoinRoom, PrivateChatDtoCreateMessage, PrivateChatDtoCreateRoom } from './dto';
 import * as argon from 'argon2';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -64,33 +64,6 @@ export class ChatService {
                 },
                 bannedUsers: {},
                 mutedUsers: {},
-            },
-        });
-       await this.prisma.user.update({
-            where: {
-                id: body.idUser,
-            },
-            data: {
-                ownedRooms: {
-                    connect: {
-                        name: room.name,
-                    },
-                },
-                rooms: {
-                    connect: {
-                        name: room.name,
-                    },
-                },
-                administratedRooms: {
-                    connect: {
-                        name: room.name,
-                    },
-                },
-                invitedRooms: {
-                    connect: {
-                        name: room.name,
-                    },
-                },
             },
         });
         delete room.password;
@@ -234,7 +207,7 @@ export class ChatService {
         }
         const toInvite = await this.prisma.user.findFirst({
             where: {
-                id: body.idUserToExecute,
+                login: body.loginUserToExecute,
             }
         });
         if (!toInvite) {
@@ -258,7 +231,7 @@ export class ChatService {
                 name: body.roomName,
                 users: {
                     some: {
-                        id: body.idUserToExecute,
+                        login: body.loginUserToExecute,
                     }
                 }
             },
@@ -273,14 +246,14 @@ export class ChatService {
             data: {
                 invitedUsers: {
                     connect: {
-                        id: body.idUserToExecute,
+                        login: body.loginUserToExecute,
                     },
                 },
             },
         });
         const updatedUser = await this.prisma.user.update({
             where: {
-                id: body.idUserToExecute,
+                login: body.loginUserToExecute,
             },
             data: {
                 invitedRooms: {
@@ -312,7 +285,7 @@ export class ChatService {
         }
         const toKick = await this.prisma.user.findFirst({
             where: {
-                id: body.idUserToExecute,
+                login: body.loginUserToExecute,
             },
         });
         if (!toKick) {
@@ -336,7 +309,7 @@ export class ChatService {
                 name: body.roomName,
                 users: {
                     some: {
-                        id: body.idUserToExecute,
+                        login: body.loginUserToExecute,
                     },
                 },
             },
@@ -347,7 +320,7 @@ export class ChatService {
         const isKickedUserOwner = await this.prisma.room.findFirst({
             where: {
                 name: body.roomName,
-                ownerId: body.idUserToExecute,
+                owner: toKick,
             },
         });
         const isKickedUserAdmin = await this.prisma.room.findFirst({
@@ -355,7 +328,7 @@ export class ChatService {
                 name: body.roomName,
                 administrators: {
                     some: {
-                        id: body.idUserToExecute,
+                        login: body.loginUserToExecute,
                     },
                 },
             },
@@ -365,7 +338,7 @@ export class ChatService {
                 name: body.roomName,
                 mutedUsers: {
                     some: {
-                        id: body.idUserToExecute,
+                        login: body.loginUserToExecute,
                     },
                 },
             },
@@ -380,29 +353,29 @@ export class ChatService {
             data: {
                 users: {
                     disconnect: {
-                        id: body.idUserToExecute,
+                        login: body.loginUserToExecute,
                     },
                 },
                 invitedUsers: {
                     disconnect: {
-                        id: body.idUserToExecute,
+                        login: body.loginUserToExecute,
                     },
                 },
                 administrators: isKickedUserAdmin ? {} : {
                     disconnect: {
-                        id: body.idUserToExecute,
+                        login: body.loginUserToExecute,
                     },
                 },
                 mutedUsers: isKickedUserMuted ? {} : {
                     disconnect: {
-                        id: body.idUserToExecute,
+                        login: body.loginUserToExecute,
                     },
                 },
             },
         });
         const updatedUser = await this.prisma.user.update({
             where: {
-                id: body.idUserToExecute,
+                login: body.loginUserToExecute,
             },
             data: {
                 rooms: {
@@ -549,7 +522,7 @@ export class ChatService {
         }
         const toBan = await this.prisma.user.findFirst({
             where: {
-                id: body.idUserToExecute,
+                login: body.loginUserToExecute,
             },
         });
         if (!toBan) {
@@ -581,7 +554,7 @@ export class ChatService {
                 name: body.roomName,
                 users: {
                     some: {
-                        id: body.idUserToExecute,
+                        login: body.loginUserToExecute,
                     },
                 },
             },
@@ -594,7 +567,7 @@ export class ChatService {
                 name: body.roomName,
                 bannedUsers: {
                     some: {
-                        id: body.idUserToExecute,
+                        login: body.loginUserToExecute,
                     },
                 },
             },
@@ -605,7 +578,7 @@ export class ChatService {
         const isBannedUserOwner = await this.prisma.room.findFirst({
             where: {
                 name: body.roomName,
-                ownerId: body.idUserToExecute,
+                owner: toBan,
             },
         });
         if (isBannedUserOwner) {
@@ -616,7 +589,7 @@ export class ChatService {
                 name: body.roomName,
                 administrators: {
                     some: {
-                        id: body.idUserToExecute,
+                        login: body.loginUserToExecute,
                     },
                 },
             },
@@ -626,7 +599,7 @@ export class ChatService {
                 name: body.roomName,
                 mutedUsers: {
                     some: {
-                        id: body.idUserToExecute,
+                        login: body.loginUserToExecute,
                     },
                 },
             },
@@ -638,34 +611,34 @@ export class ChatService {
             data: {
                 mutedUsers: isBannedUserMuted ? {} : {
                     disconnect: {
-                        id: body.idUserToExecute,
+                        login: body.loginUserToExecute,
                     },
                 },
                 bannedUsers: {
                     connect: {
-                        id: body.idUserToExecute,
+                        login: body.loginUserToExecute,
                     },
                 },
                 users: {
                     disconnect : {
-                        id : body.idUserToExecute,
+                        login : body.loginUserToExecute,
                     }
                 },
                 invitedUsers : {
                     disconnect : {
-                        id : body.idUserToExecute,
+                        login : body.loginUserToExecute,
                     }
                 },
                 administrators: isBannedUserAdmin ? {} : {
                     disconnect: {
-                        id: body.idUserToExecute,
+                        login: body.loginUserToExecute,
                     }
                 },
             },
         });
         await this.prisma.user.update({
             where: {
-                id: body.idUserToExecute,
+                login: body.loginUserToExecute,
             },
             data: {
                 rooms: {
@@ -862,7 +835,7 @@ export class ChatService {
         });
         const user = await this.prisma.user.findFirst({
             where: {
-                id: body.idUserToExecute,
+                login: body.loginUserToExecute,
             },
         });
         if (!user) {
@@ -884,7 +857,7 @@ export class ChatService {
                 name: body.roomName,
                 users: {
                     some: {
-                        id: body.idUserToExecute,
+                        login: body.loginUserToExecute,
                     },
                 },
             },
@@ -910,7 +883,7 @@ export class ChatService {
                 name: body.roomName,
                 administrators: {
                     some: {
-                        id: body.idUserToExecute,
+                        login: body.loginUserToExecute,
                     },
                 },
             },
@@ -925,14 +898,14 @@ export class ChatService {
             data: {
                 administrators: {
                     connect: {
-                        id: body.idUserToExecute,
+                        login: body.loginUserToExecute,
                     },
                 },
             },
         });
         await this.prisma.user.update({
             where: {
-                id: body.idUserToExecute,
+                login: body.loginUserToExecute,
             },
             data: {
                 administratedRooms: {
@@ -953,7 +926,7 @@ export class ChatService {
         });
         const user = await this.prisma.user.findFirst({
             where: {
-                id: body.idUserToExecute,
+                login: body.loginUserToExecute,
             },
         });
         if (!user) {
@@ -975,7 +948,7 @@ export class ChatService {
                 name: body.roomName,
                 users: {
                     some: {
-                        id: body.idUserToExecute,
+                        login: body.loginUserToExecute,
                     },
                 },
             },
@@ -1001,7 +974,7 @@ export class ChatService {
                 name: body.roomName,
                 administrators: {
                     some: {
-                        id: body.idUserToExecute,
+                        login: body.loginUserToExecute,
                     },
                 },
             },
@@ -1010,7 +983,7 @@ export class ChatService {
             where: {
                 name: body.roomName,
                 owner: {
-                    id: body.idUserToExecute,
+                    login: body.loginUserToExecute,
                 },
             },
         });
@@ -1027,14 +1000,14 @@ export class ChatService {
             data: {
                 administrators: {
                     disconnect: {
-                        id: body.idUserToExecute,
+                        login: body.loginUserToExecute,
                     },
                 },
             },
         });
         await this.prisma.user.update({
             where: {
-                id: body.idUserToExecute,
+                login: body.loginUserToExecute,
             },
             data: {
                 administratedRooms: {
@@ -1055,7 +1028,7 @@ export class ChatService {
         });
         const user = await this.prisma.user.findFirst({
             where: {
-                id: body.idUserToExecute,
+                login: body.loginUserToExecute,
             },
         });
         if (!user) {
@@ -1077,7 +1050,7 @@ export class ChatService {
                 name: body.roomName,
                 users: {
                     some: {
-                        id: body.idUserToExecute,
+                        login: body.loginUserToExecute,
                     },
                 },
             },
@@ -1097,7 +1070,7 @@ export class ChatService {
         const isUserOwner = await this.prisma.room.findFirst({
             where: {
                 name: body.roomName,
-                ownerId: body.idUserToExecute,
+                ownerId: user.id,
             },
         });
         const isUserAdmin = await this.prisma.room.findFirst({
@@ -1105,7 +1078,7 @@ export class ChatService {
                 name: body.roomName,
                 administrators: {
                     some: {
-                        id: body.idUserToExecute,
+                        login: body.loginUserToExecute,
                     },
                 },
             },
@@ -1118,10 +1091,10 @@ export class ChatService {
                 name: body.roomName,
             },
             data: {
-                ownerId: body.idUserToExecute,
+                ownerId: user.id,
                 administrators : (!isUserAdmin) ? {} : {
                     connect: {
-                        id: body.idUserToExecute,
+                        login: body.loginUserToExecute,
                     },
                 }
 
@@ -1129,7 +1102,7 @@ export class ChatService {
         });
         await this.prisma.user.update({
             where: {
-                id: body.idUserToExecute,
+                login: body.loginUserToExecute,
             },
             data: {
                 ownedRooms: {
@@ -1172,7 +1145,7 @@ export class ChatService {
         });
         const user = await this.prisma.user.findFirst({
             where: {
-                id: body.idUserToExecute,
+                login: body.loginUserToExecute,
             },
         });
         if (!user) {
@@ -1194,7 +1167,7 @@ export class ChatService {
                 name: body.roomName,
                 users: {
                     some: {
-                        id: body.idUserToExecute,
+                        login: body.loginUserToExecute,
                     },
                 },
             },
@@ -1207,7 +1180,7 @@ export class ChatService {
                 name: body.roomName,
                 invitedUsers: {
                     some: {
-                        id: body.idUserToExecute,
+                        login: body.loginUserToExecute,
                     },
                 },
             },
@@ -1215,7 +1188,7 @@ export class ChatService {
         if (!isUserInvited) {
             throw new BadRequestException('User is not invited in room');
         }
-        if (body.idAdmin == body.idUserToExecute)
+        if (body.idAdmin == user.id)
         {
             await this.prisma.room.update({
                 where: {
@@ -1224,14 +1197,14 @@ export class ChatService {
                 data: {
                     invitedUsers: {
                         disconnect: {
-                            id: body.idUserToExecute,
+                            login: body.loginUserToExecute,
                         },
                     },
                 },
             });
             await this.prisma.user.update({
                 where: {
-                    id: body.idUserToExecute,
+                    login: body.loginUserToExecute,
                 },
                 data: {
                     invitedRooms: {
@@ -1257,7 +1230,7 @@ export class ChatService {
         });
         const user = await this.prisma.user.findFirst({
             where: {
-                id: body.idUserToExecute,
+                login: body.loginUserToExecute,
             },
         });
         if (!user) {
@@ -1279,7 +1252,7 @@ export class ChatService {
                 name: body.roomName,
                 users: {
                     some: {
-                        id: body.idUserToExecute,
+                        login: body.loginUserToExecute,
                     },
                 },
             },
@@ -1292,7 +1265,7 @@ export class ChatService {
                 name: body.roomName,
                 bannedUsers: {
                     some: {
-                        id: body.idUserToExecute,
+                        login: body.loginUserToExecute,
                     },
                 },
             },
@@ -1320,14 +1293,14 @@ export class ChatService {
             data: {
                 bannedUsers: {
                     disconnect: {
-                        id: body.idUserToExecute,
+                        login: body.loginUserToExecute,
                     },
                 },
             },
         });
         await this.prisma.user.update({
             where: {
-                id: body.idUserToExecute,
+                login: body.loginUserToExecute,
             },
             data: {
                 bannedRooms: {
@@ -1534,4 +1507,92 @@ export class ChatService {
         }
         return privateRoom;
     }
+	async blockUser(body: ChatDtoBlockUser)
+	{
+		const user = await this.prisma.user.findFirst({
+			where: {
+				id: body.idUser,
+			},
+		});
+		if (!user)
+			throw new BadRequestException('User does not exist');
+		const userToBlock = await this.prisma.user.findFirst({
+			where: {
+				login: body.loginUserToBlock,
+			},
+		});
+		if (!userToBlock)
+			throw new BadRequestException('User to block does not exist');
+		if (user.id == userToBlock.id)
+			throw new BadRequestException('You cannot block yourself');
+		const isAlreadyBlocked = await this.prisma.user.findFirst({
+			where: {
+				id: body.idUser,
+				blockedUsers: {
+					some: {
+						login: body.loginUserToBlock,
+					},
+				},
+			},
+		});
+		if (isAlreadyBlocked)
+			throw new BadRequestException('User is already blocked');
+		await this.prisma.user.update({
+			where: {
+				id: body.idUser,
+			},
+			data: {
+				blockedUsers: {
+					connect: {
+						login: body.loginUserToBlock,
+					},
+				},
+			},
+		});
+		return { message: "User successfully blocked" }
+	}
+	async unblockUser(body: ChatDtoBlockUser)
+	{
+		const user = await this.prisma.user.findFirst({
+			where: {
+				id: body.idUser,
+			},
+		});
+		if (!user)
+			throw new BadRequestException('User does not exist');
+		const userToUnblock = await this.prisma.user.findFirst({
+			where: {
+				login: body.loginUserToBlock,
+			},
+		});
+		if (!userToUnblock)
+			throw new BadRequestException('User to unblock does not exist');
+		if (user.id == userToUnblock.id)
+			throw new BadRequestException('You cannot unblock yourself');
+		const isBlocked = await this.prisma.user.findFirst({
+			where: {
+				id: body.idUser,
+				blockedUsers: {
+					some: {
+						login: body.loginUserToBlock,
+					},
+				},
+			},
+		});
+		if (!isBlocked)
+			throw new BadRequestException('User is not blocked');
+		await this.prisma.user.update({
+			where: {
+				id: body.idUser,
+			},
+			data: {
+				blockedUsers: {
+					disconnect: {
+						login: body.loginUserToBlock,
+					},
+				},
+			},
+		});
+		return { message: "User successfully unblocked" }
+	}
 }

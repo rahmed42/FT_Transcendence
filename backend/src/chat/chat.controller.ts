@@ -1,6 +1,6 @@
 import {BadRequestException, Body, Controller, Get, Param, Post, Req, UseGuards} from '@nestjs/common';
 import { ChatService } from './chat.service';
-import { ChatDtoAdminOperation, ChatDtoCreateRoom, ChatDtoGetRoom, ChatDtoJoinRoom } from './dto';
+import { ChatDtoAdminOperation, ChatDtoBlockUser, ChatDtoCreateRoom, ChatDtoGetRoom, ChatDtoJoinRoom } from './dto';
 import { AuthGuard } from '@nestjs/passport';
 import { ExtractJwt } from 'passport-jwt';
 import { Request } from 'express';
@@ -100,14 +100,15 @@ export class ChatController {
         return await this.ChatService.giveOwner(body);
     }
     @Post('blockUser')
-    async blockUser(@Body() body: ChatDtoAdminOperation)
+    async blockUser(@Body() body: ChatDtoBlockUser)
     {
-
+		return await this.ChatService.blockUser(body);
     }
-    /* TODO MUTE, BLOQUER (don't show other messages) */
+	@Post('unblockUser')
+	async unblockUser(@Body() body: ChatDtoBlockUser)
+	{
+		return await this.ChatService.unblockUser(body);
+	}
+    /* TODO MUTE */
 //     @Post('unblockUser')
-// 	async unblockUser(@Body() body: ChatDtoAdminOperation)
-// 	{
-// 		return await this.ChatService.unblockUser(body);
-// 	}
 }
