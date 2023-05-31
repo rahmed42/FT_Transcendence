@@ -15,6 +15,7 @@ export interface User {
 	createAt: string;
 	updateAt: string;
 	two_fa: boolean;
+	two_fa_secret: string,
 }
 
 // Create a store with a default value
@@ -34,6 +35,7 @@ export function resetUser() {
 		createAt: '',
 		updateAt: '',
 		two_fa: false,
+		two_fa_secret: '',
 	});
 }
 resetUser();

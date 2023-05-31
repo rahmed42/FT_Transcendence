@@ -16,7 +16,7 @@
 			const unsubscribe = user.subscribe((value) => {
 				// update currentUser with last user value at store changes
 				currentUser = value;
-				console.log(user, value);
+				// console.log(user, value);
 			});
 
 			const code = new URLSearchParams(window.location.search).get('code');
@@ -64,7 +64,6 @@
 			const jwtValue = cookie.substring(4);
 
 			if (jwtValue.length > 0) {
-				console.log('There is a cookie value');
 				return true;
 			}
 		}
@@ -76,7 +75,7 @@
 		// Fetch user informations from the server
 		const response = await fetch('http://localhost:3333/profil/me', {
 			method: 'GET',
-			credentials: 'include'
+			credentials: 'include',
 		});
 		const contentType = response.headers.get('Content-Type');
 		if (contentType && contentType.includes('application/json')) {
@@ -85,8 +84,20 @@
 			// update the user store
 			setUser(data);
 		}
+		// fetch endpoint to create the two_fa_secret
+		if (currentUser && currentUser.two_fa === true) {
+			const response = await fetch('http://localhost:3333/auth/qrcode_generate', {
+				method: 'POST',
+				credentials: 'include',
+			});
+			const contentType = response.headers.get('Content-Type');
+			if (contentType && contentType.includes('application/json')) {
+				const data = await response.json();
+				console.log(data.qrcode);
+				// window.location.href = data.qrcode;
+			}
+		}
 
-		if (currentUser && currentUser.two_fa === true) console.log('THIS IS FUCKING TRUE');
 		// redirect to login Page if not logged in
 		if ((!currentUser || !currentUser.login) && window.location.pathname !== '/')
 			window.location.href = '/';
