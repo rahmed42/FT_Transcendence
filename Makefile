@@ -61,7 +61,7 @@ update :
 	@echo "${TXT_GREEN}"
 	@printf "Updating Backend npm ...\n"
 	@echo "${FANCY_RESET}"
-	cd Backend && npm update && npm audit fix
+	cd backend && npm update && npm audit fix
 
 #################### PROJECT LAUNCH ####################
 back :
@@ -72,9 +72,9 @@ back :
 	@echo "${FANCY_RESET}"
 	@make up
 ifeq ($(USER),bryan) #FOR TIM
-	cd Backend && npm install && sudo npx prisma generate && npm run start:dev
+	cd backend && npm install && sudo npx prisma generate && npm run start:dev
 else
-	cd Backend && npm install && npx prisma generate && npm run start:dev
+	cd backend && npm install && npx prisma generate && npm run start:dev
 endif
 
 front :
@@ -91,7 +91,7 @@ bgame :
 	@echo "${TXT_GREEN}"
 	@printf "Launching ${name} Game back...\n"
 	@echo "${FANCY_RESET}"
-	cd Backend && npm run startgame
+	cd backend && npm run startgame
 
 fgame :
 	@echo "${TXT_YELLOW}"
