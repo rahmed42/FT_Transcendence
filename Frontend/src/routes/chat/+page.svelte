@@ -3,8 +3,6 @@
   import { onDestroy, onMount } from 'svelte';
   import { get } from 'svelte/store';
   import { writable } from 'svelte/store';
-  import io from 'socket.io-client';
-  import type { Socket } from 'socket.io';
 
   let messageInput = '';
   let messages = [
@@ -163,7 +161,7 @@
           } else if (response.ok) {
             const newChannel = await response.json();
             channelList.update(channelList => [...channelList, { name: newChannel.room.name }]);
-            console.log(newChannel.room.name);
+            // console.log(newChannel.room.name);
             closeModal();
           }
         }
