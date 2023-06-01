@@ -441,10 +441,11 @@
 <style>
   .container {
     display: flex;
+    margin-top: 10px; 
   }
 
   .sidebar {
-    width: 200px;
+    width: 100px;
     padding: 10px;
     height: 100vh;
     max-height: 100vh;
@@ -582,4 +583,53 @@
   .p-anim:hover {
     color: #EDA11A;
   }
+
+  
+  @media screen and (max-width: 600px) {
+  .container 
+  {
+    flex-direction: column;
+    margin: 10px;
+  }
+
+  .sidebar,
+  .chat-area,
+  .user-list {
+    max-height: 500px;
+    overflow-y: auto;
+    border-radius: 10px;
+    margin-bottom: 10px;
+  }
+  .channel-header{
+    text-align: center;
+    color: black;
+  }
+
+  .user-list-title{
+    text-align: center;
+    color: black;
+  }
+
+  .sidebar,
+  .chat-area {
+    width: 100%;
+  }
+
+  .user-list {
+    width: 100%;
+  }
+
+  .sidebar,
+  .chat-area,
+  .user-list {
+    background-color: #f5f5f5;
+  }
+
+  .message-container-user,
+  .message-container-other {
+    background-color: #9ab3f5;
+    font-family: Arial, sans-serif;
+  }
+}
+
 </style>
