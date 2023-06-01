@@ -2,7 +2,8 @@
 	import { onMount } from 'svelte';
 	import { notification } from '../../stores/notificationStore.js';
 
-  
+    const apiUrl = import.meta.env.VITE_API_URL;
+
 	let pendingRequests = [];
 	let friends = [];
 	let userLogin;
@@ -16,48 +17,48 @@
 	}
   
 	async function getFriendRequests(userLogin) {
-	  const res = await fetch(`http://localhost:3333/social/friend-requests/${userLogin}`);
+	  const res = await fetch(`${apiUrl}/social/friend-requests/${userLogin}`);
 	  return await res.json();
 	}
   
 	async function acceptFriendRequest(id) {
-	  await fetch(`http://localhost:3333/social/friend-request/${id}/accept`, { method: 'PATCH' });
+	  await fetch(`${apiUrl}/social/friend-request/${id}/accept`, { method: 'PATCH' });
 	  await refreshData();
 	}
   
 	async function rejectFriendRequest(id) {
-	  await fetch(`http://localhost:3333/social/friend-request/${id}/reject`, { method: 'PATCH' });
+	  await fetch(`${apiUrl}/social/friend-request/${id}/reject`, { method: 'PATCH' });
 	  await refreshData();
 	}
   
 	async function getFriendList(userLogin) {
-	  const res = await fetch(`http://localhost:3333/social/friend-list/${userLogin}`);
+	  const res = await fetch(`${apiUrl}/social/friend-list/${userLogin}`);
 	  return await res.json();
 	}
   
 	async function sendFriendRequest() {
-	  const res = await fetch('http://localhost:3333/social/friend-request', {
+	  const res = await fetch(`${apiUrl}/social/friend-request`, {
 		method: 'POST', 
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify({ requesterLogin: userLogin, requesteeLogin }) 
 	  });
 	  
-	  if (res.ok) { // Check if the request was successful
-		notification.set('Friend request sent successfully!'); // Set a success message
+	  if (res.ok) { 
+		notification.set('Friend request sent successfully!');
 		setTimeout(() => {
-    	  notification.set(''); // Reset the notification message after 5 seconds
+    	  notification.set('');
     	}, 5000);
 		await refreshData();
 	  } else {
-		notification.set('Failed to send friend request!'); // Set an error message
+		notification.set('Failed to send friend request!');
 		setTimeout(() => {
-     	  notification.set(''); // Reset the notification message after 5 seconds
+     	  notification.set('');
    		}, 5000);
 	  }
 	}
 
 	async function deleteFriend(id) {
-      await fetch(`http://localhost:3333/social/friend/${id}`, { method: 'DELETE' });
+      await fetch(`${apiUrl}/social/friend/${id}`, { method: 'DELETE' });
       await refreshData();
 	}
 </script>
