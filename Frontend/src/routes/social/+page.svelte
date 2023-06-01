@@ -10,8 +10,6 @@
 	let userLogin;
 	let requesteeLogin;
   
-	$: userLogin && refreshData();
-  
 	async function refreshData() {
 	  pendingRequests = await getFriendRequests(userLogin);
 	  friends = await getFriendList(userLogin);
@@ -62,9 +60,38 @@
       await fetch(`${apiUrl}/social/friend/${id}`, { method: 'DELETE' });
       await refreshData();
 	}
+
+	async function loginUser() {
+        if(userLogin) {
+            refreshData();
+        } else {
+            notification.set('Please enter a valid login!');
+            setTimeout(() => {
+                notification.set('');
+            }, 5000);
+        }
+    }
 </script>
-  
-<input type="text" bind:value={userLogin} placeholder="Your user login" />
+
+<style>
+  .login-container {
+    display: flex;
+    gap: 4px;
+  }
+
+  .login-input {
+    width: 200px;
+  }
+
+  .login-button {
+    width: 100px;
+  }
+</style>
+
+<div class="login-container">
+  <input type="text" bind:value={userLogin} placeholder="Type the user's login" class="login-input"/>
+  <button on:click={loginUser} class="login-button">Search</button>
+</div>
 
 <section>
 	<h2>Pending friend requests</h2>
