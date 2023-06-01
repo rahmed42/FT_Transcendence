@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Param, Patch, Get } from '@nestjs/common';
+import { Controller, Post, Body, Param, Patch, Get, Delete } from '@nestjs/common';
 import { SocialService } from './social.service';
 import { FriendRequestDto } from './dto/friend-request.dto';
 import { ParseIntPipe } from '@nestjs/common';
@@ -30,5 +30,10 @@ export class SocialController {
   @Get('friend-list/:userLogin')
   async getFriendList(@Param('userLogin') userLogin: string): Promise<any> {
     return this.socialService.getFriendList(userLogin);
+  }
+
+  @Delete('friend/:id')
+  async deleteFriend(@Param('id', ParseIntPipe) id: number): Promise<any> {
+    return this.socialService.deleteFriend(id);
   }
 }

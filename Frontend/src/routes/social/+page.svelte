@@ -55,6 +55,11 @@
    		}, 5000);
 	  }
 	}
+
+	async function deleteFriend(id) {
+      await fetch(`http://localhost:3333/social/friend/${id}`, { method: 'DELETE' });
+      await refreshData();
+	}
 </script>
   
 <input type="text" bind:value={userLogin} placeholder="Your user login" />
@@ -73,9 +78,12 @@
 <section>
 	<h2>Your friends</h2>
 	{#each friends as friend (friend.id)}
-	  <p><a href={`/profile/${friend.friend.login}`}>{friend.friend.login}</a></p>
+	  <p>
+		<a href={`/profile/${friend.friend.login}`}>{friend.friend.login}</a>
+		<button on:click={() => deleteFriend(friend.id)}>Delete Friend</button>
+	  </p>
 	{/each}
-</section>
+  </section>
   
 <section>
 	<h2>Send a friend request</h2>

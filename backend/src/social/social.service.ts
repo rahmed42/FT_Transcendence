@@ -4,13 +4,12 @@ import { PrismaService } from '../prisma/prisma.service';
 @Injectable()
 export class SocialService {
   constructor(private readonly prisma: PrismaService) {}
+
   async sendFriendRequest(requesterLogin: string, requesteeLogin: string): Promise<any> {
-    // Throw an error if the requester and requestee are the same
     if(requesterLogin === requesteeLogin){
       throw new Error('Cannot send friend request to yourself');
     }
-    
-    // Check that both logins are defined
+
     if(!requesterLogin || !requesteeLogin){
       throw new Error('Invalid user login');
     }
@@ -33,12 +32,10 @@ export class SocialService {
       },
     });
 
-    // Throw an error if a request already exists
     if (existingRequest) {
       throw new Error('Friend request already exists');
     }
 
-    // Create a new friend request with 'pending' status
     const friendRequest = await this.prisma.friend.create({
       data: {
         requesterId: requester.id,
@@ -114,5 +111,28 @@ export class SocialService {
         friend: friend.requesterId === user.id ? friend.requestee : friend.requester,
       }));
     }
+    // // Soft delete
+    // async deleteFriend(id: number): Promise<any> {
+    //   const friend = await this.prisma.friend.findUnique({ where: { id } });
+    //   if(!friend){
+    //     throw new NotFoundException('Friend not found');
+    //   }
+    //   const updatedFriend = await this.prisma.friend.update({
+    //     where: { id },
+    //     data: { status: 'deleted' },
+    //   });
+    //   return updatedFriend;
+    // }
+
+    // // Hard delete
+    async deleteFriend(id: number): Promise<any> {
+      const friend = await this.prisma.friend.findUnique({ where: { id } });
+      if(!friend){
+        throw new NotFoundException('Friend not found');
+      }
+      const deletedFriend = await this.prisma.friend.delete({
+        where: { id },
+      });
+      return deletedFriend;
+    }
   }
-  
