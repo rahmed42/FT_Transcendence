@@ -28,8 +28,15 @@
     "@nestjs/jwt": "^10.0.3",
     "@nestjs/passport": "^9.0.3",
     "@nestjs/platform-express": "^9.4.0",
+    "@nestjs/platform-socket.io": "^9.4.2",
+    "@nestjs/websockets": "^9.4.2",
     "@prisma/client": "^4.14.1",
+    "@types/passport-jwt": "^4.0.1",
+    "@types/uuid": "^9.0.1",
+    "argon2": "^0.30.3",
     "axios": "^1.4.0",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.0",
     "colyseus": "^0.15.0-preview.4",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
@@ -43,7 +50,9 @@
     "qrcode": "^1.5.3",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.2.0",
-    "superagent": "^8.0.9"
+    "socket.io-client": "^4.6.1",
+    "superagent": "^8.0.9",
+    "uuid": "^9.0.0"
   },
   "devDependencies": {
     "@colyseus/loadtest": "^0.15.0-preview.0",
