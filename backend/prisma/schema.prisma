@@ -11,24 +11,6 @@ datasource db {
 }
 
 model User {
-<<<<<<< HEAD
-  token String
-  jwtToken String @default("")
-  id Int @unique
-  email String 
-  login String
-  first_name String
-  last_name String
-  large_pic String
-  medium_pic String
-  small_pic String
-  createAt DateTime @default(now())
-  updateAt DateTime @updatedAt
-  two_fa Boolean @default(false)
-  two_fa_secret String?
-  two_fa_authenticate Boolean @default(false)
-  otpUrl String?
-=======
   token              String
   jwtToken           String        @default("")
   id                 Int           @id @unique
@@ -52,7 +34,8 @@ model User {
   blockedByUsers     User[]        @relation("BlockedUser")
   blockedUsers       User[]        @relation("BlockedUser")
   two_fa             Boolean       @default(false)
->>>>>>> ebfdd7a27c404702adc6c122122fa9bf5813ac98
+  two_fa_secret String?
+  isLogged Boolean @default(false)
 }
 
 model Authenticator {

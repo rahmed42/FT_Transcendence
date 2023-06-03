@@ -4,7 +4,7 @@
 	let checked = false;
 
 	function handleChange () {
-		console.log('Valeure de checked -> ', checked);
+		// console.log('Valeure de checked -> ', checked);
 	}
 	async function save_settings() {
 		const response = await fetch('http://localhost:3333/auth/settings', {

@@ -1,16 +1,17 @@
 <!-- Shared Header config file with navigation links -->
+
+
 <script lang="ts">
 	import { page } from '$app/stores';
 	import logo from '$lib/images/42PongLogo.png';
 	import { beforeUpdate, onMount } from 'svelte';
 	import { setUser, user, resetUser, type User } from '../stores/user';
 
-	let currentUser: User | undefined;
-
+	let currentUser: User | undefined
 	// onMount is called when the component is mounted in the DOM
 	onMount(async () => {
 		//await loading all page before starting
-		await new Promise((resolve) => setTimeout(resolve, 1000));
+		// await new Promise((resolve) => setTimeout(resolve, 1000));
 		if (typeof window !== 'undefined') {
 			// Subscribe to the user store
 			const unsubscribe = user.subscribe((value) => {
@@ -23,8 +24,19 @@
 			if (code) {
 				await getToken(code);
 			}
+
 			if (checkJwtCookie())
+			{
+				console.log('START GETUSERINFO');
 				await getUserInfo();
+			}
+
+			if (currentUser && currentUser.two_fa)
+			{
+				sessionStorage.setItem('isLogged', JSON.stringify(currentUser.isLogged));
+				if (window.location.pathname !== '/2_fa')
+					window.location.href = '/2_fa';
+			}
 
 			// Clean up the subscription on unmount
 			return () => {
@@ -66,11 +78,11 @@
 
 			if (jwtValue.length > 0) {
 				return true;
+				}
 			}
 		}
+		return false;
 	}
-	return false;
-}
 
 	async function getUserInfo() {
 		// Fetch user informations from the server
@@ -84,19 +96,6 @@
 			const data = await response.json();
 			// update the user store
 			setUser(data);
-		}
-		// fetch endpoint to create the two_fa_secret
-		if (currentUser && currentUser.two_fa === true) {
-			const response = await fetch('http://localhost:3333/auth/qrcode_generate', {
-				method: 'POST',
-				credentials: 'include',
-			});
-			const contentType = response.headers.get('Content-Type');
-			if (contentType && contentType.includes('application/json')) {
-				const data = await response.json();
-				console.log(data.qrcode);
-				// window.location.href = data.qrcode;
-			}
 		}
 
 		// redirect to login Page if not logged in
