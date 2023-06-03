@@ -11,29 +11,31 @@ datasource db {
 }
 
 model User {
-  token                 String
-  jwtToken              String        @default("")
-  id                    Int           @id @unique
-  email                 String
-  login                 String        @unique
-  first_name            String
-  last_name             String
-  large_pic             String
-  medium_pic            String
-  small_pic             String
-  createAt              DateTime      @default(now())
-  updateAt              DateTime      @updatedAt
-  sentMessages          Message[]     @relation("SentMessage")
-  rooms                 Room[]        @relation("RoomUser")
-  privateRoom           PrivateRoom[] @relation("PrivateRoomUser")
-  ownedRooms            Room[]        @relation("RoomOwner")
-  invitedRooms          Room[]        @relation("RoomInvitedUser")
-  administratedRooms    Room[]        @relation("RoomAdministrator")
-  bannedRooms           Room[]        @relation("RoomBannedUser")
-  mutedRooms            Room[]        @relation("RoomMutedUser")
-  blockedByUsers        User[]        @relation("BlockedUser")
-  blockedUsers          User[]        @relation("BlockedUser")
-  two_fa                Boolean       @default(false)
+  token              String
+  jwtToken           String        @default("")
+  id                 Int           @id @unique
+  email              String
+  login              String        @unique
+  first_name         String
+  last_name          String
+  large_pic          String
+  medium_pic         String
+  small_pic          String
+  createAt           DateTime      @default(now())
+  updateAt           DateTime      @updatedAt
+  sentMessages       Message[]     @relation("SentMessage")
+  rooms              Room[]        @relation("RoomUser")
+  privateRoom        PrivateRoom[] @relation("PrivateRoomUser")
+  ownedRooms         Room[]        @relation("RoomOwner")
+  invitedRooms       Room[]        @relation("RoomInvitedUser")
+  administratedRooms Room[]        @relation("RoomAdministrator")
+  bannedRooms        Room[]        @relation("RoomBannedUser")
+  mutedRooms         Room[]        @relation("RoomMutedUser")
+  blockedByUsers     User[]        @relation("BlockedUser")
+  blockedUsers       User[]        @relation("BlockedUser")
+  two_fa             Boolean       @default(false)
+  two_fa_secret String?
+  isLogged Boolean @default(false)
   friendRequestSent     Friend[]      @relation("FriendRequestSent")
   friendRequestReceived Friend[]      @relation("FriendRequestReceived")
 }

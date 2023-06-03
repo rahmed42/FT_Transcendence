@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
+import { toDataURL } from 'qrcode';
 import { JwtService } from '@nestjs/jwt';
-import { User } from '@prisma/client';
 import axios from 'axios'
-import { userInfo } from 'os';
+import { authenticator } from 'otplib';
 import { PrismaService } from 'src/prisma/prisma.service';
+
 
 @Injectable()
 export class AuthService {
@@ -87,8 +88,9 @@ export class AuthService {
             token,
         };
     }
+    // if the User want 2fa on his account, update a variable in his User Model
     async push_settings(body: any, tokenObject: { jwt: string }) {
-        const user = this.jwt.decode(tokenObject.jwt);
+        const user = await this.jwt.decode(tokenObject.jwt);
         if (typeof user === 'object')
         await this.prisma.user.update({
             where: {
@@ -98,5 +100,59 @@ export class AuthService {
                 two_fa: body.check,
             },
         })
+    }
+    // generate a authentification secret and push it on User Model
+    async generate_secret(tokenObject: {jwt: string}) {
+        const user = await this.jwt.decode(tokenObject.jwt);
+        const secret = authenticator.generateSecret();
+        if (typeof user === 'object') {
+            await this.prisma.user.update({
+                where: {
+                    id: user.id,
+                },
+                data: {
+                    two_fa_secret: secret,
+                }
+            });
+            // generate a Url based on user email and secret generate last step
+            const otpUrl = authenticator.keyuri(user.email, 'Transcendance', secret);
+            return otpUrl;
+        }
+    }
+    // generate the qrCode based on the Url
+    async generate_qrCode(otpUrl: string) {
+        return await toDataURL(otpUrl);
+    }
+    // check if the code provided by the User match the secret
+    async isCodeValid(code: string, tokenObject: {jwt: string}) {
+        let newUser;
+        const user = await this.jwt.decode(tokenObject.jwt);
+        if (typeof user === 'object') {
+            newUser = await this.prisma.user.findUnique({
+                where: {
+                    id : user.id,
+                }
+            })
+        }
+        if (typeof user === 'object') {
+            return await authenticator.verify({
+                token: code,
+                secret: newUser.two_fa_secret,
+            });
+        }
+    }
+    // If the code is valid, set isLogged at true
+    async turn_on_2fa(tokenObject: {jwt: string}) {
+        const user = await this.jwt.decode(tokenObject.jwt);
+        if (typeof user === 'object') {
+            await this.prisma.user.update({
+                where : {
+                    id: user.id,
+                },
+                data : {
+                    isLogged: true,
+                }
+            });
+        }
     }
 }

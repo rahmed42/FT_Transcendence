@@ -1,12 +1,13 @@
 <!-- Shared Header config file with navigation links -->
+
+
 <script lang="ts">
 	import { page } from '$app/stores';
 	import logo from '$lib/images/42PongLogo.png';
 	import { afterUpdate, onMount } from 'svelte';
 	import { setUser, user, resetUser, type User } from '../stores/user';
 
-	let currentUser: User | undefined;
-
+	let currentUser: User | undefined
 	// onMount is called when the component is mounted in the DOM
 	onMount(async () => {
 		if (typeof window !== 'undefined') {
@@ -14,14 +15,25 @@
 			const unsubscribe = user.subscribe((value) => {
 				// update currentUser with last user value at store changes
 				currentUser = value;
-				console.log(user, value);
+				// console.log(user, value);
 			});
 			const code = new URLSearchParams(window.location.search).get('code');
 			if (code) {
 				await getToken(code);
 			}
+
 			if (checkJwtCookie())
+			{
+				console.log('START GETUSERINFO');
 				await getUserInfo();
+			}
+
+			if (currentUser && currentUser.two_fa)
+			{
+				sessionStorage.setItem('isLogged', JSON.stringify(currentUser.isLogged));
+				if (window.location.pathname !== '/2_fa')
+					window.location.href = '/2_fa';
+			}
 
 			// Clean up the subscription on unmount
 			return () => {
@@ -62,19 +74,18 @@
 			const jwtValue = cookie.substring(4);
 
 			if (jwtValue.length > 0) {
-				console.log('There is a cookie value');
 				return true;
+				}
 			}
 		}
+		return false;
 	}
-	return false;
-}
 
 	async function getUserInfo() {
 		// Fetch user informations from the server
 		const response = await fetch('http://localhost:3333/profil/me', {
 			method: 'GET',
-			credentials: 'include'
+			credentials: 'include',
 		});
 		const contentType = response.headers.get('Content-Type');
 		if (contentType && contentType.includes('application/json')) {
@@ -84,7 +95,6 @@
 			setUser(data);
 		}
 
-		if (currentUser && currentUser.two_fa === true) console.log('THIS IS FUCKING TRUE');
 		// redirect to login Page if not logged in
 		if ((!currentUser || !currentUser.login) && window.location.pathname !== '/')
 			window.location.href = '/';

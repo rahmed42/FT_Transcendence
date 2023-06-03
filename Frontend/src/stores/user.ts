@@ -15,8 +15,10 @@ export interface User {
 	createAt: string;
 	updateAt: string;
 	two_fa: boolean;
+	two_fa_secret: string,
+	isLogged: boolean;
 }
-
+;
 // Create a store with a default value
 export const user = writable<User>({} as User);
 export function resetUser() {
@@ -34,7 +36,9 @@ export function resetUser() {
 		createAt: '',
 		updateAt: '',
 		two_fa: false,
-	});
+		two_fa_secret: '',
+		isLogged: false,
+	})
 }
 resetUser();
 
