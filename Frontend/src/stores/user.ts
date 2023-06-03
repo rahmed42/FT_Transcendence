@@ -1,4 +1,4 @@
-// import { writable } from 'svelte/store';
+import { writable } from 'svelte/store';
 
 // // Structure of User
 // export interface User {
@@ -75,9 +75,7 @@
 
 // export const checked = writable<boolean>(false);
 
-
-import { writable } from 'svelte/store';
-
+// **************************** 
 // Structure of User
 export interface User {
 	token: string;
