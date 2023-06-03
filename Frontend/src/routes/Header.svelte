@@ -1,6 +1,4 @@
 <!-- Shared Header config file with navigation links -->
-
-
 <script lang="ts">
 	import { page } from '$app/stores';
 	import logo from '$lib/images/42PongLogo.png';
@@ -8,24 +6,22 @@
 	import { setUser, user, resetUser, type User } from '../stores/user';
 
 	let currentUser: User | null = null;
-	// const userSession = JSON.parse(sessionStorage.getItem('user') || 'null');
 
 	// onMount is called when the component is mounted in the DOM
 	onMount(async () => {
 		if (typeof window !== 'undefined') {
 			// Subscribe to the user store
 			const unsubscribe = user.subscribe((value) => {
-				console.log(value, currentUser);
 				// update currentUser with last user value at store changes
 				if (value.login) {
 					currentUser = value;
 					sessionStorage.setItem('user', JSON.stringify(value));
-					console.log('GetValue ', currentUser);
+					// console.log('GetValue ', currentUser);
 				}
 				// Fist time user is null, so we check if sessionStorage has a user
 				else if (sessionStorage.getItem('user')) {
 					currentUser = JSON.parse(sessionStorage.getItem('user'));
-					console.log('SessionRestored ', currentUser);
+					// console.log('SessionRestored ', currentUser);
 				}
 			});
 			const code = new URLSearchParams(window.location.search).get('code');
@@ -35,7 +31,7 @@
 
 			if (checkJwtCookie())
 			{
-				console.log('START GETUSERINFO');
+				// console.log('START GETUSERINFO');
 				await getUserInfo();
 			}
 
@@ -124,6 +120,11 @@
 		currentUser = null;
 	}
 </script>
+
+<head>
+	<!-- Preload image to avoid flickering -->
+	<link rel="preload" as="image" href={logo} />
+</head>
 
 <header>
 	<ul>
