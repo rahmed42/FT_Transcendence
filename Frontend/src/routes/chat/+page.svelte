@@ -161,7 +161,7 @@
           } else if (response.ok) {
             const newChannel = await response.json();
             channelList.update(channelList => [...channelList, { name: newChannel.room.name }]);
-            console.log(newChannel.room.name);
+            // console.log(newChannel.room.name);
             closeModal();
           }
         }

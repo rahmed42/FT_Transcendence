@@ -4,14 +4,12 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import logo from '$lib/images/42PongLogo.png';
-	import { beforeUpdate, onMount } from 'svelte';
+	import { afterUpdate, onMount } from 'svelte';
 	import { setUser, user, resetUser, type User } from '../stores/user';
 
 	let currentUser: User | undefined
 	// onMount is called when the component is mounted in the DOM
 	onMount(async () => {
-		//await loading all page before starting
-		// await new Promise((resolve) => setTimeout(resolve, 1000));
 		if (typeof window !== 'undefined') {
 			// Subscribe to the user store
 			const unsubscribe = user.subscribe((value) => {
@@ -19,7 +17,6 @@
 				currentUser = value;
 				// console.log(user, value);
 			});
-
 			const code = new URLSearchParams(window.location.search).get('code');
 			if (code) {
 				await getToken(code);
@@ -45,8 +42,8 @@
 		}
 	});
 
-	beforeUpdate(async () => {
-		// redirect to home Page if logged in and on login Page
+	afterUpdate(async () => {
+		// redirect to home Page if logged in and on login Page / To add on backend checks
 		if (currentUser && currentUser.login && window.location.pathname === '/')
 			window.location.href = '/home';
 	});

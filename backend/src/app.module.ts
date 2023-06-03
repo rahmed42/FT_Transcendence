@@ -11,10 +11,13 @@ import { ChatModule } from './chat/chat.module';
 import { ChatController } from './chat/chat.controller';
 import { ChatService } from './chat/chat.service';
 import { GatewayModule } from './chat/websockets/gateway.module';
+import { SocialModule } from './social/social.module';
+import { SocialController } from './social/social.controller';
+import { SocialService } from './social/social.service';
 
 @Module({
-  imports: [AuthModule, PrismaModule, JwtModule, UserModule, ChatModule, GatewayModule],
-  controllers: [AuthController, UserController, ChatController],
-  providers: [AuthService, UserService, ChatService],
+  imports: [AuthModule, PrismaModule, JwtModule, UserModule, ChatModule, GatewayModule, SocialModule],
+  controllers: [AuthController, UserController, ChatController, SocialController],
+  providers: [AuthService, UserService, ChatService, SocialService],
 })
 export class AppModule {}
