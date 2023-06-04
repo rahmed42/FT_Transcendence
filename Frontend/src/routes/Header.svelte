@@ -12,13 +12,13 @@
 		if (typeof window !== 'undefined') {
 			// Subscribe to the user store
 			const unsubscribe = user.subscribe((value) => {
-				// update currentUser with last user value at store changes
+				// update currentUser with last user value at store changes if exist
 				if (value.login) {
 					currentUser = value;
 					sessionStorage.setItem('user', JSON.stringify(value));
 					// console.log('GetValue ', currentUser);
 				}
-				// Fist time user is null, so we check if sessionStorage has a user
+				// Fist time user is null, so we check if sessionStorage has a user or it will return null
 				else if (sessionStorage.getItem('user')) {
 					currentUser = JSON.parse(sessionStorage.getItem('user'));
 					// console.log('SessionRestored ', currentUser);
@@ -42,6 +42,10 @@
 					window.location.href = '/2_fa';
 			}
 
+			// redirect to home Page if logged in and reload on game page
+			if (sessionStorage.getItem('user') && window.location.pathname === '/game')
+				window.location.href = '/home';
+
 			// Clean up the subscription on unmount
 			return () => {
 				unsubscribe();
@@ -51,7 +55,7 @@
 
 	afterUpdate(async () => {
 		// redirect to home Page if logged in and on login Page / To add on backend checks
-		if (sessionStorage.getItem('isLogged') && window.location.pathname === '/')
+		if (sessionStorage.getItem('user') && window.location.pathname === '/')
 			window.location.href = '/home';
 	});
 
