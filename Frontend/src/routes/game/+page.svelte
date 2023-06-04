@@ -6,6 +6,7 @@
 	import { Part2Scene } from './scenes/Part2Scene';
 
 	let selectedGame: GameSelector | null = null;
+	let game: any;
 
 	// Fonction afterUpdate - appelée après la mise à jour du composant
 	onMount(async () => {
@@ -17,7 +18,7 @@
 			// SSR info : https://vitejs.dev/guide/ssr.html
 			//Init Phaser and start the game
 			const Phaser = await import('phaser');
-			let game: Phaser.Game | null = new Phaser.Game({
+				game = new Phaser.Game({
 				// CANVAS Rendering to be faster
 				type: Phaser.CANVAS,
 				// Set the fps
@@ -49,17 +50,17 @@
 	});
 
 	// Fonction onDestroy - appelée lorsque le composant est détruit
-	// onDestroy(() => {
-	// 	console.log('Leaving Game');
-	// 	if (selectedGame) {
-	// 		selectedGame = null;
-	// 	}
+	onDestroy(() => {
+		console.log('Leaving Game');
+		if (selectedGame) {
+			selectedGame = null;
+		}
 
-	// 	if (game) {
-	// 		game.destroy(true);
-	// 		game = null;
-	// 	}
-	// });
+		if (game) {
+			game.destroy(true);
+			game = null;
+		}
+	});
 </script>
 
 <svelte:head>
