@@ -13,11 +13,6 @@ export class AuthController {
 			const token = await this.authService.getUser(code);
 			return token;
 		}
-	@Patch('logout')
-		async logout(@Req() request: Request) {
-			const token = request.cookies;
-			await this.authService.turn_out_2fa(token);
-		}
 	@Post('settings')
 		async save_settings(@Body() body: any, @Req() request: Request) {
 	 		const token = request.cookies;
@@ -26,8 +21,13 @@ export class AuthController {
 	@Post('qrcode_generate')
 		async generate(@Req() request: Request, @Body() body: any) {
 			const token = request.cookies;
-			const otpUrl = await this.authService.generate_secret(token);
-			const qrcode = await this.authService.generate_qrCode(otpUrl);
+			let otpUrl;
+			let qrcode;
+			const secret = await this.authService.check_secret(token);
+			if (!secret) {
+				otpUrl = await this.authService.generate_secret(token);
+				qrcode = await this.authService.generate_qrCode(otpUrl);
+			}
 			return { qrcode }
 		}
 	@Post('2fa_code')
@@ -35,8 +35,6 @@ export class AuthController {
 			const code = body.code;
 			const token = request.cookies;
 			const valide = await this.authService.isCodeValid(code, token);
-			if (valide)
-				this.authService.turn_on_2fa(token);
 			return { valide };
 		}
 }

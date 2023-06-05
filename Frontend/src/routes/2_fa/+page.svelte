@@ -7,12 +7,6 @@
     let userCode = "";
     let errorMessage = "";
     onMount(async () => {
-        let isLoggedValue = false;
-        const isLogged = sessionStorage.getItem('isLogged');
-        if (isLogged !== null) {
-            isLoggedValue = JSON.parse(isLogged);
-        }
-    
         async function generate_qrCode() {
             const response = await fetch('http://localhost:3333/auth/qrcode_generate', {
                 method: 'POST',
@@ -21,13 +15,11 @@
             const contentType = response.headers.get('Content-Type');
             if (contentType && contentType.includes('application/json')) {
                 const data = await response.json();
-                qrcode = data.qrcode;
+                if (data.qrcode)
+                    qrcode = data.qrcode;
             }
         }
-        // rajouter une condition pour ne generer le qr code que a la toute premiere authentification
-        if (isLoggedValue === false) {
-            generate_qrCode();
-        }
+        generate_qrCode();
     })
     async function send_code() {
         if (userCode === "")
@@ -47,11 +39,11 @@
             const data = await response.json();
             if (data.valide)
             {
+                // fetch back to increment log variable
                 sessionStorage.setItem('isLogged', JSON.stringify(true));
                 window.location.href = '/home';
             }
         }
-        return true;
     }
 </script>
 

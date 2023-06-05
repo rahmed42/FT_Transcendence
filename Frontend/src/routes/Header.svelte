@@ -33,8 +33,9 @@
 			{
 				// console.log('START GETUSERINFO');
 				await getUserInfo();
-
-			if (currentUser && currentUser.two_fa) //Attention IsLogged est set que si 2fa est actif !
+			}
+			const first_log = sessionStorage.getItem('isLogged');
+			if (currentUser && currentUser.two_fa && !first_log) //Attention IsLogged est set que si 2fa est actif !
 			{
 				sessionStorage.setItem('isLogged', JSON.stringify(currentUser.isLogged));
 				if (window.location.pathname !== '/2_fa')
@@ -43,7 +44,10 @@
 
 			// redirect to home Page if logged in and reload on game page
 			if (sessionStorage.getItem('user') && window.location.pathname === '/game')
+			{
+				console.log('tamerelapute');
 				window.location.href = '/home';
+			}
 
 			// Clean up the subscription on unmount
 			return () => {
@@ -55,8 +59,11 @@
 	afterUpdate(async () => {
 		// redirect the user if isLogged is true
 		// redirect to home Page if logged in and on login Page / To add on backend checks
-		if (sessionStorage.getItem('user') && window.location.pathname === '/')
-			window.location.href = '/home';
+		if (sessionStorage.getItem('user') && window.location.pathname === '/') 
+		{
+			console.log('redirect to /home');
+			window.location.href = '/home'
+		}
 	});
 
 	async function getToken(code: string) {
@@ -115,13 +122,8 @@
 		// Clear the user store
 		resetUser();
 		// Clear the cookie
-		// need to set isLogged variable to false in the database
-		await fetch('http://localhost:3333/auth/logout', {
-			method: 'PATCH',
-			credentials: 'include',
-		});
-		sessionStorage.setItem('isLogged', JSON.stringify(false));
 		document.cookie = 'jwt=;';
+		// sessionStorage.setItem('isLogged', JSON.stringify(false));
 		// sessionStorage cleaning
 		sessionStorage.removeItem('user');
 		sessionStorage.removeItem('isLogged');
