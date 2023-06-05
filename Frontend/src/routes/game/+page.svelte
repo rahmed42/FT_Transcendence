@@ -5,8 +5,11 @@
 	import { Part1Scene } from './scenes/Part1Scene';
 	import { Part2Scene } from './scenes/Part2Scene';
 
-	let selectedGame: GameSelector | null = null;
-	let game: any;
+	/**
+	 * TODO : Have to disconnect on change page/patch reload on game page
+	 */
+
+	 let game: any;
 
 	// Fonction afterUpdate - appelée après la mise à jour du composant
 	onMount(async () => {
@@ -41,9 +44,6 @@
 				scene: [GameSelector, Part1Scene, Part2Scene]
 			});
 
-			// Get the selected game
-			selectedGame = new GameSelector();
-
 			//Begin the game
 			game.scene.start('selector');
 		}
@@ -51,12 +51,11 @@
 
 	// Fonction onDestroy - appelée lorsque le composant est détruit
 	onDestroy(() => {
-		console.log('Leaving Game');
-		if (selectedGame) {
-			selectedGame = null;
-		}
 
+		console.log('Leaving Game');
+		// destroy game instance
 		if (game) {
+			console.log('Destroying Game');
 			game.destroy(true);
 			game = null;
 		}
