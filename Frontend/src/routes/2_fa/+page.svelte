@@ -24,6 +24,7 @@
                 qrcode = data.qrcode;
             }
         }
+        // rajouter une condition pour ne generer le qr code que a la toute premiere authentification
         if (isLoggedValue === false) {
             generate_qrCode();
         }
@@ -41,11 +42,15 @@
                 code: userCode,
             })
         })
-        // const contentType = response.headers.get('Content-Type');
-        // if (contentType && contentType.includes('application/json')) {
-        //     const data = await response.json();
-        //     console.log(data);
-        // }
+        const contentType = response.headers.get('Content-Type');
+        if (contentType && contentType.includes('application/json')) {
+            const data = await response.json();
+            if (data.valide)
+            {
+                sessionStorage.setItem('isLogged', JSON.stringify(true));
+                window.location.href = '/home';
+            }
+        }
         return true;
     }
 </script>

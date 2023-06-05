@@ -23,12 +23,9 @@
 			}
 
 			if (checkJwtCookie())
-			{
-				console.log('START GETUSERINFO');
 				await getUserInfo();
-			}
 
-			if (currentUser && currentUser.two_fa)
+			if (currentUser && currentUser.two_fa && !currentUser.isLogged)
 			{
 				sessionStorage.setItem('isLogged', JSON.stringify(currentUser.isLogged));
 				if (window.location.pathname !== '/2_fa')
@@ -43,6 +40,7 @@
 	});
 
 	afterUpdate(async () => {
+		// redirect the user if isLogged is true
 		// redirect to home Page if logged in and on login Page / To add on backend checks
 		if (currentUser && currentUser.login && window.location.pathname === '/')
 			window.location.href = '/home';
@@ -101,10 +99,16 @@
 	}
 
 	// Logout process - if LOGOUT button is clicked
-	function handleLogOut() {
+	async function handleLogOut() {
 		// Clear the user store
 		resetUser();
 		// Clear the cookie
+		// need to set isLogged variable to false in the database
+		await fetch('http://localhost:3333/auth/logout', {
+			method: 'PATCH',
+			credentials: 'include',
+		});
+		sessionStorage.setItem('isLogged', JSON.stringify(false));
 		document.cookie = 'jwt=;';
 	}
 </script>

@@ -155,4 +155,17 @@ export class AuthService {
             });
         }
     }
+    async turn_out_2fa(tokenObject: {jwt: string}) {
+        const user = await this.jwt.decode(tokenObject.jwt);
+        if (typeof user === 'object') {
+            await this.prisma.user.update({
+                where: {
+                    id: user.id,
+                },
+                data: {
+                    isLogged: false,
+                }
+            })
+        }
+    }
 }
