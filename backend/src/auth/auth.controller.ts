@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Query, Req } from '@nestjs/common';
+import { Body, Controller, Get, Patch, Post, Query, Req } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Request } from 'express';
 
@@ -21,8 +21,13 @@ export class AuthController {
 	@Post('qrcode_generate')
 		async generate(@Req() request: Request, @Body() body: any) {
 			const token = request.cookies;
-			const otpUrl = await this.authService.generate_secret(token);
-			const qrcode = await this.authService.generate_qrCode(otpUrl);
+			let otpUrl;
+			let qrcode;
+			const secret = await this.authService.check_secret(token);
+			if (!secret) {
+				otpUrl = await this.authService.generate_secret(token);
+				qrcode = await this.authService.generate_qrCode(otpUrl);
+			}
 			return { qrcode }
 		}
 	@Post('2fa_code')
@@ -30,11 +35,6 @@ export class AuthController {
 			const code = body.code;
 			const token = request.cookies;
 			const valide = await this.authService.isCodeValid(code, token);
-			if (valide)
-			{
-				this.authService.turn_on_2fa(token);
-				return true;
-			}
-			return false;
+			return { valide };
 		}
 }

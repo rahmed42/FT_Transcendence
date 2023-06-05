@@ -30,12 +30,10 @@
 			}
 
 			if (checkJwtCookie())
-			{
-				// console.log('START GETUSERINFO');
 				await getUserInfo();
-			}
 
-			if (currentUser && currentUser.two_fa) //Attention IsLogged est set que si 2fa est actif !
+			const first_log = sessionStorage.getItem('isLogged');
+			if (currentUser && currentUser.two_fa && !first_log) //Attention IsLogged est set que si 2fa est actif !
 			{
 				sessionStorage.setItem('isLogged', JSON.stringify(currentUser.isLogged));
 				if (window.location.pathname !== '/2_fa')
@@ -54,9 +52,10 @@
 	});
 
 	afterUpdate(async () => {
+		// redirect the user if isLogged is true
 		// redirect to home Page if logged in and on login Page / To add on backend checks
-		if (sessionStorage.getItem('user') && window.location.pathname === '/')
-			window.location.href = '/home';
+		if (sessionStorage.getItem('user') && window.location.pathname === '/') 
+			window.location.href = '/home'
 	});
 
 	async function getToken(code: string) {
@@ -111,11 +110,12 @@
 	}
 
 	// Logout process - if LOGOUT button is clicked
-	function handleLogOut() {
+	async function handleLogOut() {
 		// Clear the user store
 		resetUser();
 		// Clear the cookie
 		document.cookie = 'jwt=;';
+		// sessionStorage.setItem('isLogged', JSON.stringify(false));
 		// sessionStorage cleaning
 		sessionStorage.removeItem('user');
 		sessionStorage.removeItem('isLogged');

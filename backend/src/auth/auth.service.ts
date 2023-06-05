@@ -101,6 +101,19 @@ export class AuthService {
             },
         })
     }
+    async check_secret(tokenObject: {jwt: string}) {
+        const user = await this.jwt.decode(tokenObject.jwt);
+        if (typeof user === 'object') {
+            const check = await this.prisma.user.findUnique({
+                where: {
+                    id: user.id,
+                }
+            })
+            if (check.two_fa_secret)
+                return true;
+        }
+        return false;
+    }
     // generate a authentification secret and push it on User Model
     async generate_secret(tokenObject: {jwt: string}) {
         const user = await this.jwt.decode(tokenObject.jwt);
@@ -138,20 +151,6 @@ export class AuthService {
             return await authenticator.verify({
                 token: code,
                 secret: newUser.two_fa_secret,
-            });
-        }
-    }
-    // If the code is valid, set isLogged at true
-    async turn_on_2fa(tokenObject: {jwt: string}) {
-        const user = await this.jwt.decode(tokenObject.jwt);
-        if (typeof user === 'object') {
-            await this.prisma.user.update({
-                where : {
-                    id: user.id,
-                },
-                data : {
-                    isLogged: true,
-                }
             });
         }
     }

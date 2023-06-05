@@ -5,14 +5,9 @@
 
     let qrcode = "";
     let userCode = "";
+    let checkError = "";
     let errorMessage = "";
     onMount(async () => {
-        let isLoggedValue = false;
-        const isLogged = sessionStorage.getItem('isLogged');
-        if (isLogged !== null) {
-            isLoggedValue = JSON.parse(isLogged);
-        }
-    
         async function generate_qrCode() {
             const response = await fetch('http://localhost:3333/auth/qrcode_generate', {
                 method: 'POST',
@@ -21,16 +16,13 @@
             const contentType = response.headers.get('Content-Type');
             if (contentType && contentType.includes('application/json')) {
                 const data = await response.json();
-                qrcode = data.qrcode;
+                if (data.qrcode)
+                    qrcode = data.qrcode;
             }
         }
-        if (isLoggedValue === false) {
-            generate_qrCode();
-        }
+        generate_qrCode();
     })
     async function send_code() {
-        if (userCode === "")
-            return false;
         const response = await fetch('http://localhost:3333/auth/2fa_code', {
             method: 'POST',
             credentials: 'include',
@@ -41,13 +33,20 @@
                 code: userCode,
             })
         })
-        // const contentType = response.headers.get('Content-Type');
-        // if (contentType && contentType.includes('application/json')) {
-        //     const data = await response.json();
-        //     console.log(data);
-        // }
-        return true;
+        const contentType = response.headers.get('Content-Type');
+        if (contentType && contentType.includes('application/json')) {
+            const data = await response.json();
+            if (data.valide)
+            {
+                sessionStorage.setItem('isLogged', JSON.stringify(true));
+                window.location.href = '/home';
+                return;
+            }
+        }
+        checkError = 'false';
+        errorMessage = "Code not valid";
     }
+
 </script>
 
 <svelte:head>
@@ -56,13 +55,13 @@
 </svelte:head>
 
 
+
+{#if qrcode.length > 1}
 <div class="center">
 	<div class="text-column">
 		<h1>Scan the QR code to add our application</h1>
 	</div>
 </div>
-
-{#if qrcode.length > 1}
     <div class="image-container">
         <img src={qrcode} alt="Mon image" class="qrcode"/>
     </div>
@@ -72,17 +71,11 @@
     <input type="text" bind:value={userCode} placeholder="Enter your code" />
 
     <button on:click={() => {
-    const success = send_code();
-    if (!success) {
-      errorMessage = "Your code is not valid";
-    }
-    else {
-        errorMessage = "";
-    }
+    let success = send_code();
   }}>Send</button>
 </main>
 
-{#if errorMessage.length > 1}
+{#if checkError === "false"}
     <p class="error_message">{errorMessage}</p>
 {/if}
 
