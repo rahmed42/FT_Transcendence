@@ -30,10 +30,8 @@
 			}
 
 			if (checkJwtCookie())
-			{
-				// console.log('START GETUSERINFO');
 				await getUserInfo();
-			}
+
 			const first_log = sessionStorage.getItem('isLogged');
 			if (currentUser && currentUser.two_fa && !first_log) //Attention IsLogged est set que si 2fa est actif !
 			{
@@ -44,10 +42,7 @@
 
 			// redirect to home Page if logged in and reload on game page
 			if (sessionStorage.getItem('user') && window.location.pathname === '/game')
-			{
-				console.log('tamerelapute');
 				window.location.href = '/home';
-			}
 
 			// Clean up the subscription on unmount
 			return () => {
@@ -60,10 +55,7 @@
 		// redirect the user if isLogged is true
 		// redirect to home Page if logged in and on login Page / To add on backend checks
 		if (sessionStorage.getItem('user') && window.location.pathname === '/') 
-		{
-			console.log('redirect to /home');
 			window.location.href = '/home'
-		}
 	});
 
 	async function getToken(code: string) {
