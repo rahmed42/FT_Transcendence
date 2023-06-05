@@ -1,21 +1,28 @@
 <!-- Shared Header config file with navigation links -->
-
-
 <script lang="ts">
 	import { page } from '$app/stores';
 	import logo from '$lib/images/42PongLogo.png';
 	import { afterUpdate, onMount } from 'svelte';
 	import { setUser, user, resetUser, type User } from '../stores/user';
 
-	let currentUser: User | undefined
+	let currentUser: User | null = null;
+
 	// onMount is called when the component is mounted in the DOM
 	onMount(async () => {
 		if (typeof window !== 'undefined') {
 			// Subscribe to the user store
 			const unsubscribe = user.subscribe((value) => {
-				// update currentUser with last user value at store changes
-				currentUser = value;
-				// console.log(user, value);
+				// update currentUser with last user value at store changes if exist
+				if (value.login) {
+					currentUser = value;
+					sessionStorage.setItem('user', JSON.stringify(value));
+					// console.log('GetValue ', currentUser);
+				}
+				// Fist time user is null, so we check if sessionStorage has a user or it will return null
+				else if (sessionStorage.getItem('user')) {
+					currentUser = JSON.parse(sessionStorage.getItem('user'));
+					// console.log('SessionRestored ', currentUser);
+				}
 			});
 			const code = new URLSearchParams(window.location.search).get('code');
 			if (code) {
@@ -23,14 +30,20 @@
 			}
 
 			if (checkJwtCookie())
+			{
+				// console.log('START GETUSERINFO');
 				await getUserInfo();
 
-			if (currentUser && currentUser.two_fa && !currentUser.isLogged)
+			if (currentUser && currentUser.two_fa) //Attention IsLogged est set que si 2fa est actif !
 			{
 				sessionStorage.setItem('isLogged', JSON.stringify(currentUser.isLogged));
 				if (window.location.pathname !== '/2_fa')
 					window.location.href = '/2_fa';
 			}
+
+			// redirect to home Page if logged in and reload on game page
+			if (sessionStorage.getItem('user') && window.location.pathname === '/game')
+				window.location.href = '/home';
 
 			// Clean up the subscription on unmount
 			return () => {
@@ -42,7 +55,7 @@
 	afterUpdate(async () => {
 		// redirect the user if isLogged is true
 		// redirect to home Page if logged in and on login Page / To add on backend checks
-		if (currentUser && currentUser.login && window.location.pathname === '/')
+		if (sessionStorage.getItem('user') && window.location.pathname === '/')
 			window.location.href = '/home';
 	});
 
@@ -92,9 +105,8 @@
 			// update the user store
 			setUser(data);
 		}
-
 		// redirect to login Page if not logged in
-		if ((!currentUser || !currentUser.login) && window.location.pathname !== '/')
+		if ((!currentUser || !currentUser.login || !sessionStorage.getItem('user')) && window.location.pathname !== '/')
 			window.location.href = '/';
 	}
 
@@ -110,13 +122,24 @@
 		});
 		sessionStorage.setItem('isLogged', JSON.stringify(false));
 		document.cookie = 'jwt=;';
+		// sessionStorage cleaning
+		sessionStorage.removeItem('user');
+		sessionStorage.removeItem('isLogged');
+		sessionStorage.removeItem('jwt');
+		// reset currentUser
+		currentUser = null;
 	}
 </script>
+
+<head>
+	<!-- Preload image to avoid flickering -->
+	<link rel="preload" as="image" href={logo} />
+</head>
 
 <header>
 	<ul>
 		<!-- Home button Logo  -->
-		{#if  currentUser && currentUser.login}
+		{#if currentUser && currentUser.login}
 			<li class:selected={$page.url.pathname === '/home' ? 'page' : undefined}>
 				{#if $page.url.pathname === '/home'}
 					<a class="active" href="/home"><img src={logo} alt="Logo 42Pong" /></a>
