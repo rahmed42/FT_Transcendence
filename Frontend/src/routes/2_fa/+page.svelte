@@ -56,7 +56,7 @@
 
 
 
-{#if qrcode.length > 1}
+{#if qrcode}
 <div class="center">
 	<div class="text-column">
 		<h1>Scan the QR code to add our application</h1>

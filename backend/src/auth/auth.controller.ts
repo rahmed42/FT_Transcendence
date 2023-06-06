@@ -37,4 +37,10 @@ export class AuthController {
 			const valide = await this.authService.isCodeValid(code, token);
 			return { valide };
 		}
+	@Get('2fa_info')
+		async ckeck_2fa_info(@Req() request: Request) {
+			const token = request.cookies;
+			const info = await this.authService.get_2fa_info(token);
+			return { info }
+		}
 }
