@@ -45,7 +45,7 @@
 	  const res = await fetch(`${apiUrl}/social/friend-request`, {
 		method: 'POST', 
 		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify({ requesterLogin: userLogin, requesteeLogin }) 
+		body: JSON.stringify({ requesterLogin: $user.login, requesteeLogin }) 
 	  });
 	  
 	  if (res.ok) { 
@@ -66,21 +66,17 @@
       await fetch(`${apiUrl}/social/friend/${id}`, { method: 'DELETE' });
       await refreshData();
 	}
-
-	async function loginUser() {
-        if(userLogin) {
-            refreshData();
-        } else {
-            notification.set('Please enter a valid login!');
-            setTimeout(() => {
-                notification.set('');
-            }, 5000);
-        }
-    }
 </script>
 
+<style>
+	.title {
+	  font-size: 18px;
+	  font-weight: bold;
+	}
+  </style>
+
 <section>
-	<h2>Pending friend requests</h2>
+	<h2 class="title">Pending friend requests</h2>
 	{#each pendingRequests as request (request.id)}
 	  <div>
 		<p>{request.requester.login} wants to be your friend.</p>
@@ -91,7 +87,7 @@
 </section>
   
 <section>
-	<h2>Your friends</h2>
+	<h2 class="title">Your friends</h2>
 	{#each friends as friend (friend.id)}
 	  <div>
         <img src={friend.friend.small_pic} alt="{friend.friend.login}'s picture" width="50" height="50" />
@@ -102,7 +98,7 @@
 </section>
   
 <section>
-	<h2>Send a friend request</h2>
+	<h2 class="title">Send a friend request</h2>
 	<input type="text" bind:value={requesteeLogin} placeholder="Friend's user login" />
 	<button on:click={sendFriendRequest}>Send friend request</button>
 	{#if $notification} <!-- Display the notification message if it exists -->
