@@ -46,6 +46,7 @@
 				await check_2fa_user();
 			const checkIsUser2FaActivate = sessionStorage.getItem('user2FaActivate');
 			const faAuthValid = sessionStorage.getItem('isLogged');
+
 			if (checkIsUser2FaActivate && !faAuthValid)
 			{
 				if (window.location.pathname !== '/2_fa')

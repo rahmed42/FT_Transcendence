@@ -50,11 +50,9 @@
 </script>
 
 <svelte:head>
-	<title>Two Factor Authentification</title>
-	<meta name="description" content="Game CONFIG" />
+	<title>Google Authentification</title>
+	<meta name="Google Authentifation" content="Qrcode" />
 </svelte:head>
-
-
 
 {#if qrcode}
 <div class="center">
@@ -63,16 +61,20 @@
 	</div>
 </div>
     <div class="image-container">
-        <img src={qrcode} alt="Mon image" class="qrcode"/>
+        <img src={qrcode} alt="qrcode" class="qrcode"/>
     </div>
 {/if}
+
+<h1>
+    Authentification
+</h1>
 
 <main class="data">
     <input type="text" bind:value={userCode} placeholder="Enter your code" />
 
     <button on:click={() => {
-    let success = send_code();
-  }}>Send</button>
+        let success = send_code();
+    }}>Send</button>
 </main>
 
 {#if checkError === "false"}
@@ -80,18 +82,36 @@
 {/if}
 
 <style>
+    h1 {
+        color: rgb(200, 206, 15);
+        font-family: tahoma, geneva, sans-serif;
+        text-decoration: underline;
+    }
     .error_message {
+        color: red;
+        font-weight: bold;
         display: flex;
         justify-content: center;
         align-items: center;
         width: 100%;
     }
     .data {
+        position: relative;
+		top: 10px;
+		left: 0px;
         display: flex;
         justify-content: center;
         align-items: center;
         width: 100%;
         height: 10vh;
+    }
+    .data input {
+        font-weight: bold;
+        line-height: 200%;
+    }
+    .data button {
+        font-weight: bold;
+        line-height: 200%;
     }
     .image-container {
         display: flex;
