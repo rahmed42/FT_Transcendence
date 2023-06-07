@@ -1,18 +1,24 @@
 <script>
-	import { onMount } from 'svelte';
 	import { notification } from '../../stores/notificationStore.js';
+	import { user } from '../../stores/user';
 
 	// Create a ".env" file at the root of Frontend folder and add "VITE_API_URL=http://localhost:3333"
     const apiUrl = import.meta.env.VITE_API_URL;
 
 	let pendingRequests = [];
 	let friends = [];
-	let userLogin;
 	let requesteeLogin;
   
+	// Define a reactive statement that triggers when $user.login changes
+	$: {
+		if ($user.login) {
+			refreshData();
+		}
+	}
+
 	async function refreshData() {
-	  pendingRequests = await getFriendRequests(userLogin);
-	  friends = await getFriendList(userLogin);
+		pendingRequests = await getFriendRequests($user.login);
+		friends = await getFriendList($user.login);
 	}
   
 	async function getFriendRequests(userLogin) {
@@ -72,26 +78,6 @@
         }
     }
 </script>
-
-<style>
-  .login-container {
-    display: flex;
-    gap: 4px;
-  }
-
-  .login-input {
-    width: 200px;
-  }
-
-  .login-button {
-    width: 100px;
-  }
-</style>
-
-<div class="login-container">
-  <input type="text" bind:value={userLogin} placeholder="Type the user's login" class="login-input"/>
-  <button on:click={loginUser} class="login-button">Search</button>
-</div>
 
 <section>
 	<h2>Pending friend requests</h2>
