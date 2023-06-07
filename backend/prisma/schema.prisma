@@ -12,41 +12,76 @@ datasource db {
 
 model User {
   token                 String
-  jwtToken              String         @default("")
-  id                    Int            @id
+  jwtToken              String        @default("")
+  id                    Int           @id @unique
   email                 String
-  login                 String         @unique
+  login                 String        @unique
   first_name            String
   last_name             String
   large_pic             String
   medium_pic            String
   small_pic             String
-  createAt              DateTime       @default(now())
-  updateAt              DateTime       @updatedAt
-  friendRequestSent     Friend[]       @relation("FriendRequestSent")
-  friendRequestReceived Friend[]       @relation("FriendRequestReceived")
-  status                String         @default("offline")
-  stats                 Stats?
-  matchHistory          MatchHistory[]
+  createAt              DateTime      @default(now())
+  updateAt              DateTime      @updatedAt
+  sentMessages          Message[]     @relation("SentMessage")
+  rooms                 Room[]        @relation("RoomUser")
+  privateRoom           PrivateRoom[] @relation("PrivateRoomUser")
+  ownedRooms            Room[]        @relation("RoomOwner")
+  invitedRooms          Room[]        @relation("RoomInvitedUser")
+  administratedRooms    Room[]        @relation("RoomAdministrator")
+  bannedRooms           Room[]        @relation("RoomBannedUser")
+  mutedRooms            Room[]        @relation("RoomMutedUser")
+  blockedByUsers        User[]        @relation("BlockedUser")
+  blockedUsers          User[]        @relation("BlockedUser")
+  two_fa                Boolean       @default(false)
+  friendRequestSent     Friend[]      @relation("FriendRequestSent")
+  friendRequestReceived Friend[]      @relation("FriendRequestReceived")
 }
 
-model Stats {
-  id           Int      @id @default(autoincrement())
-  userId       Int      @unique
-  user         User     @relation(fields: [userId], references: [id])
-  wins         Int      @default(0)
-  losses       Int      @default(0)
-  ladderLevel  Int      @default(0)
-  achievements String[]
+model Authenticator {
+  checked Boolean @unique
 }
 
-model MatchHistory {
-  id        Int      @id @default(autoincrement())
-  userId    Int
-  user      User     @relation(fields: [userId], references: [id])
-  gameType  String
-  result    String
-  timestamp DateTime @default(now())
+model Data {
+  code String @unique
+}
+
+model Room {
+  id             Int       @id @default(autoincrement())
+  name           String    @unique
+  password       String?
+  type           String    @default("public")
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  messages       Message[]
+  users          User[]    @relation("RoomUser")
+  owner          User      @relation("RoomOwner", fields: [ownerId], references: [id])
+  ownerId        Int
+  invitedUsers   User[]    @relation("RoomInvitedUser")
+  administrators User[]    @relation("RoomAdministrator")
+  bannedUsers    User[]    @relation("RoomBannedUser")
+  mutedUsers     User[]    @relation("RoomMutedUser")
+}
+
+model PrivateRoom {
+  id        String    @id @unique
+  users     User[]    @relation("PrivateRoomUser")
+  messages  Message[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Message {
+  id            Int          @id @default(autoincrement())
+  content       String
+  sender        User         @relation("SentMessage", fields: [senderLogin], references: [login])
+  senderLogin   String
+  room          Room?        @relation(fields: [roomId], references: [id])
+  roomId        Int?
+  privateRoom   PrivateRoom? @relation(fields: [privateRoomId], references: [id])
+  privateRoomId String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
 }
 
 model Friend {
@@ -56,8 +91,4 @@ model Friend {
   status      String @default("pending")
   requester   User   @relation(fields: [requesterId], references: [id], name: "FriendRequestSent", onDelete: Cascade)
   requestee   User   @relation(fields: [requesteeId], references: [id], name: "FriendRequestReceived", onDelete: Cascade)
-}
-
-model Data {
-  code String @unique
 }

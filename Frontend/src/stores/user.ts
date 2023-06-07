@@ -1,6 +1,7 @@
 import { writable } from 'svelte/store';
 
-interface User {
+// Structure of User
+export interface User {
 	token: string;
 	jwtToken: string;
 	id: string;
@@ -13,19 +14,43 @@ interface User {
 	small_pic: string;
 	createAt: string;
 	updateAt: string;
+	two_fa: boolean;
 }
 
-export const user = writable<User>({
-	token: '',
-	jwtToken: '',
-	id: '',
-	email: '',
-	login: '',
-	first_name: '',
-	last_name: '',
-	large_pic: '',
-	medium_pic: '',
-	small_pic: '',
-	createAt: '',
-	updateAt: '',
+// Create a store with a default value
+export const user = writable<User>({} as User);
+export function resetUser() {
+	user.set({
+		token: '',
+		jwtToken: '',
+		id: '',
+		email: '',
+		login: '',
+		first_name: '',
+		last_name: '',
+		large_pic: '',
+		medium_pic: '',
+		small_pic: '',
+		createAt: '',
+		updateAt: '',
+		two_fa: false,
+	});
+}
+resetUser();
+
+// Export functions to update the store
+export function setUser(value: User) {
+	user.set(value);
+}
+
+
+// Interface for login2Fa
+export interface Login2Fa {
+	checked: boolean;
+}
+
+export const log2Fa = writable<Login2Fa>({
+	checked: false,
 });
+
+export const checked = writable<boolean>(false);

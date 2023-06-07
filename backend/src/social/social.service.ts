@@ -101,16 +101,21 @@ export class SocialService {
           ],
         },
         include: {
-          requester: true,
-          requestee: true,
+          requester: {
+            select: { login: true, small_pic: true }
+          },
+          requestee: {
+            select: { login: true, small_pic: true }
+          },
         },
       });
-  
+    
       return friendList.map((friend) => ({
         id: friend.id,
         friend: friend.requesterId === user.id ? friend.requestee : friend.requester,
       }));
     }
+    
     // // Soft delete
     // async deleteFriend(id: number): Promise<any> {
     //   const friend = await this.prisma.friend.findUnique({ where: { id } });

@@ -2,52 +2,55 @@
 <script lang="ts">
 	import Header from './Header.svelte';
 	import './styles.css';
-	// import { page } from '$app/stores';
 
-	// import Particles from "svelte-particles";
-	// import { loadFull } from "tsparticles-engine";
+	// import Particles from 'svelte-particles';
+	// import { loadFull } from 'tsparticles';
 
-	// let particlesUrl = "./particles.json";
+	// import { particlesConfig } from './particles';
+	// import { beforeUpdate } from 'svelte';
 
-	// let particlesConfig = {
-	//   particles: {
-	// 	color: {
-	// 	  value: "#000",
-	// 	},
-	// 	links: {
-	// 	  enable: true,
-	// 	  color: "#000",
-	// 	},
-	// 	move: {
-	// 	  enable: true,
-	// 	},
-	//   },
+	// let particlesContainer: any;
+
+	// let onParticlesLoaded = (event: CustomEvent) => {
+	// 	particlesContainer = event.detail.particles;
+
+	// 	// you can use particlesContainer to call all the Container class
+	// 	// (from the core library) methods like play, pause, refresh, start, stop
+	// 	// the tsParticles instance is stored in the particlesContainer object
+	// 	if (window.location.pathname === '/game')
+	// 		particlesContainer.stop();
+	// 	else
+	// 		particlesContainer.start();
 	// };
 
-	// let onParticlesLoaded = (event) => {
-	//   const particlesContainer = event.detail.particles;
-	//   // you can use particlesContainer to call all the Container class
-	//   // (from the core library) methods like play, pause, refresh, start, stop
+	// let particlesInit = async (main: any) => {
+	// 	// you can use main to customize the tsParticles instance adding presets or custom shapes
+	// 	// this loads the tsparticles package bundle, it's the easiest method for getting everything ready
+	// 	// starting from v2 you can add only the features you need reducing the bundle size
+	// 	await loadFull(main);
 	// };
 
-	// let particlesInit = async (engine) => {
-	//   // you can use main to customize the tsParticles instance adding presets or custom shapes
-	//   // this loads the tsparticles package bundle, it's the easiest method for getting everything ready
-	//   // starting from v2 you can add only the features you need reducing the bundle size
-	//   await loadFull(engine);
-	// };
+	// // Top stop particles on game page for ressources
+	// beforeUpdate(() => {
+	// 	if (!particlesContainer)
+	// 		return;
+	// 	if (window.location.pathname === '/game')
+	// 		particlesContainer.stop();
+	// 	else
+	// 		particlesContainer.start();
+	// });
 </script>
 
-<div class="app" id="app">
+<!-- <Particles
+	id="tsparticles"
+	options={particlesConfig}
+	on:particlesLoaded={onParticlesLoaded}
+	{particlesInit}
+/> -->
+
+<div class="app">
 	<Header />
 	<main>
-		<!-- <Particles
-		id="tsparticles"
-		url="{particlesUrl}"
-		options="{particlesConfig}"
-		on:particlesLoaded="{onParticlesLoaded}"
-		particlesInit="{particlesInit}"
-	  /> -->
 		<slot />
 	</main>
 
@@ -55,7 +58,7 @@
 		<center>
 			Made By <strong> ☁️ anggonza 🌟 ddupont 🌟 mmatthie 🌟 rahmed 🌟 tbrandt ☁️ </strong>
 		</center>
-<pre>
+		<pre>
     :::      ::::::::   :::::::::   ::::::::  ::::    :::  ::::::::
    :+:      :+:    :+:  :+:    :+: :+:    :+: :+:+:   :+: :+:    :+:
   +:+ +:+         +:+   +:+    +:+ +:+    +:+ :+:+:+  +:+ +:+
@@ -68,11 +71,14 @@
 </div>
 
 <style>
-	/* .app {
-	  display: flex;
-	  flex-direction: column;
-	  min-height: 100vh;
-	} */
+	.app {
+		display: flex;
+		flex-direction: column;
+		position: relative;
+		background: transparent;
+		color: white;
+		overflow: auto;
+	}
 
 	main {
 		flex: 1;
@@ -88,20 +94,8 @@
 	footer {
 		display: flex;
 		flex-direction: column;
-		justify-content: center;
 		align-items: center;
+		justify-content: center;
 		padding: 12px;
 	}
-	/* .game-page {
-        position: relative;
-    }
-    .game-page #game-container {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        pointer-events: none;
-        z-index: 999;
-    } */
 </style>

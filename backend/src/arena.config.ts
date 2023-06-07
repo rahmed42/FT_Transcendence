@@ -11,8 +11,8 @@ export default Arena({
 
 	initializeGameServer: (gameServer) => {
 		/* Define your room handlers */
-		gameServer.define('part1_room', Part1Room);
-		gameServer.define('part2_room', Part2Room);
+		gameServer.define('Original', Part1Room);
+		gameServer.define('Modern', Part2Room);
 	},
 
 	initializeExpress: (app) => {
