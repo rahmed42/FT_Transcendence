@@ -20,7 +20,7 @@
 				}
 				// Fist time user is null, so we check if sessionStorage has a user or it will return null
 				else if (sessionStorage.getItem('user')) {
-					currentUser = JSON.parse(sessionStorage.getItem('user'));
+					currentUser = JSON.parse(sessionStorage.getItem('user')!);
 					// console.log('SessionRestored ', currentUser);
 				}
 			});
@@ -29,16 +29,35 @@
 				await getToken(code);
 			}
 
+			async function check_2fa_user() { 
+				const response = await fetch('http://localhost:3333/auth/2fa_info', {
+					method: 'GET',
+					credentials: 'include',
+				})
+				const contentType = response.headers.get('Content-Type');
+				if (contentType && contentType.includes('application/json')) {
+					const data = await response.json();
+					if (data.info) {
+						sessionStorage.setItem('user2FaActivate', JSON.stringify(true));
+					}
+				}
+			}
 			if (checkJwtCookie())
-				await getUserInfo();
+				await check_2fa_user();
 
-			const first_log = sessionStorage.getItem('isLogged');
-			if (currentUser && currentUser.two_fa && !first_log) //Attention IsLogged est set que si 2fa est actif !
+			const checkIsUser2FaActivate = sessionStorage.getItem('user2FaActivate');
+			const faAuthValid = sessionStorage.getItem('isLogged');
+
+			if (checkIsUser2FaActivate && !faAuthValid)
 			{
-				sessionStorage.setItem('isLogged', JSON.stringify(currentUser.isLogged));
 				if (window.location.pathname !== '/2_fa')
 					window.location.href = '/2_fa';
 			}
+
+			if (checkJwtCookie() && checkIsUser2FaActivate && faAuthValid)
+				await getUserInfo();
+			else if (checkJwtCookie() && !checkIsUser2FaActivate)
+				await getUserInfo();
 
 			// redirect to home Page if logged in and reload on game page
 			if (sessionStorage.getItem('user') && window.location.pathname === '/game')
@@ -60,6 +79,7 @@
 
 	async function getToken(code: string) {
 		// Fetch token from the server
+		// fetch endpoint to 2fa authenticate
 		const response = await fetch('http://localhost:3333/auth/login?code=' + code, {
 			method: 'POST',
 			credentials: 'include'
@@ -103,6 +123,7 @@
 			const data = await response.json();
 			// update the user store
 			setUser(data);
+			// console.log('in getUserInfo', currentUser!.avatar);
 		}
 		// redirect to login Page if not logged in
 		if ((!currentUser || !currentUser.login || !sessionStorage.getItem('user')) && window.location.pathname !== '/')
@@ -110,7 +131,7 @@
 	}
 
 	// Logout process - if LOGOUT button is clicked
-	async function handleLogOut() {
+	function handleLogOut() {
 		// Clear the user store
 		resetUser();
 		// Clear the cookie
@@ -120,6 +141,7 @@
 		sessionStorage.removeItem('user');
 		sessionStorage.removeItem('isLogged');
 		sessionStorage.removeItem('jwt');
+		sessionStorage.removeItem('user2FaActivate');
 		// reset currentUser
 		currentUser = null;
 	}
@@ -195,20 +217,36 @@
 				{#if $page.url.pathname === '/profile'}
 					<a href="/profile" class="active">
 						{currentUser.login}
-						<img
-							src={currentUser.small_pic}
-							alt={`Picture of ${currentUser.login}`}
-							style="max-height: 2em; width: auto; margin-left:0.5em"
-						/>
+						{#if currentUser.avatar}
+							<img
+								src={currentUser.avatar}
+								alt={`Picture of ${currentUser.login}`}
+								style="max-height: 2em; width: auto; margin-left:0.5em"
+							/>
+						{:else}
+							<img
+								src={currentUser.small_pic}
+								alt={`Picture of ${currentUser.login}`}
+								style="max-height: 2em; width: auto; margin-left:0.5em"
+							/>
+						{/if}
 					</a>
 				{:else}
 					<a href="/profile">
 						{currentUser.login}
-						<img
-							src={currentUser.small_pic}
-							alt={`Picture of ${currentUser.login}`}
-							style="max-height: 2em; width: auto; margin-left:0.5em"
-						/>
+						{#if currentUser.avatar}
+							<img
+								src={currentUser.avatar}
+								alt={`Picture of ${currentUser.login}`}
+								style="max-height: 2em; width: auto; margin-left:0.5em"
+							/>
+						{:else}
+							<img
+								src={currentUser.small_pic}
+								alt={`Picture of ${currentUser.login}`}
+								style="max-height: 2em; width: auto; margin-left:0.5em"
+							/>
+						{/if}
 					</a>
 				{/if}
 			</li>

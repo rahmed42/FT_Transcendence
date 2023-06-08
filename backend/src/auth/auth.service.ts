@@ -4,6 +4,7 @@ import { JwtService } from '@nestjs/jwt';
 import axios from 'axios'
 import { authenticator } from 'otplib';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { userInfo } from 'os';
 
 
 @Injectable()
@@ -152,6 +153,18 @@ export class AuthService {
                 token: code,
                 secret: newUser.two_fa_secret,
             });
+        }
+    }
+    async get_2fa_info(tokenObject: {jwt : string}) {
+        const decode = await this.jwt.decode(tokenObject.jwt);
+        if (typeof decode === 'object')
+        {
+            const user  = await this.prisma.user.findUnique({
+                where: {
+                    id: decode.id,
+                }
+            })
+            return user.two_fa;
         }
     }
 }
