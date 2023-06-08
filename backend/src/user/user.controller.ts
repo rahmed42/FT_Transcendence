@@ -1,4 +1,4 @@
-import { Controller, Get, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
 import { Request } from 'express';
 import { AuthGuard } from '@nestjs/passport';
@@ -12,4 +12,9 @@ export class UserController {
         const token = request.cookies;
         return await this.userService.getInfo(token);
     }
+    @Post('picture')
+        async update_pp(@Req() request: Request, @Body() body: any) {
+            const token = request.cookies;
+            await this.userService.upload_pp(token, body);
+        }
 }
