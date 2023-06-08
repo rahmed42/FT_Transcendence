@@ -52,7 +52,3 @@ export function resetUser() {
 export function setUser(value: User) {
 	user.set(value);
 }
-
-export function updateUser(value: any) {
-	user.set(value);
-}

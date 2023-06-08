@@ -217,28 +217,36 @@
 				{#if $page.url.pathname === '/profile'}
 					<a href="/profile" class="active">
 						{currentUser.login}
-						<!-- {#if currentUser.avatar}
+						{#if currentUser.avatar}
 							<img
 								src={currentUser.avatar}
 								alt={`Picture of ${currentUser.login}`}
 								style="max-height: 2em; width: auto; margin-left:0.5em"
 							/>
-						{:else} -->
+						{:else}
 							<img
 								src={currentUser.small_pic}
 								alt={`Picture of ${currentUser.login}`}
 								style="max-height: 2em; width: auto; margin-left:0.5em"
 							/>
-						<!-- {/if} -->
+						{/if}
 					</a>
 				{:else}
 					<a href="/profile">
 						{currentUser.login}
-						<img
-							src={currentUser.small_pic}
-							alt={`Picture of ${currentUser.login}`}
-							style="max-height: 2em; width: auto; margin-left:0.5em"
-						/>
+						{#if currentUser.avatar}
+							<img
+								src={currentUser.avatar}
+								alt={`Picture of ${currentUser.login}`}
+								style="max-height: 2em; width: auto; margin-left:0.5em"
+							/>
+						{:else}
+							<img
+								src={currentUser.small_pic}
+								alt={`Picture of ${currentUser.login}`}
+								style="max-height: 2em; width: auto; margin-left:0.5em"
+							/>
+						{/if}
 					</a>
 				{/if}
 			</li>

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { get } from 'svelte/store';
 	import { setUser, user } from '../../stores/user';
+	import { onMount } from 'svelte';
 
 	let myUser = get(user);
 	let checked = myUser.two_fa;
@@ -10,6 +11,21 @@
 	let files: FileList;
 	let avatar: string;
 
+	onMount(async () => {
+		async function getUserInfo() {
+			const response = await fetch('http://localhost:3333/profil/me', {
+				method: 'GET',
+				credentials: 'include',
+			});
+			const contentType = response.headers.get('Content-Type');
+			if (contentType && contentType.includes('application/json')) {
+				const data = await response.json();
+				setUser(data);
+				myUser = get(user);
+			}
+		}
+		getUserInfo();
+	});
 	async function active_2_fa_auth() {
 		if (checked)
 			checked = false;
@@ -84,9 +100,7 @@
     {/if}
     <input class="hidden" id="file-to-upload" type="file" accept=".png,.jpg" bind:files bind:this={fileInput} on:change={() => getBase64(files[0])}/>
 	<button class="upload_btn" on:click={ () => fileInput.click() }>Upload Picture</button>
-</div>
-
-<div class = "auth_button">
+	<div class = "auth_button">
 	<button on:click={active_2_fa_auth}>
 	{#if !checked}
 		{active_message}
@@ -94,13 +108,7 @@
 		{desactive_message}
 	{/if}
 </div>
-
-<!-- <div class = "edit_username">
-	<button on:click={edit_username}>
-			Change Username
-	</button>
-</div> -->
-
+</div>
 
  <style>
 	.title {
@@ -141,12 +149,14 @@
 	}
 	.upload_btn {
 		display: flex;
+		flex-direction: column;
+		align-items: center;
+		padding: 12px;
 		justify-content: center;
 		align-items: center;
 		background-color: #007fff;
 		color: #fff;
 		font-size: 1.2rem;
-		padding: 1rem 2rem;
 		border: none;
 		transition: background-color 0.2s ease;
 		border-radius: 75px;
@@ -154,9 +164,9 @@
 		width: 200px;
 		height: 100px;
 		font-family:"Comic Sans MS";
-		position: relative;
-		top: -350px;
-		left: -40px;
+		/* position: relative; */
+		/* top: 180px; */
+		/* left: 180px; */
 	}
 	/* .edit_username {
 		font-family:"Comic Sans MS";
