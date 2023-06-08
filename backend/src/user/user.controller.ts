@@ -16,5 +16,6 @@ export class UserController {
         async update_pp(@Req() request: Request, @Body() body: any) {
             const token = request.cookies;
             await this.userService.upload_pp(token, body);
+            return await this.userService.getInfo(token);
         }
 }

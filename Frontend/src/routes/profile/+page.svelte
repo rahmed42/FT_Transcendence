@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { get } from 'svelte/store';
-	import { user } from '../../stores/user';
+	import { setUser, user } from '../../stores/user';
 
 	let myUser = get(user);
 	let checked = myUser.two_fa;
@@ -49,15 +49,21 @@
 		const picture = imgData[1];
 		if (picture)
 		{
-			await fetch('http://localhost:3333/profil/picture', {
+			const response = await fetch('http://localhost:3333/profil/picture', {
 				method: 'POST',
 				credentials: 'include',
 				headers: {
 					'Content-Type': 'application/json',
 					Accept: 'application/json',
 				},
-				body: JSON.stringify({ data: picture }),
+				body: JSON.stringify({ data: avatar }),
 			});
+			const contentType = response.headers.get('Content-Type');
+			if (contentType && contentType.includes('application/json')) {
+				const data = await response.json();
+				setUser(data);
+				myUser = get(user);
+			}
 		}
 	}
 };
@@ -71,10 +77,10 @@
 <h1 class="title">Welcome <strong>{$user.first_name} {$user.last_name}</strong></h1>
 
 <div class = "container">
-	{#if avatar}
-        <img class="pp" id="avatar" src={avatar} alt="avatar"/>
+	{#if myUser.avatar}
+        <img class="pp" id="avatar" src={myUser.avatar} alt="avatar"/>
     {:else}
-        <img class = "pp" id="avatar" src={$user.large_pic} alt={`Picture of ${$user.login}`}/>
+        <img class="pp" id="avatar" src={$user.large_pic} alt={`Picture of ${$user.login}`}/>
     {/if}
     <input class="hidden" id="file-to-upload" type="file" accept=".png,.jpg" bind:files bind:this={fileInput} on:change={() => getBase64(files[0])}/>
 	<button class="upload_btn" on:click={ () => fileInput.click() }>Upload Picture</button>
@@ -88,12 +94,6 @@
 		{desactive_message}
 	{/if}
 </div>
-
-<!-- <div class = "upload_button">
-	<button on:click={edit_pp}>
-			Edit Profile Picture
-	</button>
-</div> -->
 
 <!-- <div class = "edit_username">
 	<button on:click={edit_username}>

@@ -44,6 +44,7 @@
 			}
 			if (checkJwtCookie())
 				await check_2fa_user();
+
 			const checkIsUser2FaActivate = sessionStorage.getItem('user2FaActivate');
 			const faAuthValid = sessionStorage.getItem('isLogged');
 
@@ -52,6 +53,7 @@
 				if (window.location.pathname !== '/2_fa')
 					window.location.href = '/2_fa';
 			}
+
 			if (checkJwtCookie() && checkIsUser2FaActivate && faAuthValid)
 				await getUserInfo();
 			else if (checkJwtCookie() && !checkIsUser2FaActivate)
@@ -121,6 +123,7 @@
 			const data = await response.json();
 			// update the user store
 			setUser(data);
+			// console.log('in getUserInfo', currentUser!.avatar);
 		}
 		// redirect to login Page if not logged in
 		if ((!currentUser || !currentUser.login || !sessionStorage.getItem('user')) && window.location.pathname !== '/')
@@ -214,11 +217,19 @@
 				{#if $page.url.pathname === '/profile'}
 					<a href="/profile" class="active">
 						{currentUser.login}
-						<img
-							src={currentUser.small_pic}
-							alt={`Picture of ${currentUser.login}`}
-							style="max-height: 2em; width: auto; margin-left:0.5em"
-						/>
+						<!-- {#if currentUser.avatar}
+							<img
+								src={currentUser.avatar}
+								alt={`Picture of ${currentUser.login}`}
+								style="max-height: 2em; width: auto; margin-left:0.5em"
+							/>
+						{:else} -->
+							<img
+								src={currentUser.small_pic}
+								alt={`Picture of ${currentUser.login}`}
+								style="max-height: 2em; width: auto; margin-left:0.5em"
+							/>
+						<!-- {/if} -->
 					</a>
 				{:else}
 					<a href="/profile">
