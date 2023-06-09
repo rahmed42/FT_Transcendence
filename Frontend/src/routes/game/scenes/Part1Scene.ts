@@ -55,6 +55,7 @@ export class Part1Scene extends Phaser.Scene {
 
 	// Constructor of the scene
 	constructor() {
+		console.log("Part1Scene constructor");
 		// active false to prevent the scene from starting automatically
 		super({ key: "part1", active: false });
 		this.activeScene = 'Part1Scene';
@@ -218,7 +219,7 @@ export class Part1Scene extends Phaser.Scene {
 				}
 			}
 		});
-		
+
 
 		// // Listen for paddle updates from server
 		// this.room.state.paddles.onChange = (player, sessionId) => {
