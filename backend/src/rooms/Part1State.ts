@@ -25,7 +25,7 @@ export class Ball extends Schema {
 }
 
 //Player class
-export class Paddle extends Schema {
+export class Player extends Schema {
 	@type("number") x: number;
 	@type("number") y: number;
 }
@@ -37,5 +37,5 @@ export class Part1State extends Schema {
 	@type({ map: Start }) startButton = new MapSchema<Start>();
 	@type({ map: Score }) scores = new MapSchema<Score>();
 	@type({ map: Ball }) balls = new MapSchema<Ball>();
-	@type({ map: Paddle }) paddles = new MapSchema<Paddle>();
+	@type({ map: Player }) players = new MapSchema<Player>();
 }

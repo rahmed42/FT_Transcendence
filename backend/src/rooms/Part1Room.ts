@@ -1,24 +1,25 @@
 import { Room, Client } from "colyseus";
-import { Part1State, Start, Score, Ball, Paddle } from "./Part1State";
-// import { listenerCount } from "superagent";
+import { Part1State, Start, Score, Ball, Player } from "./Part1State";
 
 export class Part1Room extends Room<Part1State> {
 
 	// Create a new instance of Room
-	onCreate(options: any) {
+	constructor() {
+		super();
 		// Set Max client per room at 2 players
 		this.maxClients = 2;
+	}
 
+	onCreate(options: any) {
 		// Set up the game state
 		this.setState(new Part1State());
 
-		// Set map dimensions
+		// set map dimensions
 		this.state.mapWidth = 800;
 		this.state.mapHeight = 600;
 
-
 		// Set up the start button
-		let start : Start = new Start();
+		let start = new Start();
 		start.begin = false;
 
 		// Refresh the start button state
@@ -33,7 +34,7 @@ export class Part1Room extends Room<Part1State> {
 
 
 		// Set up the scores
-		let score : Score = new Score();
+		let score = new Score();
 		score.leftPlayer = 0;
 		score.rightPlayer = 0;
 
@@ -50,7 +51,7 @@ export class Part1Room extends Room<Part1State> {
 
 
 		// Set up the ball
-		let ball : Ball = new Ball();
+		let ball = new Ball();
 		ball.x = this.state.mapWidth / 2;
 		ball.y = this.state.mapHeight / 2;
 		ball.xVelocity = 0;
@@ -68,47 +69,53 @@ export class Part1Room extends Room<Part1State> {
 			ball.yVelocity = message.yVelocity;
 			this.state.balls.set("ball", ball);
 		});
+
+		// handle player input
+		this.onMessage(0, (client, input) => {
+			const player = this.state.players.get(client.sessionId);
+			const velocity = 2;
+
+			if (input.up) {
+				player.y -= velocity;
+
+			} else if (input.down) {
+				player.y += velocity;
+			}
+		});
 	}
 
-	// At player joining
 	onJoin(client: Client, options: any) {
 		console.log(client.sessionId, "joined!");
 
 		// create player at center vertical position
-		let paddle : Paddle = new Paddle();
-		// Pop on left side if paddle 1, right side if paddle 2
-		if (this.state.paddles.size % 2 == 0)
-			paddle.x = 40;
+		const player = new Player();
+		// Pop on left side if player 1, right side if player 2
+		if (this.state.players.size % 2 == 0)
+			player.x = 40;
 		else
-			paddle.x = this.state.mapWidth - 40;
-		paddle.y = this.state.mapHeight / 2;
+			player.x = this.state.mapWidth - 40;
+		player.y = this.state.mapHeight / 2;
 
-		this.state.paddles.set(client.sessionId, paddle);
+		this.state.players.set(client.sessionId, player);
 
 		// Handle start pushed from one player
 		this.onMessage("start", (client, message) => {
-			let start : Start = this.state.startButton.get("start");
+			let start = this.state.startButton.get("start");
 			start.begin = true;
 			this.state.startButton.set("start", start);
 		});
 	}
 
-	// At player leaving destroy the room
 	onLeave(client: Client, consented: boolean) {
 		console.log(client.sessionId, "left!");
-
-		// Clean created session and instances before leaving room
-		// this.state.startButton.delete("start");
-		// this.state.scores.delete("score");
-		// this.state.balls.delete("ball");
-		this.state.paddles.delete(client.sessionId);
+		this.state.players.delete(client.sessionId);
 	}
 
-	// At player disconnection destroy the roo
 	onDispose() {
 		console.log("room", this.roomId, "disposing...");
 
 		// destroy the current room
-		this.disconnect();
+		// this.disconnect();
 	}
+
 }
