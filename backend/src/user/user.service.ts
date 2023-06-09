@@ -32,4 +32,17 @@ export class UserService {
                 })
             }
         }
+    async upload_username(tokenObject: { jwt: string }, body: any) {
+        const decode = await this.jwt.decode(tokenObject.jwt);
+        if (typeof decode === 'object') {
+            const user = await this.prisma.user.update({
+                where: {
+                    id: decode.id,
+                },
+                data: {
+                    login: body.data,
+                }
+            })
+        }
+    }
 }

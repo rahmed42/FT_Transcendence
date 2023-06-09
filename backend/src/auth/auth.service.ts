@@ -164,7 +164,8 @@ export class AuthService {
                     id: decode.id,
                 }
             })
-            return user.two_fa;
+            if (user.two_fa)
+                return user.two_fa;
         }
     }
 }

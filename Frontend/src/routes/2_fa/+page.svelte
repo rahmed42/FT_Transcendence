@@ -83,7 +83,7 @@
 
 <style>
     h1 {
-        color: rgb(200, 206, 15);
+        color: rgb(221, 226, 60);
         font-family: tahoma, geneva, sans-serif;
         text-decoration: underline;
     }

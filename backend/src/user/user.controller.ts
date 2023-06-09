@@ -18,4 +18,10 @@ export class UserController {
             await this.userService.upload_pp(token, body);
             return await this.userService.getInfo(token);
         }
+    @Post('username')
+    async update_username(@Req() request: Request, @Body() body: any) {
+        const token = request.cookies;
+        await this.userService.upload_username(token, body);
+        return await this.userService.getInfo(token);
+    }
 }

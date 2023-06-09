@@ -48,6 +48,10 @@
 			const checkIsUser2FaActivate = sessionStorage.getItem('user2FaActivate');
 			const faAuthValid = sessionStorage.getItem('isLogged');
 
+			// if (currentUser && currentUser.login) 
+			// {
+				// window.location.href = '/home';
+			// }
 			if (checkIsUser2FaActivate && !faAuthValid)
 			{
 				if (window.location.pathname !== '/2_fa')
@@ -233,7 +237,10 @@
 					</a>
 				{:else}
 					<a href="/profile">
-						{currentUser.login}
+						<!-- if (currentUser.pseudo) -->
+							<!-- {currentUser.pseudo} -->
+						<!-- else -->
+							{currentUser.login}
 						{#if currentUser.avatar}
 							<img
 								src={currentUser.avatar}
