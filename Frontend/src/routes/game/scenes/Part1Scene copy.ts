@@ -1,5 +1,4 @@
 import Phaser, { Textures } from "phaser";
-
 import { Room, Client } from "colyseus.js";
 import { BACKEND_URL } from "../backend";
 import { user, type User } from '../../../stores/user';
