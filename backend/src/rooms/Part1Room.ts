@@ -10,6 +10,7 @@ export class Part1Room extends Room<Part1State> {
 		this.maxClients = 2;
 	}
 
+	// API Server side : https://docs.colyseus.io/server/room/
 	onCreate(options: any) {
 		// Set up the game state
 		this.setState(new Part1State());

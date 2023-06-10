@@ -110,7 +110,7 @@ export class Part1Scene extends Phaser.Scene {
 	async connect() {
 		// add connection status text
 		const connectionStatusText = this.add
-			.text(50, 0, "Trying to connect with the server...")
+			.text(50, 0, "Trying to connect \nwith the server...")
 			.setStyle({ color: "#ff0000" })
 			.setPadding(4)
 
@@ -122,64 +122,14 @@ export class Part1Scene extends Phaser.Scene {
 
 			// connection successful!
 			connectionStatusText.destroy();
-
-			// // Listen to state changes in the room
-			// this.room.state.players.onAdd = (player, sessionId) => {
-			// 	console.log("New player joined: ", sessionId);
-			// 	// create visual representation for the new player
-			// 	this.createPlayer(sessionId);
-			// };
-
-			// this.room.state.players.onRemove = (player, sessionId) => {
-			// 	console.log("Player left: ", sessionId);
-			// 	// remove visual representation for the player
-			// 	this.removePlayer(sessionId);
-			// };
-
-			// // Listen to updates in the player state
-			// this.room.state.players.onChange = (player, sessionId) => {
-			// 	console.log("Player state changed: ", sessionId);
-			// 	// update visual representation for the player
-			// 	this.updatePlayer(sessionId);
-			// };
-
-			// // Listen to updates in the ball state
-			// this.room.state.onChange = () => {
-			// 	console.log("Ball state changed");
-			// 	// update visual representation for the ball
-			// 	this.updateBall();
-			// };
-
-			// // Listen to updates in the score state
-			// this.room.state.onScoreChange = () => {
-			// 	console.log("Score state changed");
-			// 	// update the score text
-			// 	this.updateScore();
-			// };
-
-			// // Listen to game over event
-			// this.room.state.onGameOver = () => {
-			// 	console.log("Game over");
-			// 	// show game over screen or handle game over logic
-			// 	this.gameOver();
-			// };
-
 		} catch (e) {
 			console.error("Error connecting to room: ", e);
 			connectionStatusText.setText("Connection error.\nPlease try again later.");
 		}
 	}
 
-
 	createLocalPaddle() : void {
-		this.input.on('pointermove', () => {
-			if (this.localPaddle)
-				this.localPaddle.destroy();
-
-			// if (this.remotePaddle)
-			// 	this.remotePaddle.destroy();
-
-			let posY;
+		let posY;
 			if (this.pointer)
 				posY = this.pointer.y;
 			else
@@ -188,7 +138,6 @@ export class Part1Scene extends Phaser.Scene {
 			// Display Paddle and set bounds
 			const paddle = {
 				'x': 20,
-				'y': 100,
 				'pos': posY,
 			};
 			this.localPaddle = this.physics.add.image(paddle.x, paddle.pos, 'paddleDefault');
@@ -196,22 +145,50 @@ export class Part1Scene extends Phaser.Scene {
 			this.localPaddle.setCollideWorldBounds(true);
 			this.localPaddle.setImmovable(true);
 
-			// this.remotePaddle = this.physics.add.image(this.cameras.main.width - paddle.x, this.cameras.main.centerY, 'paddleDefault');
-			// this.remotePaddle.setOrigin(0.5, 0.5);
-			// this.remotePaddle.setCollideWorldBounds(true);
-			// this.remotePaddle.setImmovable(true);
-
-			if (this.ball && this.localPaddle
-				//  && this.remotePaddle
-			) {
+			if (this.ball && this.localPaddle) {
 				// Add collisions between ball and paddles
 				this.physics.add.collider(this.ball, this.localPaddle);
-				// this.physics.add.collider(this.ball, this.remotePaddle);
 			}
+		this.input.on('pointermove', () => {
+			this.localPaddle.y = this.pointer.y;
+			//Update position on server !
+			//...
+		});
+	}
+
+	createRemotePaddle() : void {
+		let posY;
+		if (this.pointer)
+			posY = this.pointer.y;
+		else
+			posY = this.cameras.main.centerY;
+
+		// Display Paddle and set bounds
+		const paddle = {
+			'x': 20,
+			'pos': posY,
+		};
+		this.remotePaddle = this.physics.add.image(this.cameras.main.width - paddle.x, this.cameras.main.centerY, 'paddleDefault');
+		this.remotePaddle.setOrigin(0.5, 0.5);
+		this.remotePaddle.setCollideWorldBounds(true);
+		this.remotePaddle.setImmovable(true);
+
+		if (this.ball && this.remotePaddle) {
+			// Add collisions between ball and paddles
+			this.physics.add.collider(this.ball, this.remotePaddle);
+		}
+
+		//GET remote position from server update when sync OK
+		//...
+
+		//TEMP to test match
+		this.input.on('pointermove', () => {
+			this.remotePaddle.y = this.pointer.y;
 		});
 	}
 
 	gameListeners(): void {
+		//https://learn.colyseus.io/phaser/1-basic-player-movement.html
 		if (!this.room) {
 			console.log("No rooms !");
 			return;
@@ -220,30 +197,55 @@ export class Part1Scene extends Phaser.Scene {
 		// Listen for new players
 		this.room.state.players.onAdd((player, sessionId) => {
 			if (this.room && this.room.state.players.size <= 2) {
+
+				//Setup my Paddle
 				if (this.localPaddle === undefined){
-					console.log("Create Local Paddle", this.remotePaddle);
+					console.log("Create Local Paddle", this.localPaddle);
 					this.createLocalPaddle();
+
+					//Keep reference to this remote Paddle
+					const entity = this.localPaddle;
+					this.playerEntities[sessionId] = entity;
+					console.log("Local Entity : ", entity);
+					console.log("Local Player Y: ", player.y);
+
+					// Listen for changes and push it to backend
+					player.onChange = () => {
+						console.log("local change", entity.y, player.y);
+						entity.y = player.y
+					}
 				}
 
+				// waiting for other player
 				if (this.room.state.players.size === 1) {
 					// Start the animation loop if there is only one player
 					this.startButtonText("Waiting for duel", false);
 					this.startAnim();
 				}
 
+				// Second player added
 				if (this.room.state.players.size === 2) {
+					// Setup his paddle
 					if (this.remotePaddle === undefined) {
 						console.log("Create Remote Paddle", this.remotePaddle);
+						this.createRemotePaddle();
+
+						// Keep reference to this remote Paddle
+						const entity = this.remotePaddle;
+						this.playerEntities[sessionId] = entity;
+						console.log("Remote entity : ", entity);
+						console.log("Remote player Y: ", player.y);
+
+						// Listen for changes and push it to backend
+						player.onChange = () => {
+							console.log("remote change", entity.y, player.y);
+							entity.y = player.y
+						}
 					}
 					// Set start clickable button
 					this.startButtonText("🏓 Start Game 🏓", true);
 					this.startAnim();
 				}
-
-				// Keep reference of the player entity
-				// // console.log("Added player : ", player, this.localPaddle?.player);
-				// this.playerEntities[sessionId] = player;
-
 				// // listen for changes
 				// player.onChange = () => {
 				// 	console.log("Player state changed: ", sessionId);
@@ -257,9 +259,13 @@ export class Part1Scene extends Phaser.Scene {
 		this.room.state.players.onRemove((player, sessionId) => {
 			// If the other player leaves the game we have to stop the game
 			if (this.room && this.room.state.players.size < 2) {
+				// remove exisiting Paddle
+				this.localPaddle?.destroy();
+				this.remotePaddle?.destroy();
 				// remove player entity from scene
 				const entity = this.playerEntities[sessionId];
 				if (entity) {
+					console.log("remote entity ", entity);
 					entity.destroy();
 					delete this.playerEntities[sessionId];
 				}
@@ -305,7 +311,7 @@ export class Part1Scene extends Phaser.Scene {
 		//   });
 	}
 
-	// Game visual callbacks
+	// Game visual Init
 	gameInit(): void {
 		/* SETUP STYLES */
 		// Display styled background
@@ -383,9 +389,6 @@ export class Part1Scene extends Phaser.Scene {
 			this.scene.start('menu')
 			this.leave(this.room);
 		});
-
-		// //Adding start button for the Game
-		// this.startButtonText("Start Game", false);
 	}
 
 	// leaving room
@@ -394,8 +397,7 @@ export class Part1Scene extends Phaser.Scene {
 			// Call the leave method on the room instance
 			room.leave();
 		}
-		// Redirect to the main menu or perform any necessary actions
-		// console.log('Leaving room');
+		console.log('Leaving room');
 	}
 
 	// Game logics
@@ -440,7 +442,7 @@ export class Part1Scene extends Phaser.Scene {
 			this.time.delayedCall(1000, () => {
 				this.startButtonText("1", false);
 				this.time.delayedCall(1000, () => {
-					this.startButtonText("GO!", false);
+					this.startButtonText("GO !", false);
 					this.time.delayedCall(1000, () => {
 						this.startButton?.destroy();
 						this.ball?.setVisible(true);
@@ -463,9 +465,6 @@ export class Part1Scene extends Phaser.Scene {
 			repeat: -1
 		});
 	}
-
-
-
 
 	startButtonText(text: string, clickable: boolean): void {
 		this.startButton?.destroy();
@@ -497,62 +496,6 @@ export class Part1Scene extends Phaser.Scene {
 		this.startButtonText("🏓 Start Game 🏓", true);
 		this.startAnim();
 	}
-
-	// 	/**
-	//   * Handles the start of the game.
-	//   */
-	// 	startGame() {
-	// 		// Create the game objects (paddles, ball, score text, etc.)
-	// 		this.createPaddles();
-	// 		this.createBall();
-	// 		this.createScoreText();
-	// 		this.createStartButton();
-
-	// 		// Enable input for the local player's paddle
-	// 		this.enableLocalPaddleInput();
-
-	// 		// Start the game loop
-	// 		this.scene.start(this.activeScene);
-
-	// 		// Remove the start button
-	// 		this.startButton?.destroy();
-	// 	}
-	// /**
-	//  * Handles the game over logic.
-	//  */
-	// gameOver() {
-	// 	// Display a game over message or perform any necessary actions
-	// 	console.log("Game over!");
-
-	// 	// Call the client leave method to leave the room
-	// 	this.leaveRoom();
-	// }
-
-	// /**
-	//  * Leaves the room and returns to the main menu.
-	//  */
-	// leaveRoom() {
-	// 	// Call the leave method on the client instance
-	// 	this.client.leave();
-
-	// 	// Redirect to the main menu or perform any necessary actions
-	// 	console.log("Leaving room");
-	// }
-	// /**
-	//  * Creates the start button.
-	//  */
-	// createStartButton() {
-	// 	this.startButton = this.add
-	// 		.text(400, 300, "Click to start the game")
-	// 		.setOrigin(0.5)
-	// 		.setInteractive({ useHandCursor: true })
-	// 		.on("pointerdown", () => {
-	// 			// Send a start message to the server to start the game
-	// 			this.room?.send("start");
-	// 		});
-	// }
-
-
 
 	/**
 	 * At every update() tick, we are going to update the
