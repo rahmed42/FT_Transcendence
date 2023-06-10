@@ -55,6 +55,7 @@ export class Part1Scene extends Phaser.Scene {
 
 	// Constructor of the scene
 	constructor() {
+		console.log("Part1Scene constructor");
 		// active false to prevent the scene from starting automatically
 		super({ key: "part1", active: false });
 		this.activeScene = 'Part1Scene';
@@ -92,7 +93,7 @@ export class Part1Scene extends Phaser.Scene {
 
 		//Get player name
 		if (currentUser && currentUser.login)
-			this.myName = currentUser.login;
+			this.myName = currentUser.login; // To fetch from DB / discard current stored user
 		else
 			this.myName = "Player";
 		this.gameInit();
@@ -109,7 +110,7 @@ export class Part1Scene extends Phaser.Scene {
 	async connect() {
 		// add connection status text
 		const connectionStatusText = this.add
-			.text(0, 0, "Trying to connect with the server...")
+			.text(50, 0, "Trying to connect with the server...")
 			.setStyle({ color: "#ff0000" })
 			.setPadding(4)
 
@@ -165,7 +166,7 @@ export class Part1Scene extends Phaser.Scene {
 
 		} catch (e) {
 			console.error("Error connecting to room: ", e);
-			connectionStatusText.setText("Connection error. Please try again later.");
+			connectionStatusText.setText("Connection error.\nPlease try again later.");
 		}
 	}
 
@@ -174,7 +175,6 @@ export class Part1Scene extends Phaser.Scene {
 			console.log("No rooms !");
 			return;
 		}
-
 
 		// Listen for new players
 		this.room.state.players.onAdd((player, sessionId) => {
@@ -191,21 +191,17 @@ export class Part1Scene extends Phaser.Scene {
 				});
 
 				if (this.room.state.players.size === 1) {
-					// console.log("1 player in Game");
-					this.startButtonText("🏓 Start Game", false);
+					// Start the animation loop if there is only one player
+					this.startButtonText("Waiting Players", false);
+					this.startAnim();
 				}
-				// set the remote paddle to follow the second player.
-				else if (this.room.state.players.size === 2) {
-					if (player) {
-						// console.log("2 players in Game, sessionId %s - Player info", this.room.sessionId, player);
-						// create remote paddle
-						// this.createRemotePaddle(player);
-					}
+
+				// Set start clickable button
+				if (this.room.state.players.size === 2) {
 					this.startButtonText("🏓 Start Game 🏓", true);
+					this.startAnim();
 				}
 			}
-			// else
-			// console.log("Room is FULL");
 		});
 
 		// Listen for removed players
@@ -378,8 +374,8 @@ export class Part1Scene extends Phaser.Scene {
 			this.leave(this.room);
 		});
 
-		//Adding start button for the Game
-		this.startButtonText("Start Game", false);
+		// //Adding start button for the Game
+		// this.startButtonText("Start Game", false);
 	}
 
 	// leaving room
@@ -445,9 +441,25 @@ export class Part1Scene extends Phaser.Scene {
 		});
 	}
 
+	startAnim(): void {
+		// Create a wait animation using Phaser's tweens or animations
+		//https://newdocs.phaser.io/docs/3.52.0/Phaser.Tweens.Events.TWEEN_YOYO
+		const startAnimation = this.tweens.add({
+			targets: this.startButton,
+			alpha: { from: 1, to: 0.3 },
+			ease: 'Power2',
+			duration: 800,
+			yoyo: true,
+			repeat: -1
+		});
+	}
+
+
+
+
 	startButtonText(text: string, clickable: boolean): void {
 		this.startButton?.destroy();
-		this.startButton = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, text, { font: '64px Arial', color: '#2b0bbc' });
+		this.startButton = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, text, { font: '52px Arial', color: '#ffffff' });
 		this.startButton.setBackgroundColor('#000000');
 		this.startButton.setOrigin(0.5, 0.5);
 		if (clickable) {
@@ -472,12 +484,8 @@ export class Part1Scene extends Phaser.Scene {
 			this.ball.setVelocity(0);
 			this.ball.setVisible(false);
 		}
-		this.startButtonText("Start Game", true);
-		// Show start button
-		// if (this.startButton) {
-		// 	this.startButton.setVisible(true);
-		// 	this.startButton.setInteractive();
-		// }
+		this.startButtonText("🏓 Start Game 🏓", true);
+		this.startAnim();
 	}
 
 	// 	/**

@@ -23,7 +23,7 @@ export class Part1Scene extends Phaser.Scene {
 	// mouse pointer
 	pointer: Phaser.Input.Pointer | undefined;
 
-	// local input cache
+	// local input cach+e
 	inputPayload = {
 		y: 0,
 	};
