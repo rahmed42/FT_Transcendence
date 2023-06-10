@@ -15,42 +15,40 @@ export interface User {
 	createAt: string;
 	updateAt: string;
 	two_fa: boolean;
+	two_fa_secret: string,
+	isLogged: boolean;
+	avatar: string,
 }
+
+// Retrieve the user from the session storage if exist else return an empty object
+const defaultUser: User = {
+	token: '',
+	jwtToken: '',
+	id: '',
+	email: '',
+	login: '',
+	first_name: '',
+	last_name: '',
+	large_pic: '',
+	medium_pic: '',
+	small_pic: '',
+	createAt: '',
+	updateAt: '',
+	two_fa: false,
+	two_fa_secret: '',
+	isLogged: false,
+	avatar: '',
+};
 
 // Create a store with a default value
-export const user = writable<User>({} as User);
-export function resetUser() {
-	user.set({
-		token: '',
-		jwtToken: '',
-		id: '',
-		email: '',
-		login: '',
-		first_name: '',
-		last_name: '',
-		large_pic: '',
-		medium_pic: '',
-		small_pic: '',
-		createAt: '',
-		updateAt: '',
-		two_fa: false,
-	});
-}
-resetUser();
+export const user = writable<User>(defaultUser);
 
-// Export functions to update the store
+// Reset the user to the default value
+export function resetUser() {
+	user.set(defaultUser);
+}
+
+// function to update the store
 export function setUser(value: User) {
 	user.set(value);
 }
-
-
-// Interface for login2Fa
-export interface Login2Fa {
-	checked: boolean;
-}
-
-export const log2Fa = writable<Login2Fa>({
-	checked: false,
-});
-
-export const checked = writable<boolean>(false);

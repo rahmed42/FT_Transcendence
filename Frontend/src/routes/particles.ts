@@ -1,7 +1,7 @@
 export let particlesConfig = {
 	"particles": {
 	  "number": {
-		"value": 20, // number of balls
+		"value": 10, // number of balls
 		"density": {
 		  "enable": false
 		}
