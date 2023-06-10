@@ -170,6 +170,47 @@ export class Part1Scene extends Phaser.Scene {
 		}
 	}
 
+
+	createLocalPaddle() : void {
+		this.input.on('pointermove', () => {
+			if (this.localPaddle)
+				this.localPaddle.destroy();
+
+			// if (this.remotePaddle)
+			// 	this.remotePaddle.destroy();
+
+			let posY;
+			if (this.pointer)
+				posY = this.pointer.y;
+			else
+				posY = this.cameras.main.centerY;
+
+			// Display Paddle and set bounds
+			const paddle = {
+				'x': 20,
+				'y': 100,
+				'pos': posY,
+			};
+			this.localPaddle = this.physics.add.image(paddle.x, paddle.pos, 'paddleDefault');
+			this.localPaddle.setOrigin(0.5, 0.5);
+			this.localPaddle.setCollideWorldBounds(true);
+			this.localPaddle.setImmovable(true);
+
+			// this.remotePaddle = this.physics.add.image(this.cameras.main.width - paddle.x, this.cameras.main.centerY, 'paddleDefault');
+			// this.remotePaddle.setOrigin(0.5, 0.5);
+			// this.remotePaddle.setCollideWorldBounds(true);
+			// this.remotePaddle.setImmovable(true);
+
+			if (this.ball && this.localPaddle
+				//  && this.remotePaddle
+			) {
+				// Add collisions between ball and paddles
+				this.physics.add.collider(this.ball, this.localPaddle);
+				// this.physics.add.collider(this.ball, this.remotePaddle);
+			}
+		});
+	}
+
 	gameListeners(): void {
 		if (!this.room) {
 			console.log("No rooms !");
@@ -179,28 +220,36 @@ export class Part1Scene extends Phaser.Scene {
 		// Listen for new players
 		this.room.state.players.onAdd((player, sessionId) => {
 			if (this.room && this.room.state.players.size <= 2) {
-				// const entity = this.localPaddle!;
-
-				// keep a reference of it on `playerEntities`
-				// this.playerEntities[sessionId] = entity;
-
-				// listening for server updates we need all the new coordinates at once with .onChange()
-				player.onChange(() => {
-					// update local position immediately
-					// entity.y = player.y;
-				});
+				if (this.localPaddle === undefined){
+					console.log("Create Local Paddle", this.remotePaddle);
+					this.createLocalPaddle();
+				}
 
 				if (this.room.state.players.size === 1) {
 					// Start the animation loop if there is only one player
-					this.startButtonText("Waiting Players", false);
+					this.startButtonText("Waiting for duel", false);
 					this.startAnim();
 				}
 
-				// Set start clickable button
 				if (this.room.state.players.size === 2) {
+					if (this.remotePaddle === undefined) {
+						console.log("Create Remote Paddle", this.remotePaddle);
+					}
+					// Set start clickable button
 					this.startButtonText("🏓 Start Game 🏓", true);
 					this.startAnim();
 				}
+
+				// Keep reference of the player entity
+				// // console.log("Added player : ", player, this.localPaddle?.player);
+				// this.playerEntities[sessionId] = player;
+
+				// // listen for changes
+				// player.onChange = () => {
+				// 	console.log("Player state changed: ", sessionId);
+				// 	// update visual representation for the player
+				// 	// this.updatePlayer(sessionId);
+				// }
 			}
 		});
 
@@ -288,50 +337,11 @@ export class Part1Scene extends Phaser.Scene {
 			this.ball.setBounce(1);
 		}
 
-		this.input.on('pointermove', () => {
-			if (this.localPaddle)
-				this.localPaddle.destroy();
-
-			// if (this.remotePaddle)
-			// 	this.remotePaddle.destroy();
-
-			let posY;
-			if (this.pointer)
-				posY = this.pointer.y;
-			else
-				posY = this.cameras.main.centerY;
-
-			// Display Paddle and set bounds
-			const paddle = {
-				'x': 20,
-				'y': 100,
-				'pos': posY,
-			};
-			this.localPaddle = this.physics.add.image(paddle.x, paddle.pos, 'paddleDefault');
-			this.localPaddle.setOrigin(0.5, 0.5);
-			this.localPaddle.setCollideWorldBounds(true);
-			this.localPaddle.setImmovable(true);
-
-			// this.remotePaddle = this.physics.add.image(this.cameras.main.width - paddle.x, this.cameras.main.centerY, 'paddleDefault');
-			// this.remotePaddle.setOrigin(0.5, 0.5);
-			// this.remotePaddle.setCollideWorldBounds(true);
-			// this.remotePaddle.setImmovable(true);
-
-			if (this.ball && this.localPaddle
-				//  && this.remotePaddle
-			) {
-				// Add collisions between ball and paddles
-				this.physics.add.collider(this.ball, this.localPaddle);
-				// this.physics.add.collider(this.ball, this.remotePaddle);
-			}
-		});
-
 		/* Adding Menu button */
 		const homeButton = this.add.image(this.cameras.main.centerX, 25, 'button');
 		homeButton.setScale(0.4);
 		homeButton.setOrigin(0.5, 0.5);
 		//set menu button semi transparent
-
 
 		// setting the text as interactive
 		homeButton.setInteractive();
