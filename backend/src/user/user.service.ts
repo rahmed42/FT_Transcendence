@@ -18,6 +18,14 @@ export class UserService {
                 return user;
             }
         }
+        async getFriendInfo(username: string) {
+                const user = await this.prisma.user.findUnique({
+                    where: {
+                        login: username,
+                    },
+                })
+                return user;
+        }
         async upload_pp(tokenObject: {jwt:string }, body: any) {
             const decode = await this.jwt.decode(tokenObject.jwt);
             if (typeof decode === 'object')

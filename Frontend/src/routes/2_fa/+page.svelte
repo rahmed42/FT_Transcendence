@@ -38,7 +38,7 @@
             const data = await response.json();
             if (data.valide)
             {
-                sessionStorage.setItem('isLogged', JSON.stringify(true));
+                sessionStorage.setItem('profile_username', JSON.stringify(username));
                 window.location.href = '/home';
                 return;
             }

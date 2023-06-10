@@ -109,7 +109,7 @@
 	{#each friends as friend (friend.id)}
 	  <div>
         <img src={friend.friend.small_pic} alt="{friend.friend.login}'s picture" width="50" height="50" />
-		<a href={`/profile/${friend.friend.login}`}>{friend.friend.login}</a>
+		<a href={`/profile/?login=${friend.friend.login}`}>{friend.friend.login}</a>
 		<button on:click={() => deleteFriend(friend.id)}>Delete Friend</button>
 	  </div>
 	{/each}
