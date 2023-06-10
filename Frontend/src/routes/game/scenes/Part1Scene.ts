@@ -105,7 +105,6 @@ export class Part1Scene extends Phaser.Scene {
 		this.gameListeners();
 	}
 
-	// 	/* Methods */
 	// Connect with the room
 	async connect() {
 		// add connection status text
@@ -128,189 +127,7 @@ export class Part1Scene extends Phaser.Scene {
 		}
 	}
 
-	createLocalPaddle() : void {
-		let posY;
-			if (this.pointer)
-				posY = this.pointer.y;
-			else
-				posY = this.cameras.main.centerY;
-
-			// Display Paddle and set bounds
-			const paddle = {
-				'x': 20,
-				'pos': posY,
-			};
-			this.localPaddle = this.physics.add.image(paddle.x, paddle.pos, 'paddleDefault');
-			this.localPaddle.setOrigin(0.5, 0.5);
-			this.localPaddle.setCollideWorldBounds(true);
-			this.localPaddle.setImmovable(true);
-
-			if (this.ball && this.localPaddle) {
-				// Add collisions between ball and paddles
-				this.physics.add.collider(this.ball, this.localPaddle);
-			}
-		this.input.on('pointermove', () => {
-			this.localPaddle.y = this.pointer.y;
-			//Update position on server !
-			//...
-		});
-	}
-
-	createRemotePaddle() : void {
-		let posY;
-		if (this.pointer)
-			posY = this.pointer.y;
-		else
-			posY = this.cameras.main.centerY;
-
-		// Display Paddle and set bounds
-		const paddle = {
-			'x': 20,
-			'pos': posY,
-		};
-		this.remotePaddle = this.physics.add.image(this.cameras.main.width - paddle.x, this.cameras.main.centerY, 'paddleDefault');
-		this.remotePaddle.setOrigin(0.5, 0.5);
-		this.remotePaddle.setCollideWorldBounds(true);
-		this.remotePaddle.setImmovable(true);
-
-		if (this.ball && this.remotePaddle) {
-			// Add collisions between ball and paddles
-			this.physics.add.collider(this.ball, this.remotePaddle);
-		}
-
-		//GET remote position from server update when sync OK
-		//...
-
-		//TEMP to test match
-		this.input.on('pointermove', () => {
-			this.remotePaddle.y = this.pointer.y;
-		});
-	}
-
-	gameListeners(): void {
-		//https://learn.colyseus.io/phaser/1-basic-player-movement.html
-		if (!this.room) {
-			console.log("No rooms !");
-			return;
-		}
-
-		// Listen for new players
-		this.room.state.players.onAdd((player, sessionId) => {
-			if (this.room && this.room.state.players.size <= 2) {
-
-				//Setup my Paddle
-				if (this.localPaddle === undefined){
-					console.log("Create Local Paddle", this.localPaddle);
-					this.createLocalPaddle();
-
-					//Keep reference to this remote Paddle
-					const entity = this.localPaddle;
-					this.playerEntities[sessionId] = entity;
-					console.log("Local Entity : ", entity);
-					console.log("Local Player Y: ", player.y);
-
-					// Listen for changes and push it to backend
-					player.onChange = () => {
-						console.log("local change", entity.y, player.y);
-						entity.y = player.y
-					}
-				}
-
-				// waiting for other player
-				if (this.room.state.players.size === 1) {
-					// Start the animation loop if there is only one player
-					this.startButtonText("Waiting for duel", false);
-					this.startAnim();
-				}
-
-				// Second player added
-				if (this.room.state.players.size === 2) {
-					// Setup his paddle
-					if (this.remotePaddle === undefined) {
-						console.log("Create Remote Paddle", this.remotePaddle);
-						this.createRemotePaddle();
-
-						// Keep reference to this remote Paddle
-						const entity = this.remotePaddle;
-						this.playerEntities[sessionId] = entity;
-						console.log("Remote entity : ", entity);
-						console.log("Remote player Y: ", player.y);
-
-						// Listen for changes and push it to backend
-						player.onChange = () => {
-							console.log("remote change", entity.y, player.y);
-							entity.y = player.y
-						}
-					}
-					// Set start clickable button
-					this.startButtonText("🏓 Start Game 🏓", true);
-					this.startAnim();
-				}
-				// // listen for changes
-				// player.onChange = () => {
-				// 	console.log("Player state changed: ", sessionId);
-				// 	// update visual representation for the player
-				// 	// this.updatePlayer(sessionId);
-				// }
-			}
-		});
-
-		// Listen for removed players
-		this.room.state.players.onRemove((player, sessionId) => {
-			// If the other player leaves the game we have to stop the game
-			if (this.room && this.room.state.players.size < 2) {
-				// remove exisiting Paddle
-				this.localPaddle?.destroy();
-				this.remotePaddle?.destroy();
-				// remove player entity from scene
-				const entity = this.playerEntities[sessionId];
-				if (entity) {
-					console.log("remote entity ", entity);
-					entity.destroy();
-					delete this.playerEntities[sessionId];
-				}
-				// Kick the last player
-				if (this.room.state.players.size === 1) {
-					this.leave(this.room);
-					alert("The other player left ! Back to the menu...");
-					this.setActiveScene("menu");
-					// console.log(`Going back to ${this.activeScene}`);
-					this.scene.stop('part1');
-					this.scene.start('menu')
-				}
-			}
-		});
-
-		// // Listen for paddle updates from server
-		// this.room.state.paddle.onChange(() => {
-		// 	const remotePlayer = this.getRemotePlayer();
-		// 	if (remotePlayer && this.remotePaddle) {
-		// 		this.remotePaddle.y = remotePlayer.y;
-		// 	}
-		// });
-
-		//   // Listen for ball updates from server
-		//   this.room.state.ball.onChange(() => {
-		// 	if (this.ball) {
-		// 	  this.ball.x = this.room!.state.ball.x;
-		// 	  this.ball.y = this.room!.state.ball.y;
-		// 	}
-		//   });
-
-		//   // Listen for score updates from server
-		//   this.room.state.scores.onChange(() => {
-		// 	this.myScore = this.room!.state.scores[this.room!.sessionId];
-		// 	this.opponentScore = this.room!.state.scores[
-		// 	  this.getOpponentSessionId()
-		// 	];
-
-		// 	if (this.myScoreText && this.opponentScoreText) {
-		// 	  this.myScoreText.setText(`Score: ${this.myScore}`);
-		// 	  this.opponentScoreText.setText(`Opponent: ${this.opponentScore}`);
-		// 	}
-		//   });
-	}
-
+	// 	/* Methods */
 	// Game visual Init
 	gameInit(): void {
 		/* SETUP STYLES */
@@ -381,6 +198,16 @@ export class Part1Scene extends Phaser.Scene {
 				this.myScoreText.setText(this.myScore.toString());
 			if (this.opponentScoreText)
 				this.opponentScoreText.setText(this.opponentScore.toString());
+			// delete Paddles if exists
+			if (this.localPaddle) {
+				this.localPaddle.destroy();
+				this.localPaddle = undefined;
+			}
+			if (this.remotePaddle) {
+				this.remotePaddle.destroy();
+				this.remotePaddle = undefined;
+			}
+			console.log("after delete Paddles", this.localPaddle, this.remotePaddle);
 			this.setActiveScene("menu");
 			// Stop the current scene (part1)
 			this.scene.stop('part1');
@@ -391,48 +218,199 @@ export class Part1Scene extends Phaser.Scene {
 		});
 	}
 
-	// leaving room
-	leave(room: Room) {
-		if (room) {
-			// Call the leave method on the room instance
-			room.leave();
+	createLocalPaddle() : void {
+		let posY;
+			if (this.pointer)
+				posY = this.pointer.y;
+			else
+				posY = this.cameras.main.centerY;
+
+			// Display Paddle and set bounds
+			const paddle = {
+				'x': 20,
+				'pos': posY,
+			};
+			this.localPaddle = this.physics.add.image(paddle.x, paddle.pos, 'paddleDefault');
+			this.localPaddle.setOrigin(0.5, 0.5);
+			this.localPaddle.setCollideWorldBounds(true);
+			this.localPaddle.setImmovable(true);
+
+			if (this.ball && this.localPaddle) {
+				// Add collisions between ball and paddles
+				this.physics.add.collider(this.ball, this.localPaddle);
+			}
+		this.input.on('pointermove', () => {
+			this.localPaddle.y = this.pointer.y;
+			//Update position on server !
+			//...
+		});
+	}
+
+	createRemotePaddle() : void {
+		let posY;
+		if (this.pointer)
+			posY = this.pointer.y;
+		else
+			posY = this.cameras.main.centerY;
+
+		// Display Paddle and set bounds
+		const paddle = {
+			'x': 20,
+			'pos': posY,
+		};
+		this.remotePaddle = this.physics.add.image(this.cameras.main.width - paddle.x, this.cameras.main.centerY, 'paddleDefault');
+		this.remotePaddle.setOrigin(0.5, 0.5);
+		this.remotePaddle.setCollideWorldBounds(true);
+		this.remotePaddle.setImmovable(true);
+
+		if (this.ball && this.remotePaddle) {
+			// Add collisions between ball and paddles
+			this.physics.add.collider(this.ball, this.remotePaddle);
 		}
-		console.log('Leaving room');
+
+		//GET remote position from server update when sync OK
+		//...
+
+		//TEMP to test match
+		this.input.on('pointermove', () => {
+			// this.remotePaddle.y = this.pointer.y;
+		});
 	}
 
-	// Game logics
-	resetBall(): void {
-		/* Refresh Score */
-		if (this.myScoreText)
-			this.myScoreText.setText(this.myScore.toString());
-		if (this.opponentScoreText)
-			this.opponentScoreText.setText(this.opponentScore.toString());
-
-		if (this.ball) {
-			// set the ball to center
-			this.ball.x = this.cameras.main.centerX;
-			this.ball.y = this.cameras.main.centerY;
-
-			// Launch the ball to random direction
-			let velocityX = Phaser.Math.Between(300, 450);
-			let velocityY = Phaser.Math.Between(200, 350);
-
-			// random negative or positive
-			velocityX *= Math.random() < 0.5 ? 1 : -1;
-			velocityY *= Math.random() < 0.5 ? 1 : -1;
-			this.ball.setVelocity(velocityX, velocityY);
+	// Game listeners
+	gameListeners(): void {
+		//https://learn.colyseus.io/phaser/1-basic-player-movement.html
+		if (!this.room) {
+			console.log("No rooms !");
+			return;
 		}
+
+		// Listen for new players
+		this.room.state.players.onAdd((player, sessionId) => {
+			if (this.room && this.room.state.players.size <= 2) {
+				console.log("Paddles", this.localPaddle, this.remotePaddle);
+
+				//Setup my Paddle
+				if (this.localPaddle === undefined){
+					console.log("Create Local Paddle", this.localPaddle);
+					this.createLocalPaddle();
+
+					//Keep reference to this remote Paddle
+					const entity = this.localPaddle;
+					this.playerEntities[sessionId] = entity;
+					console.log("Local Entity : ", entity);
+					console.log("Local Player Y: ", player.y);
+
+					// Listen for changes and push it to backend
+					player.onChange = () => {
+						// console.log("local change", entity.y, player.y);
+						// entity.y = player.y
+					}
+				}
+
+				// waiting for other player
+				if (this.room.state.players.size === 1) {
+					// Start the animation loop if there is only one player
+					this.startButtonText("Waiting for duel", false);
+					this.startAnim();
+				}
+
+				// Second player added
+				if (this.room.state.players.size === 2) {
+					// Setup his paddle
+					if (this.remotePaddle === undefined) {
+						console.log("Create Remote Paddle", this.remotePaddle);
+						this.createRemotePaddle();
+
+						// Keep reference to this remote Paddle
+						const entity = this.remotePaddle;
+						this.playerEntities[sessionId] = entity;
+						console.log("Remote entity : ", entity);
+						console.log("Remote player Y: ", player.y);
+
+						// Listen for changes and push it to backend
+						player.onChange = () => {
+							// console.log("remote change", entity.y, player.y);
+							// entity.y = player.y
+						}
+					}
+					// Set start clickable button
+					this.startButtonText("🏓 Start Game 🏓", true);
+					this.startAnim();
+				}
+				// // listen for changes
+				// player.onChange = () => {
+				// 	console.log("Player state changed: ", sessionId);
+				// 	// update visual representation for the player
+				// 	// this.updatePlayer(sessionId);
+				// }
+			}
+		});
+
+		// Listen for removed players
+		this.room.state.players.onRemove((player, sessionId) => {
+			console.log("onRemove ", sessionId);
+			// delete Paddles if exists
+			if (this.localPaddle) {
+				this.localPaddle.destroy();
+				this.localPaddle = undefined;
+			}
+			if (this.remotePaddle) {
+				this.remotePaddle.destroy();
+				this.remotePaddle = undefined;
+			}
+			// If the other player leaves the game we have to stop the game
+			if (this.room && this.room.state.players.size < 2) {
+				// remove player entity from scene
+				const entity = this.playerEntities[sessionId];
+				if (entity) {
+					console.log("remote entity ", entity);
+					entity.destroy();
+					delete this.playerEntities[sessionId];
+				}
+				// Kick the last player
+				if (this.room.state.players.size === 1) {
+					this.leave(this.room);
+					alert("The other player left ! Back to the menu...");
+					this.setActiveScene("menu");
+					// console.log(`Going back to ${this.activeScene}`);
+					this.scene.stop('part1');
+					this.scene.start('menu')
+				}
+			}
+		});
+
+		// // Listen for paddle updates from server
+		// this.room.state.paddle.onChange(() => {
+		// 	const remotePlayer = this.getRemotePlayer();
+		// 	if (remotePlayer && this.remotePaddle) {
+		// 		this.remotePaddle.y = remotePlayer.y;
+		// 	}
+		// });
+
+		//   // Listen for ball updates from server
+		//   this.room.state.ball.onChange(() => {
+		// 	if (this.ball) {
+		// 	  this.ball.x = this.room!.state.ball.x;
+		// 	  this.ball.y = this.room!.state.ball.y;
+		// 	}
+		//   });
+
+		//   // Listen for score updates from server
+		//   this.room.state.scores.onChange(() => {
+		// 	this.myScore = this.room!.state.scores[this.room!.sessionId];
+		// 	this.opponentScore = this.room!.state.scores[
+		// 	  this.getOpponentSessionId()
+		// 	];
+
+		// 	if (this.myScoreText && this.opponentScoreText) {
+		// 	  this.myScoreText.setText(`Score: ${this.myScore}`);
+		// 	  this.opponentScoreText.setText(`Opponent: ${this.opponentScore}`);
+		// 	}
+		//   });
 	}
 
-	startMatch(): void {
-		// Reset score
-		this.myScore = 0;
-		this.opponentScore = 0;
-
-		// Reset ball
-		this.countDown();
-	}
-
+	// Utils
 	countDown(): void {
 		//Count from 3 to 0 each second then pop & reset the ball
 		this.startButtonText("3", false);
@@ -486,6 +464,39 @@ export class Part1Scene extends Phaser.Scene {
 			this.startButton.disableInteractive();
 	}
 
+	// Game logics
+	resetBall(): void {
+		/* Refresh Score */
+		if (this.myScoreText)
+			this.myScoreText.setText(this.myScore.toString());
+		if (this.opponentScoreText)
+			this.opponentScoreText.setText(this.opponentScore.toString());
+
+		if (this.ball) {
+			// set the ball to center
+			this.ball.x = this.cameras.main.centerX;
+			this.ball.y = this.cameras.main.centerY;
+
+			// Launch the ball to random direction
+			let velocityX = Phaser.Math.Between(300, 450);
+			let velocityY = Phaser.Math.Between(200, 350);
+
+			// random negative or positive
+			velocityX *= Math.random() < 0.5 ? 1 : -1;
+			velocityY *= Math.random() < 0.5 ? 1 : -1;
+			this.ball.setVelocity(velocityX, velocityY);
+		}
+	}
+
+	startMatch(): void {
+		// Reset score
+		this.myScore = 0;
+		this.opponentScore = 0;
+
+		// Reset ball
+		this.countDown();
+	}
+
 	resetGame(): void {
 		// Reset ball and stop it
 		if (this.ball) {
@@ -495,6 +506,14 @@ export class Part1Scene extends Phaser.Scene {
 		}
 		this.startButtonText("🏓 Start Game 🏓", true);
 		this.startAnim();
+	}
+
+	leave(room: Room) {
+		if (room) {
+			// Call the leave method on the room instance
+			room.leave();
+		}
+		console.log('Leaving room');
 	}
 
 	/**
