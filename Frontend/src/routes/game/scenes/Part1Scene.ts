@@ -55,7 +55,7 @@ export class Part1Scene extends Phaser.Scene {
 
 	// Constructor of the scene
 	constructor() {
-		console.log("Part1Scene constructor");
+		// console.log("Part1Scene constructor");
 		// active false to prevent the scene from starting automatically
 		super({ key: "part1", active: false });
 		this.activeScene = 'Part1Scene';
@@ -89,7 +89,7 @@ export class Part1Scene extends Phaser.Scene {
 
 	async create() {
 		// Define camera size
-		this.cameras.main = this.cameras.add(0, 0, this.game.config.width, this.game.config.height, false, 'Original');
+		this.cameras.main = this.cameras.add(0, 0, this.game.config.width as number, this.game.config.height as number, false, 'Original');
 
 		//Get player name
 		if (currentUser && currentUser.login)
@@ -147,7 +147,7 @@ export class Part1Scene extends Phaser.Scene {
 
 		//Init mouse pointer
 		this.pointer = this.input.activePointer;
-		this.pointer.y = 0;
+		this.pointer.y = this.cameras.main.centerY;
 
 		/* SETUP PHYSICS */
 		// Add map bounds, disable collisions on left/right bounds
@@ -207,46 +207,48 @@ export class Part1Scene extends Phaser.Scene {
 				this.remotePaddle.destroy();
 				this.remotePaddle = undefined;
 			}
-			console.log("after delete Paddles", this.localPaddle, this.remotePaddle);
+			// console.log("after delete Paddles", this.localPaddle, this.remotePaddle);
 			this.setActiveScene("menu");
 			// Stop the current scene (part1)
 			this.scene.stop('part1');
 			// console.log(`Going back to ${this.activeScene}`);
 			// Start the menu scene
 			this.scene.start('menu')
-			this.leave(this.room);
+			if (this.room)
+				this.leave(this.room);
 		});
 	}
 
-	createLocalPaddle() : void {
+	createLocalPaddle(): void {
 		let posY;
-			if (this.pointer)
-				posY = this.pointer.y;
-			else
-				posY = this.cameras.main.centerY;
+		if (this.pointer)
+			posY = this.pointer.y;
+		else
+			posY = this.cameras.main.centerY;
 
-			// Display Paddle and set bounds
-			const paddle = {
-				'x': 20,
-				'pos': posY,
-			};
-			this.localPaddle = this.physics.add.image(paddle.x, paddle.pos, 'paddleDefault');
-			this.localPaddle.setOrigin(0.5, 0.5);
-			this.localPaddle.setCollideWorldBounds(true);
-			this.localPaddle.setImmovable(true);
+		// Display Paddle and set bounds
+		const paddle = {
+			'x': 20,
+			'pos': posY,
+		};
+		this.localPaddle = this.physics.add.image(paddle.x, paddle.pos, 'paddleDefault');
+		this.localPaddle.setOrigin(0.5, 0.5);
+		this.localPaddle.setCollideWorldBounds(true);
+		this.localPaddle.setImmovable(true);
 
-			if (this.ball && this.localPaddle) {
-				// Add collisions between ball and paddles
-				this.physics.add.collider(this.ball, this.localPaddle);
-			}
+		if (this.ball && this.localPaddle) {
+			// Add collisions between ball and paddles
+			this.physics.add.collider(this.ball, this.localPaddle);
+		}
 		this.input.on('pointermove', () => {
-			this.localPaddle.y = this.pointer.y;
+			if (this.localPaddle && this.pointer)
+				this.localPaddle.y = this.pointer.y;
 			//Update position on server !
 			//...
 		});
 	}
 
-	createRemotePaddle() : void {
+	createRemotePaddle(): void {
 		let posY;
 		if (this.pointer)
 			posY = this.pointer.y;
@@ -280,32 +282,27 @@ export class Part1Scene extends Phaser.Scene {
 	// Game listeners
 	gameListeners(): void {
 		//https://learn.colyseus.io/phaser/1-basic-player-movement.html
-		if (!this.room) {
-			console.log("No rooms !");
-			return;
-		}
-
 		// Listen for new players
 		this.room.state.players.onAdd((player, sessionId) => {
 			if (this.room && this.room.state.players.size <= 2) {
-				console.log("Paddles", this.localPaddle, this.remotePaddle);
+				// console.log("Paddles", this.localPaddle, this.remotePaddle);
 
 				//Setup my Paddle
-				if (this.localPaddle === undefined){
-					console.log("Create Local Paddle", this.localPaddle);
+				if (this.localPaddle === undefined) {
+					// console.log("Create Local Paddle", this.localPaddle);
 					this.createLocalPaddle();
 
 					//Keep reference to this remote Paddle
-					const entity = this.localPaddle;
+					const entity = this.localPaddle!;
 					this.playerEntities[sessionId] = entity;
-					console.log("Local Entity : ", entity);
-					console.log("Local Player Y: ", player.y);
+					// console.log("Local Entity : ", entity);
+					// console.log("Local Player Y: ", player.y);
 
 					// Listen for changes and push it to backend
-					player.onChange = () => {
-						// console.log("local change", entity.y, player.y);
-						// entity.y = player.y
-					}
+					// player.onChange = () => {
+					// 	console.log("local change", entity.y, player.y);
+					// 	// entity.y = player.y
+					// }
 				}
 
 				// waiting for other player
@@ -319,20 +316,26 @@ export class Part1Scene extends Phaser.Scene {
 				if (this.room.state.players.size === 2) {
 					// Setup his paddle
 					if (this.remotePaddle === undefined) {
-						console.log("Create Remote Paddle", this.remotePaddle);
+						// console.log("Create Remote Paddle", this.remotePaddle);
 						this.createRemotePaddle();
 
 						// Keep reference to this remote Paddle
-						const entity = this.remotePaddle;
+						const entity = this.remotePaddle!;
 						this.playerEntities[sessionId] = entity;
-						console.log("Remote entity : ", entity);
-						console.log("Remote player Y: ", player.y);
+						// console.log("Remote entity : ", entity);
+						// console.log("Remote player Y: ", player.y);
 
 						// Listen for changes and push it to backend
-						player.onChange = () => {
-							// console.log("remote change", entity.y, player.y);
-							// entity.y = player.y
-						}
+						// player.onChange = () => {
+						// 	console.log("remote change", entity.y, player.y);
+						// 	// entity.y = player.y
+						// }
+
+						player.listen("y", (value: number) => {
+							// console.log("remote y", value);
+							if (this.remotePaddle)
+								this.remotePaddle.y = value;
+						});
 					}
 					// Set start clickable button
 					this.startButtonText("🏓 Start Game 🏓", true);
@@ -349,7 +352,7 @@ export class Part1Scene extends Phaser.Scene {
 
 		// Listen for removed players
 		this.room.state.players.onRemove((player, sessionId) => {
-			console.log("onRemove ", sessionId);
+			// console.log("onRemove ", sessionId);
 			// delete Paddles if exists
 			if (this.localPaddle) {
 				this.localPaddle.destroy();
@@ -364,7 +367,7 @@ export class Part1Scene extends Phaser.Scene {
 				// remove player entity from scene
 				const entity = this.playerEntities[sessionId];
 				if (entity) {
-					console.log("remote entity ", entity);
+					// console.log("remote entity ", entity);
 					entity.destroy();
 					delete this.playerEntities[sessionId];
 				}
@@ -513,7 +516,7 @@ export class Part1Scene extends Phaser.Scene {
 			// Call the leave method on the room instance
 			room.leave();
 		}
-		console.log('Leaving room');
+		// console.log('Leaving room');
 	}
 
 	/**
@@ -522,9 +525,7 @@ export class Part1Scene extends Phaser.Scene {
 	 */
 	update(time: number, delta: number): void {
 		// skip loop if not connected with room yet.
-		if (!this.room) {
-			return;
-		}
+		if (!this.room) { return; }
 
 		// Reset the ball if outbounds
 		if (this.ball && (this.ball.x < 0 || this.ball.x > this.cameras.main.width)) {
@@ -538,11 +539,11 @@ export class Part1Scene extends Phaser.Scene {
 			else
 				this.resetBall();
 		}
-		// send pointer position to server
-		this.inputPayload.y = this.input.activePointer.y;
 
-		// send input to server
-		// this.room.send(this.inputPayload.y);
-
+		// send input to the server if changes to avoid server spamming
+		if (this.inputPayload.y !== this.input.y) {
+			this.inputPayload.y = this.input.y;
+			this.room.send(0, this.inputPayload);
+		}
 	}
 }

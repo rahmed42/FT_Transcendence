@@ -74,14 +74,10 @@ export class Part1Room extends Room<Part1State> {
 		// handle player input
 		this.onMessage(0, (client, input) => {
 			const player = this.state.players.get(client.sessionId);
-			const velocity = 2;
 
-			if (input.up) {
-				player.y -= velocity;
-
-			} else if (input.down) {
-				player.y += velocity;
-			}
+			if (input.y)
+				player.y = input.y;
+			// console.log("player.y = " + player.y);
 		});
 	}
 
@@ -109,6 +105,7 @@ export class Part1Room extends Room<Part1State> {
 
 	onLeave(client: Client, consented: boolean) {
 		console.log(client.sessionId, "left!");
+
 		this.state.players.delete(client.sessionId);
 	}
 
