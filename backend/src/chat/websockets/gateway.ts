@@ -60,8 +60,27 @@ export class Gateway implements OnModuleInit {
             },
         })
         if (isUserMuted)
-            return ;
-        this.server.to(roomName).emit('newRoomMessage', {
+		{
+			//  if date is passed, remove from mutedRooms
+			if (isUserMuted.timestampMuted.getDate() <= Date.now())
+			{
+				await this.prisma.user.update({
+					where : {
+						id: idSender,
+					},
+					data : {
+						mutedRooms : {
+							delete: {
+								name: roomName,
+							}
+						}
+					}
+				});
+			}
+			else
+				return ;
+		}
+		this.server.to(roomName).emit('newRoomMessage', {
             content: content,
             nameSender: user.login,
             roomName: roomName,
