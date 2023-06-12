@@ -1662,7 +1662,11 @@ export class ChatService {
 				name: body.roomName,
 			},
 			include: {
-				mutedUsers: true,
+				mutedUsers: {
+					select: {
+						login: true,
+					},
+				},
 			},
 		});
 		return { mutedUsers : mutedUsers, message: "User successfully muted" }
