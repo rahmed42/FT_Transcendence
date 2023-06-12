@@ -3,6 +3,7 @@
   import { onDestroy, onMount } from 'svelte';
   import { get } from 'svelte/store';
   import { writable } from 'svelte/store';
+  import io from 'socket.io-client';
 
   let messageInput = '';
   interface Message {
@@ -52,14 +53,17 @@
   let muteList = writable<{ login: string }[]>([]);
   let blockList = writable<{ login: string }[]>([]);
   let adminList = writable<{ login: string }[]>([]);
+  let privateList = writable<{ login: string }[]>([]);
   let error: string = '';
   let selectedChannel = '';
   let selectedUser = '';
   let selectedSection = '';
   let login: string = '';
+  let socket: any;
+  
   
   onMount(async () => {
-    /*const socket = io('http://localhost:3333', {
+    socket = io('http://localhost:3333', {
       transports: ['websocket'],
       auth: {
         token: sessionStorage.getItem('jwt'),
@@ -74,12 +78,12 @@
     socket.on('newRoomMessage', (data: any) => {
       console.log(data);
     });
-    socket.emit("newMessage", {content : "salam"});*/
     
 
     let storedUser = sessionStorage.getItem('userID');
     let storedLogin = sessionStorage.getItem('login');
     let storedToken = sessionStorage.getItem('jwt');
+    console.log("premier :", storedLogin);
     if (storedUser && storedUser !== 'undefined' && storedUser !== 'null') {
       userID = parseInt(storedUser || '0');
     } else {
@@ -88,12 +92,18 @@
       sessionStorage.setItem('userID', JSON.stringify(userID));
     }
 
-    if (storedLogin && storedLogin !== 'undefined' && storedLogin !== 'null') {
+    if (storedLogin && storedLogin !== 'undefined' && storedLogin !== 'null' && storedLogin !== null) {
       login = storedLogin;
+      console.log("login in storedLogin:", login);
     } else {
       let test = get(user);
-      login = test.login;
-      sessionStorage.setItem('login', JSON.stringify(login));
+      console.log("test :", test);
+      if (test && test.login)
+      {
+        login = test.login;
+        sessionStorage.setItem('login', login);
+        console.log("deuxieme :", test.login);
+      }
     }
 
     if (storedToken && storedToken !== 'undefined' && storedToken !== 'null') {
@@ -101,8 +111,11 @@
     } else {
       let test = get(user);
       token = test.jwtToken;
-      sessionStorage.setItem('jwt', JSON.stringify(token));
+      sessionStorage.setItem('jwt', token);
     }
+    console.log('login : ', login);
+    console.log('jwt : ', token);
+    console.log('id : ', userID);
 
     const response = await fetch('http://localhost:3333/chat/rooms', {
       method: 'GET',
@@ -115,6 +128,19 @@
       const data = await response.json();
       console.log(data.rooms);
       channelList.set(data.rooms);
+    }
+    
+    const response2 = await fetch('http://localhost:3333/chat/privateRooms', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + token,
+      },
+    });
+    if (response2.ok)
+    {
+      const data = await response2.json();
+      privateList.update(currentPrivateList => [...currentPrivateList, { login: data[0].users[0].login }]);
     }
   });
 
@@ -149,6 +175,11 @@
           const data = await response.json();
           throw new Error(data.message);
         }
+        else
+        {
+          const data = await response.json();
+          throw new Error(data.message);
+        }
       }
       catch (err) {
         if (err instanceof Error)
@@ -176,6 +207,12 @@ async function grantUserAdmin()
       const data = await response.json();
       throw new Error(data.message);
     }
+    else
+    {
+      const data = await response.json();
+      throw new Error(data.message);
+      adminList.set(data.administrators);
+    }
   }
   catch (err) {
     if (err instanceof Error)
@@ -202,6 +239,12 @@ async function expulSelectedUser() {
       const data = await response.json();
       throw new Error(data.message);
     }
+    else
+    {
+      const data = await response.json();
+      throw new Error(data.message);
+      //need to get the newlist of user, to update the list
+    }
   }
   catch (err) {
     if (err instanceof Error)
@@ -212,7 +255,7 @@ async function expulSelectedUser() {
 async function banSelectedUser() {
   try
   {
-    const response = await fetch("http://localhost:3333/chat/giveAdmin", {
+    const response = await fetch("http://localhost:3333/chat/banUser", {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -227,6 +270,12 @@ async function banSelectedUser() {
     if (!response.ok) {
       const data = await response.json();
       throw new Error(data.message);
+    }
+    else
+    {
+      const data = await response.json();
+      throw new Error(data.message);
+      //need to get the newlist of userban, to update the list
     }
   }
   catch (err) {
@@ -254,6 +303,12 @@ async function unmuteUser() {
       const data = await response.json();
       throw new Error(data.message);
     }
+    else
+    {
+      const newMuteList = await response.json();
+      throw new Error(newMuteList.message);
+      muteList.set(newMuteList.mutedUsers.mutedUsers.login);
+    }
   }
   catch (err) {
     if (err instanceof Error)
@@ -280,6 +335,12 @@ async function revokeAdmin() {
             const data = await response.json();
             throw new Error(data.message);
         }
+        else
+        {
+          const data = await response.json();
+          throw new Error(data.message);
+          //need to adapte the list of admin without the revokeadmin
+        }
     } catch (err) {
         if (err instanceof Error) {
             alert(err.message);
@@ -301,10 +362,15 @@ async function unbanUser() {
                 loginUserToExecute: selectedUserparam,
             }),
         });
-        
         if (!response.ok) {
             const data = await response.json();
             throw new Error(data.message);
+        }
+        else
+        {
+          const data = await response.json();
+          throw new Error(data.message);
+          //need to adapte the list of banuser without the unbanuser
         }
     } catch (err) {
         if (err instanceof Error) {
@@ -330,6 +396,11 @@ async function changeChannelType() {
       }),
     });
     if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.message);
+    }
+    else
+    {
       const data = await response.json();
       throw new Error(data.message);
     }
@@ -363,7 +434,8 @@ async function muteSelectedUser(muteDuration: number) {
     else
     {
       const newMuteList = await response.json();
-      muteList.set(newMuteList.mutedUsers);
+      throw new Error(newMuteList.message);
+      muteList.set(newMuteList.mutedUsers.mutedUsers.login);
     }
     muteDuration = 0;
   }
@@ -446,10 +518,10 @@ function closeSetupModal() {
           if (!response.ok) {
             const data = await response.json();
             throw new Error(data.message);
-          } else if (response.ok) {
+          } else
+          {
             const newChannel = await response.json();
             channelList.update(channelList => [...channelList, { name: newChannel.room.name }]);
-            console.log(newChannel.room.name);
             closeModal();
           }
         }
@@ -594,31 +666,16 @@ function closeSetupModal() {
   }
 
   async function sendPrivateMessage() {
-  try {
-    const response = await fetch('http://localhost:3333/chat/sendPrivateMessage', {
-      method: 'POST',
+    socket.emit('newMessage', { idSender: userID, loginReceiver: recipientName, content: messageContent, type: "private" });
+    closePrivateMessageModal();
+    const response = await fetch('http://localhost:3333/chat/' + selectedChannel, {
+      method: 'GET',
       headers: {
         'Content-Type': 'application/json',
         Authorization: 'Bearer ' + token,
       },
-      body: JSON.stringify({
-        senderID: userID,
-        recipientName: recipientName,
-        messageContent: messageContent,
-      }),
     });
-
-    if (!response.ok) {
-      const data = await response.json();
-      privateMessageError = data.message;
-    } else {
-      closePrivateMessageModal();
-    }
-  } catch (err) {
-    if (err instanceof Error)
-      alert(err.message);
   }
-}
 
 function closePrivateMessageModal() {
   isPrivateMessageModalOpen = false;
@@ -664,10 +721,6 @@ function closePrivateMessageModal() {
         alert(err.message);
     }
   }
-
-  async function setup() {
-      openAdminModal = true;
-    }
 
   async function getProfile() {
     try {
@@ -715,6 +768,36 @@ function closePrivateMessageModal() {
     }
   }
 
+  async function unblockUser() {
+  try
+  {
+    const response = await fetch('http://localhost:3333/chat/unblockUser', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + token,
+      },
+      body: JSON.stringify({
+        idUser: userID,
+        loginUserToBlock: loginUserToExecute,
+      }),
+    });
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.message);
+    } else {
+      const newProfile = await response.json();
+      blockList.set(newProfile.blockedUsers);
+      throw new Error("User unblocked");
+    }
+  }
+  catch(err)
+  {
+    if (err instanceof Error)
+      alert(err.message);
+  }
+}
+
   async function blockUser() {
     try {
       const response = await fetch('http://localhost:3333/chat/blockUser', {
@@ -733,7 +816,8 @@ function closePrivateMessageModal() {
         throw new Error(data.message);
       } else if (response.ok) {
         const newProfile = await response.json();
-        console.log('Contenu de newProfile:', newProfile);
+        blockList.set(newProfile.blockedUsers);
+        throw new Error("User blocked");
       }
     }
     catch (err) {
@@ -745,6 +829,81 @@ function closePrivateMessageModal() {
   async function setup() {
       openAdminModal = true;
     }
+
+    async function getPrivateChannel(selectedChannel: string) {
+  const response = await fetch('http://localhost:3333/chat/privateRooms/' + selectedChannel, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: 'Bearer ' + token,
+    },
+  });
+
+  if (response.ok) {
+    const data = await response.json();
+    if (data && data.messages) {
+      userList.set(data.users);
+      const messagesRecus = data.messages;
+      messages.length = 0;
+      for (const msg of messagesRecus) {
+        if (msg && msg.content && msg.sender && msg.sender.login)
+        {
+          if (msg.sender.login == login)
+          {
+            const message = {
+              content: msg.content,
+              username: msg.sender.login,
+              user: false,
+            };
+            messages.push(message);
+          }
+          else
+          {
+            const message = {
+              content: msg.content,
+              username: msg.sender.login,
+              user: true,
+            };
+            messages.push(message);
+          }
+        }
+      }
+    }
+  } else {
+    const data = await response.json();
+    throw Error(data.message);
+  }
+}
+
+async function leaveRoom()
+{
+  try
+  {
+    const response = await fetch('http://localhost:3333/chat/leaveRoom', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + token,
+      },
+      body: JSON.stringify({
+        idUser: userID,
+        roomName: selectedChannel,
+      }),
+    });
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.message);
+    } else {
+      const newProfile = await response.json();
+      channelList.update(channelList => channelList.filter(channel => channel.name !== selectedChannel));
+    }
+  }
+  catch(err)
+  {
+    if (err instanceof Error)
+      alert(err.message);
+  }
+}
 </script>
 
 <svelte:head>
@@ -760,6 +919,7 @@ function closePrivateMessageModal() {
       <button on:click={getProfile}>Profil</button>
       <button on:click={inviteGame}>Invite Game</button>
       <button on:click={blockUser}>Block</button>
+      <button on:click={unblockUser}>Unblock</button>
       <button on:click={closeUserModal}>Close</button>
     </div>
   </div>
@@ -952,10 +1112,22 @@ function closePrivateMessageModal() {
     <button class="create-channel p-anim" on:click={() => openPrivateMessageModal()}>
       Private Message
     </button>
+    {#if selectedChannel}
+      <button class="create-channel p-anim" on:click={() => leaveRoom()}>
+        Leave Channel
+      </button>
+    {/if}
     {#if channelList !== null}
       {#each $channelList as channel}
         <button class="channel-button p-anim" on:click={() => getChannel(channel.name)}>
             {channel.name}
+        </button>
+      {/each}
+    {/if}
+    {#if privateList !== null}
+      {#each $privateList as privateChannel}
+        <button class="channel-private-button p-anim-private" on:click={() => getPrivateChannel(privateChannel.login)}>
+            {privateChannel.login}
         </button>
       {/each}
     {/if}
@@ -1090,6 +1262,19 @@ function closePrivateMessageModal() {
     border-right: 1px solid #ccc; /* Ajout de la bordure */
     padding-right: 10px; /* Ajout des marges intérieures */
     overflow-y: auto;
+  }
+
+  .channel-private-button
+  {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    border-radius: 10px;
+    color: red;
   }
 
   .channel-button,
