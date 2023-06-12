@@ -3,37 +3,33 @@
   import { onDestroy, onMount } from 'svelte';
   import { get } from 'svelte/store';
   import { writable } from 'svelte/store';
-  import io from 'socket.io-client';
-  import type { Socket } from 'socket.io';
 
   let messageInput = '';
-  let messages = [
-    //"tamere la gitane qui radotte du saucisson pleins la bouche de potiron polochon petoqu de la nana dd'en bas ninanana ça va comme ça les pyjamas poupoupou ça va comme ça nananana ça va comme ça ça gaz pour toi meme pas mais wtf pourquoi il met pas tout au meme endroit zebiah ouai ok c'st chelou ce bailOK KOKOKOKOKOKOK MOMOMOMOMO TOTOTOTOTOKKO &#x200"
-    { content: "tamere la gitane qui radotte du saucisson pleins la bouche de potiron polochon petoqu de la nana dd'en bas ninanana ça va comme ça les pyjamas poupoupou ça va comme ça nananana ça va comme ça ça gaz pour toi meme pas mais wtf pourquoi il met pas tout au meme endroit zebiah ouai ok c'st chelou ce bailOK KOKOKOKOKOKOK MOMOMOMOMO TOTOTOTOTOKKO &#x200", username: "manu", user: true },
-    { content: " ", username: "ange", user: false },
-    { content: "ton pere", username: "manu", user: true },
-    { content: "la choucroute", username: "Tim", user: false },
-    { content: "ton frere", username: "manu", user: true },
-    { content: "le gitan", username: "Rabah", user: false },
-    { content: "ta soeur", username: "Dorian", user: false },
-    { content: "la madeleine", username: "manu", user: true },
-    { content: "2-2 sa mere", username: "manu", user: true },
-    { content: "la pute", username: "Joseph", user: false },
-    { content: "Suuuuuh", username: "Louis", user: false },
-    { content: "CR7!!!", username: "Mathéo", user: false },
-    { content: "tamere", username: "manu", user: true },
-    { content: "le saucisson", username: "ange", user: false },
-    { content: "ton pere", username: "manu", user: true },
-    { content: "la choucroute", username: "Tim", user: false },
-    { content: "ton frere", username: "manu", user: true },
-    { content: "le gitan", username: "Rabah", user: false },
-    { content: "ta soeur", username: "Dorian", user: false },
-    { content: "la madeleine", username: "manu", user: true },
-    { content: "2-2 sa mere", username: "manu", user: true },
-    { content: "la pute", username: "Joseph", user: false },
-    { content: "Suuuuuh", username: "Louis", user: false },
-    { content: "CR7!!!", username: "Mathéo", user: false }
-  ];
+  interface Message {
+    content: string;
+    username: string;
+    user: boolean;
+  }
+  let messages:Message[] = [];
+
+  let isUserModalOpen = false;
+  let openAdminModal = false;
+  let changePassword = false;
+  let banUser = false;
+  let muteUser = false;
+  let grantAdmin = false;
+  let expulUser = false;
+  let selectedUserparam = '';
+  let newPassword = '';
+  let muteDuration = 0;
+  let loginUserToExecute = '';
+
+  let isPrivateMessageModalOpen = false;
+  let recipientName = '';
+  let messageContent = '';
+  let privateMessageError = '';
+
+  let isAdmin = false;
   let isInvalidType = false;
   let isInvalidName = false;
   let isInvalidPassword = false;
@@ -52,9 +48,16 @@
   let token = '';
   let channelList = writable<{ name: string }[]>([]);
   let userList = writable<{ login: string }[]>([]);
+  let banList = writable<{ login: string }[]>([]);
+  let muteList = writable<{ login: string }[]>([]);
+  let blockList = writable<{ login: string }[]>([]);
+  let adminList = writable<{ login: string }[]>([]);
   let error: string = '';
   let selectedChannel = '';
   let selectedUser = '';
+  let selectedSection = '';
+  let login: string = '';
+  
   onMount(async () => {
     /*const socket = io('http://localhost:3333', {
       transports: ['websocket'],
@@ -71,10 +74,12 @@
     socket.on('newRoomMessage', (data: any) => {
       console.log(data);
     });
-    socket.emit("newMessage", {content : "salam"})
-    const storedUser = sessionStorage.getItem('userID');
-    */
+    socket.emit("newMessage", {content : "salam"});*/
+    
+
     let storedUser = sessionStorage.getItem('userID');
+    let storedLogin = sessionStorage.getItem('login');
+    let storedToken = sessionStorage.getItem('jwt');
     if (storedUser && storedUser !== 'undefined' && storedUser !== 'null') {
       userID = parseInt(storedUser || '0');
     } else {
@@ -82,7 +87,22 @@
       userID = parseInt(test.id);
       sessionStorage.setItem('userID', JSON.stringify(userID));
     }
-    token = sessionStorage.getItem('jwt') || '';
+
+    if (storedLogin && storedLogin !== 'undefined' && storedLogin !== 'null') {
+      login = storedLogin;
+    } else {
+      let test = get(user);
+      login = test.login;
+      sessionStorage.setItem('login', JSON.stringify(login));
+    }
+
+    if (storedToken && storedToken !== 'undefined' && storedToken !== 'null') {
+      token = storedToken;
+    } else {
+      let test = get(user);
+      token = test.jwtToken;
+      sessionStorage.setItem('jwt', JSON.stringify(token));
+    }
 
     const response = await fetch('http://localhost:3333/chat/rooms', {
       method: 'GET',
@@ -94,11 +114,276 @@
     if (response.ok) {
       const data = await response.json();
       channelList.set(data.rooms);
-    } else {
-      const data = await response.json();
-      console.log(data.message);
     }
   });
+
+  function openPrivateMessageModal() {
+  isPrivateMessageModalOpen = true;
+  recipientName = '';
+  messageContent = '';
+  privateMessageError = '';
+}
+
+  function selectSection(section: string) {
+    selectedSection = section;
+  }
+
+  async function changeUserPassword(newPassword: string) 
+  {
+    try
+    {
+      const response = await fetch("http://localhost:3333/chat/changePassword", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + token,
+        },
+          body: JSON.stringify({
+          idUser: userID,
+          roomName: selectedChannel,
+          password: newPassword,
+          }),
+        });
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.message);
+        }
+      }
+      catch (err) {
+        if (err instanceof Error)
+          alert(err.message);
+    }
+  }
+
+async function grantUserAdmin() 
+{
+  try
+  {
+    const response = await fetch("http://localhost:3333/chat/giveAdmin", {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: 'Bearer ' + token,
+    },
+      body: JSON.stringify({
+      idAdmin: userID,
+      roomName: selectedChannel,
+      loginUserToExecute: selectedUserparam,
+      }),
+    });
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.message);
+    }
+  }
+  catch (err) {
+    if (err instanceof Error)
+      alert(err.message);
+  }     
+}
+
+async function expulSelectedUser() {
+  try
+  {
+    const response = await fetch("http://localhost:3333/chat/kickUser", {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: 'Bearer ' + token,
+    },
+      body: JSON.stringify({
+      idAdmin: userID,
+      roomName: selectedChannel,
+      loginUserToExecute: selectedUserparam,
+      }),
+    });
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.message);
+    }
+  }
+  catch (err) {
+    if (err instanceof Error)
+      alert(err.message);
+  } 
+}
+
+async function banSelectedUser() {
+  try
+  {
+    const response = await fetch("http://localhost:3333/chat/giveAdmin", {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: 'Bearer ' + token,
+    },
+      body: JSON.stringify({
+      idAdmin: userID,
+      roomName: selectedChannel,
+      loginUserToExecute: selectedUserparam,
+      }),
+    });
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.message);
+    }
+  }
+  catch (err) {
+    if (err instanceof Error)
+      alert(err.message);
+  } 
+}
+
+async function unmuteUser() {
+  try
+  {
+    const response = await fetch("http://localhost:3333/chat/unmuteUser", {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + token,
+      },
+        body: JSON.stringify({
+        idAdmin: userID,
+        roomName: selectedChannel,
+        loginUserToExecute: selectedUserparam,
+        }),
+      });
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.message);
+    }
+  }
+  catch (err) {
+    if (err instanceof Error)
+      alert(err.message);
+  }
+}
+
+async function revokeAdmin() {
+    try {
+        const response = await fetch("http://localhost:3333/chat/removeAdmin", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: 'Bearer ' + token,
+            },
+            body: JSON.stringify({
+                idAdmin: userID,
+                roomName: selectedChannel,
+                loginUserToExecute: selectedUserparam,
+            }),
+        });
+        
+        if (!response.ok) {
+            const data = await response.json();
+            throw new Error(data.message);
+        }
+    } catch (err) {
+        if (err instanceof Error) {
+            alert(err.message);
+        }
+    }
+}
+
+async function unbanUser() {
+    try {
+        const response = await fetch("http://localhost:3333/chat/unbanUser", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: 'Bearer ' + token,
+            },
+            body: JSON.stringify({
+                idAdmin: userID,
+                roomName: selectedChannel,
+                loginUserToExecute: selectedUserparam,
+            }),
+        });
+        
+        if (!response.ok) {
+            const data = await response.json();
+            throw new Error(data.message);
+        }
+    } catch (err) {
+        if (err instanceof Error) {
+            alert(err.message);
+        }
+    }
+}
+
+async function changeChannelType() {
+  try
+  {
+    const response = await fetch("http://localhost:3333/chat/changeRoomType", {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: 'Bearer ' + token,
+    },
+      body: JSON.stringify({
+      idUser: userID,
+      roomName: selectedChannel,
+      password: newPassword,
+      type: newChannelType,
+      }),
+    });
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.message);
+    }
+  }
+  catch (err) {
+    if (err instanceof Error)
+      alert(err.message);
+  } 
+}
+
+async function muteSelectedUser(muteDuration: number) {
+  try
+  {
+    const response = await fetch("http://localhost:3333/chat/muteUser", {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: 'Bearer ' + token,
+    },
+      body: JSON.stringify({
+      idAdmin: userID,
+      roomName: selectedChannel,
+      loginUserToExecute: selectedUserparam,
+      muteDuration: muteDuration,
+      }),
+    });
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.message);
+    }
+    else
+    {
+      const newMuteList = await response.json();
+      muteList.set(newMuteList.mutedUsers);
+    }
+    muteDuration = 0;
+  }
+  catch (err) {
+    if (err instanceof Error)
+      alert(err.message);
+  } 
+}
+
+function closeSetupModal() {
+  openAdminModal = false;
+  changePassword = false;
+  banUser = false;
+  muteUser = false;
+  grantAdmin = false;
+  expulUser = false;
+  selectedUserparam = '';
+  newPassword = '';
+  selectedSection = '';
+}
+
 
   function openModal() {
     isModalOpen = true;
@@ -189,26 +474,46 @@
 
   function selectUser(user: string) {
     // Logique de sélection de l'utilisateur
+    loginUserToExecute = user;
+    isUserModalOpen = true;
     console.log('Utilisateur sélectionné:', user);
   }
-  async function joinChannel() {
-    try {
+
+  function closeUserModal()
+  {
+    isUserModalOpen = false;
+    loginUserToExecute = '';
+  }
+
+  async function joinChannel()
+  {
+    try 
+    {
       if (joinChannelName.trim() !== '' &&
         joinChannelName.length <= 10 &&
-        isValidChannelName(joinChannelName)
-      ) {
-        if (joinChannelType === '') {
-          isJoinInvalidType = true;
-        } else {
-          if (joinChannelType === 'protected') {
-            if (joinChannelPassword.trim() === '') {
-              isJoinInvalidPassword = true;
-              return;
+        isValidChannelName(joinChannelName))
+        {
+          if (joinChannelType === '')
+          {
+            isJoinInvalidType = true;
+            return;
+          }
+          else
+          {
+            if (joinChannelType === 'protected')
+            {
+              if (joinChannelPassword.trim() === '')
+              {
+                isJoinInvalidPassword = true;
+                return;
+              }
             }
           }
-          const response = await fetch('http://localhost:3333/chat/joinRoom', {
+          const response = await fetch('http://localhost:3333/chat/joinRoom',
+          {
             method: 'POST',
-            headers: {
+            headers:
+            {
               'Content-Type': 'application/json',
               Authorization: 'Bearer ' + token,
             },
@@ -218,11 +523,13 @@
               password: joinChannelPassword,
             }),
           });
-          if (!response.ok) {
+          if (!response.ok) 
+          {
             const data = await response.json();
             throw new Error(data.message);
           }
-          else if (response.ok) {
+          else if (response.ok) 
+          {
             const newChannel = await response.json();
             channelList.update(channelList => [...channelList, { name: newChannel.room.name }]);
             //socket.emit('joinRoom', { roomId: newChannel.room.id, userId: userID });
@@ -230,19 +537,94 @@
           }
           closeJoinModal();
         }
-      } else {
+      else
+      {
         isJoinInvalidName = true;
+        return;
       }
-    } catch (err) {
+    }
+    catch (err) {
       if (err instanceof Error)
         alert(err.message);
     }
   }
 
   async function sendMessage() {
+    if (selectedChannel === '') {
+      messageInput = '';
+      return;
+    }
+    if (messageInput.trim() === '') {
+      return;
+    }
     console.log(messageInput);
+    messages = [...messages, { username: login, content: messageInput, user: true }];
     messageInput = '';
   }
+
+  async function confirmSelection() {
+    if (selectedSection === 'changePassword') {
+      changeUserPassword(newPassword);
+    } else if (selectedSection === 'grantAdmin') {
+      grantUserAdmin();
+    } else if (selectedSection === 'expulUser') {
+      expulSelectedUser();
+    } else if (selectedSection === 'banUser') {
+      banSelectedUser();
+    } else if (selectedSection === 'muteUser') {
+      muteSelectedUser(muteDuration);
+    }
+    else if (selectedSection === 'revokeAdmin') {
+      revokeAdmin();
+    }
+    else if (selectedSection === 'unbanUser') {
+      unbanUser();
+    }
+    else if (selectedSection === 'unmuteUser') {
+      unmuteUser();
+    }
+    else if (selectedSection === 'changeChannelType') {
+      changeChannelType();
+    }
+    else {
+      console.log("error");
+    }
+    closeSetupModal();
+  }
+
+  async function sendPrivateMessage() {
+  try {
+    const response = await fetch('http://localhost:3333/chat/sendPrivateMessage', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + token,
+      },
+      body: JSON.stringify({
+        senderID: userID,
+        recipientName: recipientName,
+        messageContent: messageContent,
+      }),
+    });
+
+    if (!response.ok) {
+      const data = await response.json();
+      privateMessageError = data.message;
+    } else {
+      closePrivateMessageModal();
+    }
+  } catch (err) {
+    if (err instanceof Error)
+      alert(err.message);
+  }
+}
+
+function closePrivateMessageModal() {
+  isPrivateMessageModalOpen = false;
+  recipientName = '';
+  messageContent = '';
+  privateMessageError = '';
+}
 
   async function getChannel(channel: string) {
     try {
@@ -262,13 +644,96 @@
         if (newChannel)
         {
           	userList.set(newChannel.users);
-            //j'aimerais check la réponse du back, si mon userID est admin, alors j'aimerais mettre un bouton pour les admins
-            //pour toutes les options d'administrateur, et si c'est pas un admin, alors j'aimerais pas qu'il y ai de bouton
-            //pour les options d'administrateur
-
-            console.log(newChannel);
+            messages = newChannel.messages;
+            banList.set(newChannel.bannedUsers);
+            muteList.set(newChannel.mutedUsers);
+            adminList.set(newChannel.administrators);
+            if (newChannel.administrators) {
+              newChannel.administrators.forEach((admin: {id: number}) => {
+                if (admin.id === userID) {
+              isAdmin = true;
+          }
+        });
+      }
         }
-       }
+      }
+    }
+    catch (err) {
+      if (err instanceof Error)
+        alert(err.message);
+    }
+  }
+
+  async function setup() {
+      openAdminModal = true;
+    }
+
+  async function getProfile() {
+    try {
+      const response = await fetch('http://localhost:3333/chat/profile/' + selectedUserparam, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + token,
+        },
+      });
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message);
+      } else if (response.ok) {
+        const newProfile = await response.json();
+        console.log('Contenu de newProfile:', newProfile);
+      }
+    }
+    catch (err) {
+      if (err instanceof Error)
+        alert(err.message);
+    }
+  }
+
+  async function inviteGame() {
+    try {
+      const response = await fetch('http://localhost:3333/chat/inviteGame/' + selectedUserparam, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + token,
+        },
+      });
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message);
+      } else if (response.ok) {
+        const newProfile = await response.json();
+        console.log('Contenu de newProfile:', newProfile);
+      }
+    }
+    catch (err) {
+      if (err instanceof Error)
+        alert(err.message);
+    }
+  }
+
+  async function blockUser() {
+    try {
+      const response = await fetch('http://localhost:3333/chat/blockUser', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + token,
+        },
+        body: JSON.stringify({
+          idUser: userID,
+          loginUserToBlock: loginUserToExecute,
+        }),
+      });
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message);
+      } else if (response.ok) {
+        const newProfile = await response.json();
+        console.log('Contenu de newProfile:', newProfile);
+      }
     }
     catch (err) {
       if (err instanceof Error)
@@ -282,11 +747,156 @@
   <meta name="description" content="Chat Page" />
 </svelte:head>
 
+
+{#if isUserModalOpen}
+  <div class="modal">
+    <div class="modal-content">
+      <h3>User Options</h3>
+      <button on:click={getProfile}>Profil</button>
+      <button on:click={inviteGame}>Invite Game</button>
+      <button on:click={blockUser}>Block</button>
+      <button on:click={closeUserModal}>Close</button>
+    </div>
+  </div>
+{/if}
+
+{#if openAdminModal}
+  <div class="modal">
+    <div class="modal-content">
+      <h3>Setup</h3>
+
+      {#if selectedSection === 'changeChannelType'}
+      <div class="selected-option">
+        <p>Change Type:</p>
+        <label>
+          <input type="radio" value="public" id="public" name="channelType" bind:group={newChannelType} /> Public
+        </label>
+        <label>
+          <input type="radio" value="private" id="private" name="channelType" bind:group={newChannelType} /> Private
+        </label>
+        <label>
+          <input type="radio" value="protected" id="protected" name="channelType" bind:group={newChannelType} /> Protected
+        </label>
+    
+        {#if newChannelType === 'protected'}
+          <input bind:value={newPassword} type="password" id="channelPassword" placeholder="Password" name = NewPassword />
+        {/if}
+      </div>
+    {/if}
+
+      {#if selectedSection === 'changePassword'}
+        <div class="selected-option">
+          <p>Change Password:</p>
+          <input bind:value={newPassword} id="newPassword" type="password" placeholder="New Password" name = "newPassword"/>
+        </div>
+      {/if}
+
+      {#if selectedSection === 'grantAdmin'}
+        <div class="selected-option">
+          <p>Give Admin:</p>
+          <select name="selectedUser" bind:value={selectedUserparam}>
+            {#each $userList as user}
+              <option value={user.login}>{user.login}</option>
+            {/each}
+          </select>
+        </div>
+      {/if}
+
+      {#if selectedSection === 'revokeAdmin'}
+        <div class="selected-option">
+          <p>Revoke Admin:</p>
+          <select name="selectedUser" bind:value={selectedUserparam}>
+            {#each $adminList as admin}
+              <option value={admin.login}>{admin.login}</option>
+            {/each}
+          </select>
+        </div>
+      {/if}
+
+      {#if selectedSection === 'expulUser'}
+        <div class="selected-option">
+          <p>Kick User:</p>
+          <select name="selectedUser" bind:value={selectedUserparam}>
+            {#each $userList as user}
+              <option value={user.login}>{user.login}</option>
+            {/each}
+          </select>
+        </div>
+      {/if}
+
+      {#if selectedSection === 'banUser'}
+        <div class="selected-option">
+          <p>Ban User:</p>
+          <select name="selectedUser" bind:value={selectedUserparam}>
+            {#each $userList as user}
+              <option value={user.login}>{user.login}</option>
+            {/each}
+          </select>
+        </div>
+      {/if}
+
+      {#if selectedSection === 'muteUser'}
+        <div class="selected-option">
+          <p>Mute User:</p>
+          <select name="selectedUser" bind:value={selectedUserparam}>
+            {#each $userList as user}
+              <option value={user.login}>{user.login}</option>
+            {/each}
+          </select>
+          <input bind:value={muteDuration} type="number" name="duration" placeholder="Mute Duration (minutes)" min="1" />
+        </div>
+      {/if}
+
+      {#if selectedSection === 'unbanUser'}
+        <div class="selected-option">
+          <p>Unban User:</p>
+          <select name="selectedUser" bind:value={selectedUserparam}>
+            {#each $banList as bannedUsers}
+              <option value={bannedUsers.login}>{bannedUsers.login}</option>
+            {/each}
+          </select>
+        </div>
+      {/if}
+
+      {#if selectedSection === 'unmuteUser'}
+        <div class="selected-option">
+          <p>Unmute User:</p>
+          <select name="selectedUser" bind:value={selectedUserparam}>
+            {#each $muteList as mutedUsers}
+              <option value={mutedUsers.login}>{mutedUsers.login}</option>
+            {/each}
+          </select>
+        </div>
+      {/if}
+
+      <div class="section-select">
+        <label for="sectionSelect">Select Section:</label>
+        <select bind:value={selectedSection} id="sectionSelect">
+          <option value="changeChannelType">Change Type</option>
+          <option value="changePassword">Change Password</option>
+          <option value="grantAdmin">Give Admin</option>
+          <option value="revokeAdmin">Revoke Admin</option>
+          <option value="expulUser">Kick User</option>
+          <option value="banUser">Ban User</option>
+          <option value="muteUser">Mute User</option>
+          <option value="unbanUser">Unban User</option>
+          <option value="unmuteUser">Unmute User</option>
+        </select>
+      </div>
+
+      <div class="modal-actions">
+        <button on:click={() => confirmSelection()}>Confirm</button>
+        <button on:click={() => closeSetupModal()}>Cancel</button>
+      </div>
+    </div>
+  </div>
+{/if}
+
 {#if isJoinModalOpen}
   <div class="modal">
     <div class="modal-content">
       <h3>Join a channel</h3>
-      <input bind:value={joinChannelName} type="text" placeholder="Channel Name" />
+      <input bind:value={joinChannelName} type="text" placeholder="Channel Name" name="joinChannelName" id="joinChannelName1" />
       {#if isJoinInvalidName}
         <p class="error-message">Invalid channel name. Please enter a valid name.</p>
       {/if}
@@ -296,14 +906,14 @@
       <div class="channel-type">
         <span>Channel Type:</span>
         <label>
-          <input type="radio" value="public" bind:group={joinChannelType} /> Public
+          <input type="radio" name="public" value="public" bind:group={joinChannelType} /> Public
         </label>
         <label>
-          <input type="radio" value="protected" bind:group={joinChannelType} /> Protected
+          <input type="radio" name="protected" value="protected" bind:group={joinChannelType} /> Protected
         </label>
       </div>
       {#if joinChannelType === 'protected'}
-        <input bind:value={joinChannelPassword} type="password" placeholder="Password" />
+        <input bind:value={joinChannelPassword} type="password" placeholder="Password" name = "joinChannelPassword" />
         {#if isJoinInvalidType && joinChannelType === 'protected' && isJoinInvalidPassword}
           <p class="error-message">Please enter a password for the protected channel.</p>
         {/if}
@@ -319,9 +929,12 @@
       {#if selectedChannel != null}
         <div class="channel-header">
           <h2>{selectedChannel}</h2>
+          {#if isAdmin}
+            <button on:click={setup} class="button-admin">Setup</button>
+          {/if}
         </div>
       {/if}
-      {#if $channelList !== null && $channelList.length === 0}
+      {#if $channelList != null && $channelList.length === 0}
         <p>No channels joined</p>
       {/if}
     </div>
@@ -331,10 +944,13 @@
     <button class="create-channel p-anim" on:click={() => openJoinModal()}>
       Join Channel
     </button>
+    <button class="create-channel p-anim" on:click={() => openPrivateMessageModal()}>
+      Private Message
+    </button>
     {#if channelList !== null}
       {#each $channelList as channel}
         <button class="channel-button p-anim" on:click={() => getChannel(channel.name)}>
-          {channel.name}
+            {channel.name}
         </button>
       {/each}
     {/if}
@@ -356,7 +972,7 @@
       {/each}
     </div>
     <div class="input-area">
-      <input bind:value={messageInput} type="text" placeholder="Type here..." />
+      <input bind:value={messageInput} type="text" placeholder="Type here..." id = userID name = "messageInput"/>
       <button on:click={sendMessage}>Send</button>
     </div>
   </div>
@@ -376,7 +992,7 @@
     <div class="modal">
       <div class="modal-content">
         <h3>Create a new channel</h3>
-        <input bind:value={newChannelName} type="text" placeholder="Channel Name" />
+        <input bind:value={newChannelName} type="text" placeholder="Channel Name" name = newChannelName/>
         {#if isInvalidName}
           <p class="error-message">Invalid channel name. Please enter a valid name.</p>
         {/if}
@@ -386,17 +1002,17 @@
         <div class="channel-type">
           <span>Channel Type:</span>
           <label>
-            <input type="radio" value="public" bind:group={newChannelType} /> Public
+            <input type="radio" value="public" bind:group={newChannelType} id="newChannelTypePublic"/> Public
           </label>
           <label>
-            <input type="radio" value="private" bind:group={newChannelType} /> Private
+            <input type="radio" value="private" bind:group={newChannelType} id="newChannelTypePrivate"/> Private
           </label>
           <label>
-            <input type="radio" value="protected" bind:group={newChannelType} /> Protected
+            <input type="radio" value="protected" bind:group={newChannelType} id="newChannelTypeProtected" /> Protected
           </label>
         </div>
         {#if newChannelType === 'protected'}
-          <input bind:value={newChannelPassword} type="password" placeholder="Password" />
+          <input bind:value={newChannelPassword} type="password" placeholder="Password" name = "newChannelPassword" />
           {#if isInvalidPassword}
             <p class="error-message">Please enter a password for the protected channel.</p>
           {/if}
@@ -407,55 +1023,73 @@
     </div>
   {/if}
 
-  {#if isJoinModalOpen}
+  {#if isPrivateMessageModalOpen}
     <div class="modal">
       <div class="modal-content">
-        <h3>Join a channel</h3>
-        <input bind:value={joinChannelName} type="text" placeholder="Channel Name" />
-        {#if isJoinInvalidName}
-          <p class="error-message">Invalid channel name. Please enter a valid name.</p>
+        <h3>Send Private Message</h3>
+        <input bind:value={recipientName} type="text" placeholder="Recipient Name" name = "recipientName"/>
+        <textarea bind:value={messageContent} placeholder="Message" name = "messageContent"></textarea>
+        {#if privateMessageError !== ''}
+          <p class="error-message">{privateMessageError}</p>
         {/if}
-        {#if isJoinInvalidType}
-          <p class="error-message">Please select a channel type.</p>
-        {/if}
-        <div class="channel-type">
-          <span>Channel Type:</span>
-          <label>
-            <input type="radio" value="public" bind:group={joinChannelType} /> Public
-          </label>
-          <label>
-            <input type="radio" value="protected" bind:group={joinChannelType} /> Protected
-          </label>
-        </div>
-        {#if joinChannelType === 'protected'}
-          <input bind:value={joinChannelPassword} type="password" placeholder="Password" />
-          {#if isJoinInvalidType && joinChannelType === 'protected' && isJoinInvalidPassword}
-            <p class="error-message">Please enter a password for the protected channel.</p>
-          {/if}
-        {/if}
-        <button on:click={joinChannel}>Join</button>
-        <button on:click={closeJoinModal}>Cancel</button>
+        <button on:click={sendPrivateMessage}>Send Message</button>
+        <button on:click={closePrivateMessageModal}>Cancel</button>
       </div>
     </div>
   {/if}
+
+  {#if isJoinModalOpen}
+  <div class="modal">
+    <div class="modal-content">
+      <h3>Join a channel</h3>
+      <input bind:value={joinChannelName} type="text" placeholder="Channel Name" name="joinChannelName" />
+      {#if isJoinInvalidName}
+        <p class="error-message">Invalid channel name. Please enter a valid name.</p>
+      {/if}
+      {#if isJoinInvalidType}
+        <p class="error-message">Please select a channel type.</p>
+      {/if}
+      <div class="channel-type">
+        <span>Channel Type:</span>
+        <label>
+          <input type="radio" value="public" bind:group={joinChannelType} id="joinChannelTypePublic"/> Public
+        </label>
+        <label>
+          <input type="radio" value="protected" bind:group={joinChannelType} id="joinChannelTypeProtected" /> Protected
+        </label>
+      </div>
+      {#if joinChannelType === 'protected'}
+        <input bind:value={joinChannelPassword} type="password" placeholder="Password" name="joinChannelPassword" />
+        {#if isJoinInvalidType && joinChannelType === 'protected' && isJoinInvalidPassword}
+          <p class="error-message">Please enter a password for the protected channel.</p>
+        {/if}
+      {/if}
+      <button on:click={joinChannel}>Join</button>
+      <button on:click={closeJoinModal}>Cancel</button>
+    </div>
+  </div>
+{/if}
 </div>
 
 <style>
   .container {
     display: flex;
+    margin-top: 10px; 
   }
 
   .sidebar {
-    width: 200px;
+    width: 150px;
     padding: 10px;
     height: 100vh;
     max-height: 100vh;
     border-right: 1px solid #ccc; /* Ajout de la bordure */
     padding-right: 10px; /* Ajout des marges intérieures */
+    overflow-y: auto;
   }
 
   .channel-button,
-  .user-button {
+  .user-button,
+  .button-admin{
     display: block;
     width: 100%;
     padding: 10px;
@@ -468,6 +1102,7 @@
 
   .channel-header {
     text-align: center;
+    font-weight: bold;
   }
 
   .create-channel {
@@ -546,7 +1181,7 @@
     background-color: #f0f0f0; /* Couleur de fond de la bulle de message */
     margin-left: 50%; /* Add margin to push the bubble to the right */
     border-top-right-radius: 0; /* Make the right top corner sharp */
-    direction: rtl;
+    direction: ltr;
     word-wrap: break-word;
   }
 
@@ -569,6 +1204,7 @@
 .message-autre-utilisateur {
     align-self: flex-start;
     color: black; /* Couleur du texte */
+    direction: ltr;
 }
 
 
@@ -584,4 +1220,53 @@
   .p-anim:hover {
     color: #EDA11A;
   }
+
+  
+  @media screen and (max-width: 600px) {
+  .container 
+  {
+    flex-direction: column;
+    margin: 10px;
+  }
+
+  .sidebar,
+  .chat-area,
+  .user-list {
+    max-height: 500px;
+    overflow-y: auto;
+    border-radius: 10px;
+    margin-bottom: 10px;
+  }
+  .channel-header{
+    text-align: center;
+    color: black;
+  }
+
+  .user-list-title{
+    text-align: center;
+    color: black;
+  }
+
+  .sidebar,
+  .chat-area {
+    width: 100%;
+  }
+
+  .user-list {
+    width: 100%;
+  }
+
+  .sidebar,
+  .chat-area,
+  .user-list {
+    background-color: #f5f5f5;
+  }
+
+  .message-container-user,
+  .message-container-other {
+    background-color: #9ab3f5;
+    font-family: Arial, sans-serif;
+  }
+}
+
 </style>
