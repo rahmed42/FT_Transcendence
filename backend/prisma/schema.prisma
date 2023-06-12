@@ -31,9 +31,15 @@ model User {
   administratedRooms Room[]        @relation("RoomAdministrator")
   bannedRooms        Room[]        @relation("RoomBannedUser")
   mutedRooms         Room[]        @relation("RoomMutedUser")
+  timestampMuted	 DateTime?
   blockedByUsers     User[]        @relation("BlockedUser")
   blockedUsers       User[]        @relation("BlockedUser")
   two_fa             Boolean       @default(false)
+  two_fa_secret String?
+  isLogged Boolean @default(false)
+  avatar String?
+  friendRequestSent     Friend[]      @relation("FriendRequestSent")
+  friendRequestReceived Friend[]      @relation("FriendRequestReceived")
 }
 
 model Authenticator {
@@ -80,4 +86,13 @@ model Message {
   privateRoomId String?
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
+}
+
+model Friend {
+  id          Int    @id @default(autoincrement())
+  requesterId Int
+  requesteeId Int
+  status      String @default("pending")
+  requester   User   @relation(fields: [requesterId], references: [id], name: "FriendRequestSent", onDelete: Cascade)
+  requestee   User   @relation(fields: [requesteeId], references: [id], name: "FriendRequestReceived", onDelete: Cascade)
 }

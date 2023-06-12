@@ -41,6 +41,10 @@ export class ChatDtoAdminOperation
 
     @IsNotEmpty()
     loginUserToExecute : string;
+
+	@IsOptional()
+	@IsNumber()
+	muteDuration : number;
 }
 
 export class ChatDtoGetRoom

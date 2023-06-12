@@ -113,6 +113,7 @@
     });
     if (response.ok) {
       const data = await response.json();
+      console.log(data.rooms);
       channelList.set(data.rooms);
     }
   });
@@ -740,6 +741,10 @@ function closePrivateMessageModal() {
         alert(err.message);
     }
   }
+
+  async function setup() {
+      openAdminModal = true;
+    }
 </script>
 
 <svelte:head>
