@@ -43,16 +43,6 @@
 				check: checked,
 			}),
 		});
-		const contentType = response.headers.get('Content-Type');
-        if (contentType && contentType.includes('application/json')) {
-            const data = await response.json();
-            if (data.valide)
-            {
-                sessionStorage.setItem('isLogged', JSON.stringify(true));
-                window.location.href = '/home';
-                return;
-            }
-        }
 	}
 	function getBase64(image: File) {
 		const reader = new FileReader();
@@ -149,9 +139,6 @@
     <input class="hidden" id="file-to-upload" type="file" accept=".png,.jpg" bind:files bind:this={fileInput} on:change={() => getBase64(files[0])}/>
 </div>
 
-<!-- <div> -->
-<!-- </div> -->
-
 <style>
 	.container {
 		display: flex;
@@ -181,7 +168,6 @@
 	.button-row {
 		display: flex;
 		flex-direction: column;
-		/* align-self: flex-start; */
 		margin-right: 20px;
 	}
 
@@ -199,7 +185,6 @@
 	}
 	button:hover {
 		background-color: #0f6402;
-		/* border-radius: 75px; */
 	}
 	.modal {
     position: fixed;

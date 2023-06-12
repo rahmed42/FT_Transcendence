@@ -1,5 +1,3 @@
-<!-- Config page content  -->
-
 <script lang="ts">
 	import { beforeUpdate, onMount } from 'svelte';
 
@@ -22,6 +20,13 @@
         }
         generate_qrCode();
     })
+    async function logoutUser() {
+        await fetch('http://localhost:3333/auth/logout', {
+            method: 'POST',
+            credentials: 'include',
+        });
+	}
+    // Autres instructions à exécuter après la déconnexion de l'utilisateur
     async function send_code() {
         const response = await fetch('http://localhost:3333/auth/2fa_code', {
             method: 'POST',
@@ -38,6 +43,8 @@
             const data = await response.json();
             if (data.valide)
             {
+                await logoutUser();
+                // need to post database to set connected variable to true;
                 sessionStorage.setItem('isLogged', JSON.stringify(true));
                 window.location.href = '/home';
                 return;
