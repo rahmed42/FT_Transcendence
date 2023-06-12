@@ -1661,7 +1661,7 @@ export class ChatService {
 			where: {
 				name: body.roomName,
 			},
-			include: {
+			select: {
 				mutedUsers: {
 					select: {
 						login: true,
