@@ -73,7 +73,8 @@ export class Gateway implements OnModuleInit {
 							delete: {
 								name: roomName,
 							}
-						}
+						},
+						timestampMuted: null,
 					}
 				});
 			}

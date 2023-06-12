@@ -1719,6 +1719,7 @@ export class ChatService {
 						name: body.roomName,
 					},
 				},
+				timestampMuted : null,
 			},
 		});
 		return { message: "User successfully unmuted" }
