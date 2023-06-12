@@ -1436,12 +1436,12 @@ export class ChatService {
                 },
             },
             select: {
-                id : true,
                 users: {
-                    select: {
-                        id: true,
-                        login: true,
-                    },
+                    where : {
+						id: {
+							not: body.idUser,
+						},
+					},
                 },
             }
         });
