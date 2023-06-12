@@ -1442,6 +1442,9 @@ export class ChatService {
 							not: body.idUser,
 						},
 					},
+					select: {
+						login: true,
+					},
                 },
             }
         });
