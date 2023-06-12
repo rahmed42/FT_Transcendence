@@ -1494,16 +1494,7 @@ export class ChatService {
         {
             throw new BadRequestException('User does not exist');
         }
-        const userInRoom = await this.prisma.privateRoom.findFirst({
-            where: {
-                id: body.roomName,
-                users: {
-                    some: {
-                        id: body.idUser,
-                    },
-                },
-            },
-        });
+        const userInRoom = privateRoom.users.find((user) => user.id == body.idUser);
         if (!userInRoom)
         {
             throw new BadRequestException('User is not in room');
