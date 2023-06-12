@@ -1641,6 +1641,8 @@ export class ChatService {
 			throw new BadRequestException('You are not admin of this room');
 		if (room.ownerId == userToMute.id)
 			throw new BadRequestException('You cannot mute owner of the room');
+		if (!body.muteDuration || body.muteDuration <= 0)
+			throw new BadRequestException('Mute duration must be positive');
 		const minutesToAdd = body.muteDuration; // Get the number of minutes to add from the request body
 		const date = new Date(); // Create a new Date object representing the current date and time
 		date.setMinutes(date.getMinutes() + minutesToAdd); // Add the specified number of minutes to the date object
