@@ -1456,7 +1456,12 @@ export class ChatService {
             throw new BadRequestException('Room name is required');
         const privateRoom = await this.prisma.privateRoom.findFirst({
             where: {
-                id: body.roomName,
+                users:
+				{
+					some: {
+						id: body.idUser,
+					},
+				}
             },
             select: {
                 id: true,
