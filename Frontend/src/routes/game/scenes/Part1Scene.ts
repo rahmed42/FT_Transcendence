@@ -340,9 +340,9 @@ export class Part1Scene extends Phaser.Scene {
 								this.remotePaddle.y = value;
 						});
 
-						// wait starting message from server
-						this.room.onMessage("start", (start : boolean) => {
-							console.log("started client from broadcast ", start);
+						// Getting starting game from server
+						this.room.onMessage("startGame", (start : boolean) => {
+							// console.log("started client from broadcast ", start);
 							if (start === true)
 								this.startMatch();
 						});
@@ -465,7 +465,6 @@ export class Part1Scene extends Phaser.Scene {
 					this.startButton.disableInteractive();
 				}
 				this.startState = true;
-				// this.startMatch();
 			});
 		}
 		else
@@ -546,9 +545,9 @@ export class Part1Scene extends Phaser.Scene {
 				this.resetBall();
 		}
 
-		if (this.inputPayload) {
+		if (this.inputPayload !== undefined) {
 			// send input to the server if changes to avoid server spamming
-			if (this.inputPayload.y !== this.input.y) {
+			if ((this.input.y !== undefined) && (this.inputPayload.y !== this.input.y)) {
 				// console.log("client input : " + this.inputPayload.y + "/ input local " + this.input.y);
 				this.inputPayload.y = this.input.y;
 				this.room.send(0, this.inputPayload);
@@ -558,14 +557,12 @@ export class Part1Scene extends Phaser.Scene {
 			//https://learn.colyseus.io/phaser/2-linear-interpolation.html
 
 			// Check change state of start button send to server
-			if (this.inputPayload.start !== this.startState) {
+			if ((this.startState !== undefined) && (this.inputPayload.start !== this.startState)) {
 				this.inputPayload.start = this.startState;
 				// console.log("client Start : input " + this.inputPayload.start + "/ start local " + this.startState);
 				this.room.send("start", this.inputPayload);
 
-				// check if this.startState, or from server is true begin game
-				// if (this.startState === true)
-				// 	this.startMatch();
+				// reset state
 				this.startState = false;
 			}
 		}

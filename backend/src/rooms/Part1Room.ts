@@ -30,16 +30,15 @@ export class Part1Room extends Room<Part1State> {
 
 		// Handle startButton from player
 		this.onMessage("start", (client, input) => {
-			(input.start) ?	console.log("Server - start button pressed") :
-							console.log("Server - start button released");
-
+			if (input.start)
+				console.log("Starting Game");
 			const player = this.state.startButton.get(client.sessionId);
 
 			player.begin = input.start;
-			console.log("player.begin = " + player.begin);
+			// console.log("player.begin = " + player.begin);
 
 			// send to all the room the startGame message
-			this.broadcast("start", player.begin);
+			this.broadcast("startGame", player.begin);
 		});
 
 
