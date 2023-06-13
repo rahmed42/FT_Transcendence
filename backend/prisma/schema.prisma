@@ -11,35 +11,56 @@ datasource db {
 }
 
 model User {
-  token              String
-  jwtToken           String        @default("")
-  id                 Int           @id @unique
-  email              String
-  login              String        @unique
-  first_name         String
-  last_name          String
-  large_pic          String
-  medium_pic         String
-  small_pic          String
-  createAt           DateTime      @default(now())
-  updateAt           DateTime      @updatedAt
-  sentMessages       Message[]     @relation("SentMessage")
-  rooms              Room[]        @relation("RoomUser")
-  privateRoom        PrivateRoom[] @relation("PrivateRoomUser")
-  ownedRooms         Room[]        @relation("RoomOwner")
-  invitedRooms       Room[]        @relation("RoomInvitedUser")
-  administratedRooms Room[]        @relation("RoomAdministrator")
-  bannedRooms        Room[]        @relation("RoomBannedUser")
-  mutedRooms         Room[]        @relation("RoomMutedUser")
-  timestampMuted	 DateTime?
-  blockedByUsers     User[]        @relation("BlockedUser")
-  blockedUsers       User[]        @relation("BlockedUser")
-  two_fa             Boolean       @default(false)
-  two_fa_secret String?
-  isLogged Boolean @default(false)
-  avatar String?
-  friendRequestSent     Friend[]      @relation("FriendRequestSent")
-  friendRequestReceived Friend[]      @relation("FriendRequestReceived")
+  token                 String
+  jwtToken              String         @default("")
+  id                    Int            @id @unique
+  email                 String
+  login                 String         @unique
+  first_name            String
+  last_name             String
+  large_pic             String
+  medium_pic            String
+  small_pic             String
+  createAt              DateTime       @default(now())
+  updateAt              DateTime       @updatedAt
+  sentMessages          Message[]      @relation("SentMessage")
+  rooms                 Room[]         @relation("RoomUser")
+  privateRoom           PrivateRoom[]  @relation("PrivateRoomUser")
+  ownedRooms            Room[]         @relation("RoomOwner")
+  invitedRooms          Room[]         @relation("RoomInvitedUser")
+  administratedRooms    Room[]         @relation("RoomAdministrator")
+  bannedRooms           Room[]         @relation("RoomBannedUser")
+  mutedRooms            Room[]         @relation("RoomMutedUser")
+  timestampMuted        DateTime?
+  blockedByUsers        User[]         @relation("BlockedUser")
+  blockedUsers          User[]         @relation("BlockedUser")
+  two_fa                Boolean        @default(false)
+  two_fa_secret         String?
+  isLogged              Boolean        @default(false)
+  avatar                String?
+  friendRequestSent     Friend[]       @relation("FriendRequestSent")
+  friendRequestReceived Friend[]       @relation("FriendRequestReceived")
+  stats                 Stats?
+  matchHistory          MatchHistory[]
+}
+
+model Stats {
+  id           Int      @id @default(autoincrement())
+  userId       Int      @unique
+  user         User     @relation(fields: [userId], references: [id])
+  wins         Int      @default(0)
+  losses       Int      @default(0)
+  ladderLevel  Int      @default(0)
+  achievements String[]
+}
+
+model MatchHistory {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  gameType  String
+  result    String
+  timestamp DateTime @default(now())
 }
 
 model Authenticator {

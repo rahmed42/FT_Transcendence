@@ -1,18 +1,24 @@
 <script>
-	import { onMount } from 'svelte';
 	import { notification } from '../../stores/notificationStore.js';
+	import { user } from '../../stores/user';
 
 	// Create a ".env" file at the root of Frontend folder and add "VITE_API_URL=http://localhost:3333"
     const apiUrl = import.meta.env.VITE_API_URL;
 
 	let pendingRequests = [];
 	let friends = [];
-	let userLogin;
 	let requesteeLogin;
   
+	// Define a reactive statement that triggers when $user.login changes
+	$: {
+		if ($user.login) {
+			refreshData();
+		}
+	}
+
 	async function refreshData() {
-	  pendingRequests = await getFriendRequests(userLogin);
-	  friends = await getFriendList(userLogin);
+		pendingRequests = await getFriendRequests($user.login);
+		friends = await getFriendList($user.login);
 	}
   
 	async function getFriendRequests(userLogin) {
@@ -39,7 +45,7 @@
 	  const res = await fetch(`${apiUrl}/social/friend-request`, {
 		method: 'POST', 
 		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify({ requesterLogin: userLogin, requesteeLogin }) 
+		body: JSON.stringify({ requesterLogin: $user.login, requesteeLogin }) 
 	  });
 	  
 	  if (res.ok) { 
@@ -60,38 +66,7 @@
       await fetch(`${apiUrl}/social/friend/${id}`, { method: 'DELETE' });
       await refreshData();
 	}
-
-	async function loginUser() {
-        if(userLogin) {
-            refreshData();
-        } else {
-            notification.set('Please enter a valid login!');
-            setTimeout(() => {
-                notification.set('');
-            }, 5000);
-        }
-    }
 </script>
-
-<style>
-  .login-container {
-    display: flex;
-    gap: 4px;
-  }
-
-  .login-input {
-    width: 200px;
-  }
-
-  .login-button {
-    width: 100px;
-  }
-</style>
-
-<div class="login-container">
-  <input type="text" bind:value={userLogin} placeholder="Type the user's login" class="login-input"/>
-  <button on:click={loginUser} class="login-button">Search</button>
-</div>
 
 <section>
 	<h2>Pending friend requests</h2>
@@ -109,7 +84,7 @@
 	{#each friends as friend (friend.id)}
 	  <div>
         <img src={friend.friend.small_pic} alt="{friend.friend.login}'s picture" width="50" height="50" />
-		<a href={`/profile/?login=${friend.friend.login}`}>{friend.friend.login}</a>
+		<a href={`/profile/info/?login=${friend.friend.login}`}>{friend.friend.login}</a>
 		<button on:click={() => deleteFriend(friend.id)}>Delete Friend</button>
 	  </div>
 	{/each}
