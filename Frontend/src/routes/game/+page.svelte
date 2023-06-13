@@ -15,7 +15,7 @@
 	onMount(async () => {
 		// SSR server side rendering
 		if (typeof window === 'undefined') return;
-		console.log('Entering Game', GameSelector, Part1Scene, Part2Scene);
+		// console.log('Entering Game', GameSelector, Part1Scene, Part2Scene);
 
 		// Execute on client side only if not server side rendering
 		if (!import.meta.env.SSR) {

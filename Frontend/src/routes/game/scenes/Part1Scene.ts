@@ -23,9 +23,13 @@ export class Part1Scene extends Phaser.Scene {
 	// mouse pointer
 	pointer: Phaser.Input.Pointer | undefined;
 
+	//Start state
+	startState: boolean;
+
 	// local input cache
-	inputPayload = {
-		y: 0,
+	inputPayload: any = {
+		y: 400,
+		start: false,
 	};
 
 	// Set Paddle
@@ -68,6 +72,13 @@ export class Part1Scene extends Phaser.Scene {
 		this.myScore = 0;
 		this.opponentScore = 0;
 
+		// Init start state
+		this.startState = false;
+
+		//init inputPayload
+		// this.inputPayload.y = 400;
+		// this.inputPayload.start = false;
+
 		const unsubscribe = user.subscribe((value) => {
 			// update currentUser with last user value at store changes
 			currentUser = value;
@@ -103,6 +114,7 @@ export class Part1Scene extends Phaser.Scene {
 
 		// listen for new players in the room
 		this.gameListeners();
+
 	}
 
 	// Connect with the room
@@ -243,8 +255,6 @@ export class Part1Scene extends Phaser.Scene {
 		this.input.on('pointermove', () => {
 			if (this.localPaddle && this.pointer)
 				this.localPaddle.y = this.pointer.y;
-			//Update position on server !
-			//...
 		});
 	}
 
@@ -322,31 +332,25 @@ export class Part1Scene extends Phaser.Scene {
 						// Keep reference to this remote Paddle
 						const entity = this.remotePaddle!;
 						this.playerEntities[sessionId] = entity;
-						// console.log("Remote entity : ", entity);
-						// console.log("Remote player Y: ", player.y);
 
-						// Listen for changes and push it to backend
-						// player.onChange = () => {
-						// 	console.log("remote change", entity.y, player.y);
-						// 	// entity.y = player.y
-						// }
-
+						//Triggered when 'y' property changes
 						player.listen("y", (value: number) => {
 							// console.log("remote y", value);
 							if (this.remotePaddle)
 								this.remotePaddle.y = value;
+						});
+
+						// wait starting message from server
+						this.room.onMessage("start", (start : boolean) => {
+							console.log("started client from broadcast ", start);
+							if (start === true)
+								this.startMatch();
 						});
 					}
 					// Set start clickable button
 					this.startButtonText("🏓 Start Game 🏓", true);
 					this.startAnim();
 				}
-				// // listen for changes
-				// player.onChange = () => {
-				// 	console.log("Player state changed: ", sessionId);
-				// 	// update visual representation for the player
-				// 	// this.updatePlayer(sessionId);
-				// }
 			}
 		});
 
@@ -460,7 +464,8 @@ export class Part1Scene extends Phaser.Scene {
 					this.startButton.setVisible(false);
 					this.startButton.disableInteractive();
 				}
-				this.startMatch();
+				this.startState = true;
+				// this.startMatch();
 			});
 		}
 		else
@@ -507,6 +512,7 @@ export class Part1Scene extends Phaser.Scene {
 			this.ball.setVelocity(0);
 			this.ball.setVisible(false);
 		}
+
 		this.startButtonText("🏓 Start Game 🏓", true);
 		this.startAnim();
 	}
@@ -540,10 +546,28 @@ export class Part1Scene extends Phaser.Scene {
 				this.resetBall();
 		}
 
-		// send input to the server if changes to avoid server spamming
-		if (this.inputPayload.y !== this.input.y) {
-			this.inputPayload.y = this.input.y;
-			this.room.send(0, this.inputPayload);
+		if (this.inputPayload) {
+			// send input to the server if changes to avoid server spamming
+			if (this.inputPayload.y !== this.input.y) {
+				// console.log("client input : " + this.inputPayload.y + "/ input local " + this.input.y);
+				this.inputPayload.y = this.input.y;
+				this.room.send(0, this.inputPayload);
+			}
+
+			// Add linear interpolation if lag effect is visible
+			//https://learn.colyseus.io/phaser/2-linear-interpolation.html
+
+			// Check change state of start button send to server
+			if (this.inputPayload.start !== this.startState) {
+				this.inputPayload.start = this.startState;
+				// console.log("client Start : input " + this.inputPayload.start + "/ start local " + this.startState);
+				this.room.send("start", this.inputPayload);
+
+				// check if this.startState, or from server is true begin game
+				// if (this.startState === true)
+				// 	this.startMatch();
+				this.startState = false;
+			}
 		}
 	}
 }

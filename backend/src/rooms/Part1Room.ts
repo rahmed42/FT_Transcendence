@@ -19,25 +19,34 @@ export class Part1Room extends Room<Part1State> {
 		this.state.mapWidth = 800;
 		this.state.mapHeight = 600;
 
-		// Set up the start button
-		let start = new Start();
-		start.begin = false;
+		// handle player input
+		this.onMessage(0, (client, input) => {
+			const player = this.state.players.get(client.sessionId);
 
-		// Refresh the start button state
-		this.state.startButton.set("start", start);
+			if (input.y)
+				player.y = input.y;
+			// console.log("player.y = " + player.y);
+		});
 
 		// Handle startButton from player
-		this.onMessage("start", (client, message) => {
-			start = this.state.startButton.get("start");
-			start.begin = true;
-			this.state.startButton.set("start", start);
+		this.onMessage("start", (client, input) => {
+			(input.start) ?	console.log("Server - start button pressed") :
+							console.log("Server - start button released");
+
+			const player = this.state.startButton.get(client.sessionId);
+
+			player.begin = input.start;
+			console.log("player.begin = " + player.begin);
+
+			// send to all the room the startGame message
+			this.broadcast("start", player.begin);
 		});
 
 
 		// Set up the scores
 		let score = new Score();
-		score.leftPlayer = 0;
-		score.rightPlayer = 0;
+		score.myScore = 0;
+		score.opponentScore = 0;
 
 		// Refresh the score state
 		this.state.scores.set("score", score);
@@ -45,8 +54,8 @@ export class Part1Room extends Room<Part1State> {
 		// Handle score from player
 		this.onMessage("score", (client, message) => {
 			score = this.state.scores.get("score");
-			score.leftPlayer = message.leftPlayer;
-			score.rightPlayer = message.rightPlayer;
+			score.myScore = message.myScore;
+			score.opponentScore = message.opponentScore;
 			this.state.scores.set("score", score);
 		});
 
@@ -71,21 +80,15 @@ export class Part1Room extends Room<Part1State> {
 			this.state.balls.set("ball", ball);
 		});
 
-		// handle player input
-		this.onMessage(0, (client, input) => {
-			const player = this.state.players.get(client.sessionId);
-
-			if (input.y)
-				player.y = input.y;
-			// console.log("player.y = " + player.y);
-		});
 	}
 
 	onJoin(client: Client, options: any) {
 		console.log(client.sessionId, "joined!");
 
+		/* INIT Players */
 		// create player at center vertical position
 		const player = new Player();
+
 		// Pop on left side if player 1, right side if player 2
 		if (this.state.players.size % 2 == 0)
 			player.x = 40;
@@ -95,12 +98,12 @@ export class Part1Room extends Room<Part1State> {
 
 		this.state.players.set(client.sessionId, player);
 
-		// Handle start pushed from one player
-		this.onMessage("start", (client, message) => {
-			let start = this.state.startButton.get("start");
-			start.begin = true;
-			this.state.startButton.set("start", start);
-		});
+		/* INIT Start button */
+		// Set up the start button
+		const start = new Start();
+		start.begin = false;
+
+		this.state.startButton.set(client.sessionId, start);
 	}
 
 	onLeave(client: Client, consented: boolean) {

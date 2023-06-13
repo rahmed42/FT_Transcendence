@@ -5,6 +5,12 @@ import { Schema, type, MapSchema } from "@colyseus/schema";
  * its changes/mutations incrementally.
  * The encoding and decoding process happens internally by the framework and its SDK.
 */
+//Player class
+export class Player extends Schema {
+	@type("number") x: number;
+	@type("number") y: number;
+}
+
 // Start button
 export class Start extends Schema {
 	@type("boolean") begin: boolean;
@@ -12,8 +18,8 @@ export class Start extends Schema {
 
 //Scores for each player
 export class Score extends Schema {
-	@type("number") leftPlayer: number;
-	@type("number") rightPlayer: number;
+	@type("number") myScore: number;
+	@type("number") opponentScore: number;
 }
 
 //Ball class
@@ -24,18 +30,14 @@ export class Ball extends Schema {
 	@type("number") yVelocity: number;
 }
 
-//Player class
-export class Player extends Schema {
-	@type("number") x: number;
-	@type("number") y: number;
-}
+
 
 export class Part1State extends Schema {
 	@type("number") mapWidth: number;
 	@type("number") mapHeight: number;
 
+	@type({ map: Player }) players = new MapSchema<Player>();
 	@type({ map: Start }) startButton = new MapSchema<Start>();
 	@type({ map: Score }) scores = new MapSchema<Score>();
 	@type({ map: Ball }) balls = new MapSchema<Ball>();
-	@type({ map: Player }) players = new MapSchema<Player>();
 }
