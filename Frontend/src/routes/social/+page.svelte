@@ -256,6 +256,7 @@
 
 	.friend-button:hover {
 		background-color: #0056b3;
+		text-decoration: none;
 	}
 
 	.delete-button {
