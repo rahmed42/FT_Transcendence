@@ -25,6 +25,7 @@ export class Part1Scene extends Phaser.Scene {
 
 	//Start state
 	startState: boolean;
+	gameHost: boolean;
 
 	// local input cache
 	inputPayload: any = {
@@ -76,6 +77,7 @@ export class Part1Scene extends Phaser.Scene {
 
 		// Init start state
 		this.startState = false;
+		this.gameHost = false;
 
 		//init inputPayload
 		// this.inputPayload.y = 400;
@@ -327,10 +329,18 @@ export class Part1Scene extends Phaser.Scene {
 						});
 
 						// Getting starting game from server
-						this.room.onMessage("startGame", (start : boolean) => {
+						this.room.onMessage("startGame", (start: boolean) => {
 							// console.log("started client from broadcast ", start);
 							if (start === true)
 								this.startMatch();
+						});
+
+						// Get ball position from server
+						//Triggered when 'ballX or ballY' property changes
+						player.listen("y", (value: number) => {
+							// console.log("remote y", value);
+							if (this.remotePaddle)
+								this.remotePaddle.y = value;
 						});
 					}
 					// Set start clickable button
@@ -421,6 +431,8 @@ export class Part1Scene extends Phaser.Scene {
 					this.startButton.setVisible(false);
 					this.startButton.disableInteractive();
 				}
+				// The player who clicked will be the host for the ball update
+				this.gameHost = true;
 				this.startState = true;
 			});
 		}
@@ -437,18 +449,24 @@ export class Part1Scene extends Phaser.Scene {
 			this.opponentScoreText.setText(this.opponentScore.toString());
 
 		if (this.ball) {
-			// set the ball to center
-			this.ball.x = this.cameras.main.centerX;
-			this.ball.y = this.cameras.main.centerY;
+			if (this.gameHost) {
+				console.log("I WILL HOST THE BALL position");
 
-			// Launch the ball to random direction
-			let velocityX = Phaser.Math.Between(300, 450);
-			let velocityY = Phaser.Math.Between(200, 350);
+				// set the ball to center
+				this.ball.x = this.cameras.main.centerX;
+				this.ball.y = this.cameras.main.centerY;
 
-			// random negative or positive
-			velocityX *= Math.random() < 0.5 ? 1 : -1;
-			velocityY *= Math.random() < 0.5 ? 1 : -1;
-			this.ball.setVelocity(velocityX, velocityY);
+				// Launch the ball to random direction
+				let velocityX = Phaser.Math.Between(300, 450);
+				let velocityY = Phaser.Math.Between(200, 350);
+
+				// random negative or positive
+				velocityX *= Math.random() < 0.5 ? 1 : -1;
+				velocityY *= Math.random() < 0.5 ? 1 : -1;
+				this.ball.setVelocity(velocityX, velocityY);
+			} else {
+				console.log("I will refresh from server position !");
+			}
 		}
 	}
 
@@ -462,12 +480,15 @@ export class Part1Scene extends Phaser.Scene {
 	}
 
 	resetGame(): void {
+
 		// Reset ball and stop it
 		if (this.ball) {
 			this.resetBall();
 			this.ball.setVelocity(0);
 			this.ball.setVisible(false);
 		}
+		// Wait for new game host
+		this.gameHost = false;
 
 		this.startButtonText("🏓 Start Game 🏓", true);
 		this.startAnim();
