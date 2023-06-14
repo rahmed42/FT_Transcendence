@@ -28,8 +28,10 @@ export class Part1Scene extends Phaser.Scene {
 
 	// local input cache
 	inputPayload: any = {
-		y: 400,
+		y: 300,
 		start: false,
+		ballX: 400,
+		ballY: 300,
 	};
 
 	// Set Paddle
@@ -279,14 +281,6 @@ export class Part1Scene extends Phaser.Scene {
 			// Add collisions between ball and paddles
 			this.physics.add.collider(this.ball, this.remotePaddle);
 		}
-
-		//GET remote position from server update when sync OK
-		//...
-
-		//TEMP to test match
-		this.input.on('pointermove', () => {
-			// this.remotePaddle.y = this.pointer.y;
-		});
 	}
 
 	// Game listeners
@@ -305,14 +299,6 @@ export class Part1Scene extends Phaser.Scene {
 					//Keep reference to this remote Paddle
 					const entity = this.localPaddle!;
 					this.playerEntities[sessionId] = entity;
-					// console.log("Local Entity : ", entity);
-					// console.log("Local Player Y: ", player.y);
-
-					// Listen for changes and push it to backend
-					// player.onChange = () => {
-					// 	console.log("local change", entity.y, player.y);
-					// 	// entity.y = player.y
-					// }
 				}
 
 				// waiting for other player
@@ -386,35 +372,6 @@ export class Part1Scene extends Phaser.Scene {
 				}
 			}
 		});
-
-		// // Listen for paddle updates from server
-		// this.room.state.paddle.onChange(() => {
-		// 	const remotePlayer = this.getRemotePlayer();
-		// 	if (remotePlayer && this.remotePaddle) {
-		// 		this.remotePaddle.y = remotePlayer.y;
-		// 	}
-		// });
-
-		//   // Listen for ball updates from server
-		//   this.room.state.ball.onChange(() => {
-		// 	if (this.ball) {
-		// 	  this.ball.x = this.room!.state.ball.x;
-		// 	  this.ball.y = this.room!.state.ball.y;
-		// 	}
-		//   });
-
-		//   // Listen for score updates from server
-		//   this.room.state.scores.onChange(() => {
-		// 	this.myScore = this.room!.state.scores[this.room!.sessionId];
-		// 	this.opponentScore = this.room!.state.scores[
-		// 	  this.getOpponentSessionId()
-		// 	];
-
-		// 	if (this.myScoreText && this.opponentScoreText) {
-		// 	  this.myScoreText.setText(`Score: ${this.myScore}`);
-		// 	  this.opponentScoreText.setText(`Opponent: ${this.opponentScore}`);
-		// 	}
-		//   });
 	}
 
 	// Utils
@@ -564,6 +521,13 @@ export class Part1Scene extends Phaser.Scene {
 
 				// reset state
 				this.startState = false;
+			}
+
+			// send ball position to server
+			if (this.ball && (this.inputPayload.ballX !== this.ball.x || this.inputPayload.ballY !== this.ball.y)) {
+				this.inputPayload.ballX = this.ball.x;
+				this.inputPayload.ballY = this.ball.y;
+				this.room.send("ball", this.inputPayload);
 			}
 		}
 	}

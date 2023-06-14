@@ -16,21 +16,19 @@ export class Start extends Schema {
 	@type("boolean") begin: boolean;
 }
 
-//Scores for each player
-export class Score extends Schema {
-	@type("number") myScore: number;
-	@type("number") opponentScore: number;
-}
-
 //Ball class
 export class Ball extends Schema {
 	@type("number") x: number;
 	@type("number") y: number;
-	@type("number") xVelocity: number;
-	@type("number") yVelocity: number;
+	// @type("number") xVelocity: number;
+	// @type("number") yVelocity: number;
 }
 
-
+// //Scores for each player
+// export class Score extends Schema {
+// 	@type("number") myScore: number;
+// 	@type("number") opponentScore: number;
+// }
 
 export class Part1State extends Schema {
 	@type("number") mapWidth: number;
@@ -38,6 +36,6 @@ export class Part1State extends Schema {
 
 	@type({ map: Player }) players = new MapSchema<Player>();
 	@type({ map: Start }) startButton = new MapSchema<Start>();
-	@type({ map: Score }) scores = new MapSchema<Score>();
 	@type({ map: Ball }) balls = new MapSchema<Ball>();
+	// @type({ map: Score }) scores = new MapSchema<Score>();
 }

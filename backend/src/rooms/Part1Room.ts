@@ -41,44 +41,37 @@ export class Part1Room extends Room<Part1State> {
 			this.broadcast("startGame", player.begin);
 		});
 
-
-		// Set up the scores
-		let score = new Score();
-		score.myScore = 0;
-		score.opponentScore = 0;
-
-		// Refresh the score state
-		this.state.scores.set("score", score);
-
-		// Handle score from player
-		this.onMessage("score", (client, message) => {
-			score = this.state.scores.get("score");
-			score.myScore = message.myScore;
-			score.opponentScore = message.opponentScore;
-			this.state.scores.set("score", score);
-		});
-
-
-		// Set up the ball
-		let ball = new Ball();
-		ball.x = this.state.mapWidth / 2;
-		ball.y = this.state.mapHeight / 2;
-		ball.xVelocity = 0;
-		ball.yVelocity = 0;
-
-		// Refresh the ball state
-		this.state.balls.set("ball", ball);
-
 		// Handle ball movement from player
-		this.onMessage("ball", (client, message) => {
-			ball = this.state.balls.get("ball");
-			ball.x = message.x;
-			ball.y = message.y;
-			ball.xVelocity = message.xVelocity;
-			ball.yVelocity = message.yVelocity;
-			this.state.balls.set("ball", ball);
+		this.onMessage("ball", (client, position) => {
+			const ball = this.state.balls.get(client.sessionId);
+			if (position) console.log("Ball info srv X=" + position.ballX + " - Y=" + position.ballY);
+
+			if (position.ballX && position.ballY) {
+				// Revert X position for player 2
+				if (this.state.players.size % 2 == 0)
+					ball.x = this.state.mapWidth - position.ballX;
+				else
+					ball.x = position.ballX;
+				ball.y = position.ballY;
+			}
 		});
 
+
+		// // Set up the scores
+		// let score = new Score();
+		// score.myScore = 0;
+		// score.opponentScore = 0;
+
+		// // Refresh the score state
+		// this.state.scores.set("score", score);
+
+		// // Handle score from player
+		// this.onMessage("score", (client, message) => {
+		// 	score = this.state.scores.get("score");
+		// 	score.myScore = message.myScore;
+		// 	score.opponentScore = message.opponentScore;
+		// 	this.state.scores.set("score", score);
+		// });
 	}
 
 	onJoin(client: Client, options: any) {
@@ -103,6 +96,16 @@ export class Part1Room extends Room<Part1State> {
 		start.begin = false;
 
 		this.state.startButton.set(client.sessionId, start);
+
+		/* INIT the ball */
+		// Set up the ball
+		const ball = new Ball();
+		ball.x = this.state.mapWidth / 2;
+		ball.y = this.state.mapHeight / 2;
+		ball.xVelocity = 0;
+		ball.yVelocity = 0;
+
+		this.state.balls.set(client.sessionId, ball);
 	}
 
 	onLeave(client: Client, consented: boolean) {
