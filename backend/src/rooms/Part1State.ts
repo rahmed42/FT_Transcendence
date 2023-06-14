@@ -24,11 +24,13 @@ export class Ball extends Schema {
 	// @type("number") yVelocity: number;
 }
 
-// //Scores for each player
-// export class Score extends Schema {
-// 	@type("number") myScore: number;
-// 	@type("number") opponentScore: number;
-// }
+
+
+//Scores for each player
+export class Score extends Schema {
+	@type("number") myScore: number;
+	@type("number") opponentScore: number;
+}
 
 export class Part1State extends Schema {
 	@type("number") mapWidth: number;

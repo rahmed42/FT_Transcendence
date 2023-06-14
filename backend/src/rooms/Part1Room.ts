@@ -102,8 +102,6 @@ export class Part1Room extends Room<Part1State> {
 		const ball = new Ball();
 		ball.x = this.state.mapWidth / 2;
 		ball.y = this.state.mapHeight / 2;
-		ball.xVelocity = 0;
-		ball.yVelocity = 0;
 
 		this.state.balls.set(client.sessionId, ball);
 	}
