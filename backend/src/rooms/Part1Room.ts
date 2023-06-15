@@ -44,16 +44,17 @@ export class Part1Room extends Room<Part1State> {
 		// Handle ball movement from player
 		this.onMessage("ball", (client, position) => {
 			const ball = this.state.balls.get(client.sessionId);
-			if (position) console.log("Ball info srv X=" + position.ballX + " - Y=" + position.ballY);
+			// if (position) console.log("Ball info srv X=" + position.ballX + " - Y=" + position.ballY);
 
-			if (position.ballX && position.ballY) {
-				// Revert X position for player 2
-				if (this.state.players.size % 2 == 0)
-					ball.x = this.state.mapWidth - position.ballX;
-				else
-					ball.x = position.ballX;
-				ball.y = position.ballY;
-			}
+			// invert ball position but host is on left side
+			if (position.ballX)
+				ball.ballX = this.state.mapWidth - position.ballX;
+			if (position.ballY)
+				ball.ballY = position.ballY;
+
+			// send to all the room the ball position
+			this.broadcast("ballX", ball.ballX);
+			this.broadcast("ballY", ball.ballY);
 		});
 
 
@@ -100,8 +101,8 @@ export class Part1Room extends Room<Part1State> {
 		/* INIT the ball */
 		// Set up the ball
 		const ball = new Ball();
-		ball.x = this.state.mapWidth / 2;
-		ball.y = this.state.mapHeight / 2;
+		ball.ballX = this.state.mapWidth / 2;
+		ball.ballY = this.state.mapHeight / 2;
 
 		this.state.balls.set(client.sessionId, ball);
 	}

@@ -158,8 +158,12 @@ export class Part1Scene extends Phaser.Scene {
 		this.ball.setVisible(false);
 
 		// Display score
-		this.myScoreText = this.add.text(this.cameras.main.centerX / 2, 40, '0', { fontSize: '60px', color: 'white' });
-		this.opponentScoreText = this.add.text(this.cameras.main.centerX / 2 * 3, 40, '0', { fontSize: '60px', color: 'white' });
+		this.myScoreText = this.add.text(this.cameras.main.centerX / 2, 40, '0', {
+			fontSize: '64px', color: '#ffffff', stroke: '#000000', strokeThickness: 1
+		});
+		this.opponentScoreText = this.add.text(this.cameras.main.centerX / 2 * 3, 40, '0', {
+			fontSize: '64px', color: '#ffffff', stroke: '#000000', strokeThickness: 1
+		});
 
 		//Init mouse pointer
 		this.pointer = this.input.activePointer;
@@ -186,7 +190,9 @@ export class Part1Scene extends Phaser.Scene {
 		homeButton.setInteractive();
 
 		// adding text on button
-		const homeButtonText = this.add.text(this.cameras.main.centerX, 25, 'Menu', { font: '32px Arial', color: '#ffffff' });
+		const homeButtonText = this.add.text(this.cameras.main.centerX, 25, 'Menu', {
+			font: '32px Arial', color: '#ffffff', stroke: '#000000', strokeThickness: 1
+		});
 		homeButtonText.setOrigin(0.5, 0.5);
 
 		// Add a hover effect when the mouse is over the button
@@ -299,7 +305,7 @@ export class Part1Scene extends Phaser.Scene {
 					this.createLocalPaddle();
 
 					//Keep reference to this remote Paddle
-					const entity = this.localPaddle!;
+					const entity = this.localPaddle;
 					this.playerEntities[sessionId] = entity;
 				}
 
@@ -318,7 +324,7 @@ export class Part1Scene extends Phaser.Scene {
 						this.createRemotePaddle();
 
 						// Keep reference to this remote Paddle
-						const entity = this.remotePaddle!;
+						const entity = this.remotePaddle;
 						this.playerEntities[sessionId] = entity;
 
 						//Triggered when 'y' property changes
@@ -335,13 +341,28 @@ export class Part1Scene extends Phaser.Scene {
 								this.startMatch();
 						});
 
-						// Get ball position from server
-						//Triggered when 'ballX or ballY' property changes
-						player.listen("y", (value: number) => {
-							// console.log("remote y", value);
-							if (this.remotePaddle)
-								this.remotePaddle.y = value;
-						});
+						// Get ball position from server if not hosting
+
+							// get ballX other player position
+							this.room.onMessage("ballX", (ballX: number) => {
+								// console.log("remote MballX", ballX);
+								if (!this.gameHost && this.ball)
+									this.ball.x = ballX;
+							});
+
+							// get ballY other player position
+							this.room.onMessage("ballY", (ballY: number) => {
+								// console.log("remote MballY", ballY);
+								if (!this.gameHost && this.ball)
+									this.ball.y = ballY;
+							});
+
+						// player.listen("ballX", (value: number) => {
+						// 	console.log("remote ballX", value);
+						// });
+						// player.listen("ballY", (value: number) => {
+						// 	console.log("remote ballY", value);
+						// });
 					}
 					// Set start clickable button
 					this.startButtonText("🏓 Start Game 🏓", true);
@@ -420,7 +441,9 @@ export class Part1Scene extends Phaser.Scene {
 
 	startButtonText(text: string, clickable: boolean): void {
 		this.startButton?.destroy();
-		this.startButton = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, text, { font: '52px Arial', color: '#ffffff' });
+		this.startButton = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, text, {
+			font: '52px Arial', color: '#ffffff', stroke: '#000000', strokeThickness: 1
+		});
 		this.startButton.setBackgroundColor('#000000');
 		this.startButton.setOrigin(0.5, 0.5);
 		if (clickable) {
@@ -510,9 +533,9 @@ export class Part1Scene extends Phaser.Scene {
 		// skip loop if not connected with room yet.
 		if (!this.room) { return; }
 
-		// Reset the ball if outbounds
-		if (this.ball && (this.ball.x < 0 || this.ball.x > this.cameras.main.width)) {
-			if (this.ball.x < 0)
+		// Reset the ball if outbounds + ball size (30)
+		if (this.ball && (this.ball.x < -30 || this.ball.x > this.cameras.main.width + 30)) {
+			if (this.ball.x < -30)
 				this.opponentScore++;
 			else
 				this.myScore++;
@@ -545,7 +568,8 @@ export class Part1Scene extends Phaser.Scene {
 			}
 
 			// send ball position to server
-			if (this.ball && (this.inputPayload.ballX !== this.ball.x || this.inputPayload.ballY !== this.ball.y)) {
+			if (this.ball && this.gameHost && (this.inputPayload.ballX !== this.ball.x || this.inputPayload.ballY !== this.ball.y)) {
+				// console.log("client ball : input " + this.inputPayload.ballX + " / " + this.inputPayload.ballY + "/ ball local " + this.ball.x + " / " + this.ball.y);
 				this.inputPayload.ballX = this.ball.x;
 				this.inputPayload.ballY = this.ball.y;
 				this.room.send("ball", this.inputPayload);
