@@ -57,15 +57,39 @@ export class Part1Room extends Room<Part1State> {
 			this.broadcast("ballY", ball.ballY);
 		});
 
+		// handle sync from player
+		this.onMessage("sync", (client, sync) => {
 
-		// // Set up the scores
-		// let score = new Score();
-		// score.myScore = 0;
-		// score.opponentScore = 0;
+			// wait for all client sending sync message
+			if (this.clients.length == 2) {
+				if (sync) console.log("Sync info srv sync=" + sync);
+				// send to all the room the sync message
+				this.broadcast("top", sync);
+			}
+			else {
+                console.log("Not enough clients");
+            }
+		});
 
-		// // Refresh the score state
-		// this.state.scores.set("score", score);
+		// // Handle score for player
+		// this.onMessage("opponentScore", (client, score) => {
+		// 	const scorePlayer = this.state.scores.get(client.sessionId);
+		// 	if (score) console.log("Score info srv myScore=" + score);
 
+		// 	// invert score but host is on left side
+		// 	if (score)
+		// 		scorePlayer.myScore = score;
+		// });
+
+		// // Handle score for opponent
+		// this.onMessage("myScore", (client, score) => {
+		// 	const scorePlayer = this.state.scores.get(client.sessionId);
+		// 	if (score) console.log("Score info srv opponentScore=" + score);
+
+		// 	// invert score but host is on left side
+		// 	if (score)
+		// 		scorePlayer.opponentScore = score;
+		// });
 		// // Handle score from player
 		// this.onMessage("score", (client, message) => {
 		// 	score = this.state.scores.get("score");
@@ -105,6 +129,14 @@ export class Part1Room extends Room<Part1State> {
 		ball.ballY = this.state.mapHeight / 2;
 
 		this.state.balls.set(client.sessionId, ball);
+
+		// /* INIT the scores */
+		// // Set up the scores
+		// const score = new Score();
+		// score.myScore = 0;
+		// score.opponentScore = 0;
+
+		// this.state.scores.set(client.sessionId, score);
 	}
 
 	onLeave(client: Client, consented: boolean) {
