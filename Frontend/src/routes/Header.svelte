@@ -48,10 +48,6 @@
 			const checkIsUser2FaActivate = sessionStorage.getItem('user2FaActivate');
 			const faAuthValid = sessionStorage.getItem('isLogged');
 
-			// if (currentUser && currentUser.login) 
-			// {
-				// window.location.href = '/home';
-			// }
 			if (checkIsUser2FaActivate && !faAuthValid)
 			{
 				if (window.location.pathname !== '/2_fa')
@@ -133,6 +129,7 @@
 			method: 'GET',
 			credentials: 'include',
 		});
+		// add endpoint to push status: true to tell the user is logged
 		const contentType = response.headers.get('Content-Type');
 		if (contentType && contentType.includes('application/json')) {
 			// Get the JSON data from the response

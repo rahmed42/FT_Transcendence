@@ -18,11 +18,19 @@ export class UserService {
                 return user;
             }
         }
+        async getFriendInfo(username: string) {
+                const user = await this.prisma.user.findUnique({
+                    where: {
+                        login: username,
+                    },
+                })
+                return user;
+        }
         async upload_pp(tokenObject: {jwt:string }, body: any) {
             const decode = await this.jwt.decode(tokenObject.jwt);
             if (typeof decode === 'object')
             {
-                const user = await this.prisma.user.update({
+                await this.prisma.user.update({
                     where: {
                         id: decode.id,
                     },
@@ -35,7 +43,7 @@ export class UserService {
     async upload_username(tokenObject: { jwt: string }, body: any) {
         const decode = await this.jwt.decode(tokenObject.jwt);
         if (typeof decode === 'object') {
-            const user = await this.prisma.user.update({
+            await this.prisma.user.update({
                 where: {
                     id: decode.id,
                 },
@@ -45,4 +53,18 @@ export class UserService {
             })
         }
     }
+    // async update_user_stats(body: any) {
+    //     if (body.score > 2)
+    //     {
+    //         console.log('YOU WON');
+    //         await this.prisma.stats.update({
+    //             where: {
+    //                 userId: body.currentUser.id,
+    //             },
+    //             data: {
+    //                 wins: +1,
+    //             }
+    //         })
+    //     }
+    // }
 }

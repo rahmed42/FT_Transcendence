@@ -60,8 +60,27 @@ export class Gateway implements OnModuleInit {
             },
         })
         if (isUserMuted)
-            return ;
-        this.server.to(roomName).emit('newRoomMessage', {
+		{
+			//  if date is passed, remove from mutedRooms
+			if (isUserMuted.timestampMuted.getDate() <= Date.now())
+			{
+				await this.prisma.user.update({
+					where : {
+						id: idSender,
+					},
+					data : {
+						mutedRooms : {
+							delete: {
+								name: roomName,
+							}
+						}
+					}
+				});
+			}
+			else
+				return ;
+		}
+		this.server.to(roomName).emit('newRoomMessage', {
             content: content,
             nameSender: user.login,
             roomName: roomName,
@@ -114,11 +133,13 @@ export class Gateway implements OnModuleInit {
             body = body as RoomMessageDto;
             this.sendMessageToRoom(body.roomName, body.content, body.idSender)
         }
-        else
+        else if (body.type == "private")
         {
             body = body as PrivateMessageDto;
             this.sendPrivateMessage(body.idSender, body.loginReceiver, body.content)
         }
+		else
+			return ;
     }
     @SubscribeMessage("joinRoom")
     handleJoinRoom(@MessageBody() body: {roomName: string})
