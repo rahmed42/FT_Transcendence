@@ -33,4 +33,5 @@ export class UserController {
     async update_game_data(@Body() body: any) {
         // await this.userService.update_user_stats(body);
         // console.log(body);
+    }
 }
