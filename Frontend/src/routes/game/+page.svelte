@@ -24,10 +24,10 @@
 			const Phaser = await import('phaser');
 				game = new Phaser.Game({
 				// CANVAS Rendering to be faster
-				type: Phaser.AUTO,
+				type: Phaser.CANVAS,
 				// Set the fps
 				fps: {
-					target: 60,
+					target: 30,
 					forceSetTimeOut: true,
 					smoothStep: true
 				},

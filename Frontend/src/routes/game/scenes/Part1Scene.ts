@@ -502,6 +502,7 @@ export class Part1Scene extends Phaser.Scene {
 	}
 
 	resetGame(): void {
+		// Print the winner
 
 		// Reset ball and stop it
 		if (this.ball) {
