@@ -29,9 +29,9 @@ export class UserController {
     async getFriendInfo(@Query('login') username: string) {
         return await this.userService.getFriendInfo(username);
     }
-    @Post('game_data')
+    @Post('match_stats')
     async update_game_data(@Body() body: any) {
-        // await this.userService.update_user_stats(body);
+        await this.userService.update_user_stats(body);
         // console.log(body);
     }
 }

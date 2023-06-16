@@ -210,7 +210,7 @@ export class Part1Scene extends Phaser.Scene {
 
 		// Add a pointerdown event to go back to the menu
 		homeButton.on("pointerdown", () => {
-			this.resetGame();
+			this.resetGame(true);
 			this.myScore = 0;
 			this.opponentScore = 0;
 			// Refresh the score
@@ -359,7 +359,7 @@ export class Part1Scene extends Phaser.Scene {
 								this.opponentScoreText.setText(score.toString());
 								// console.log("GH " + this.gameHost + " Opp " + this.opponentScore + "/" + score);
 								if (this.opponentScore >= 3)
-									this.resetGame();
+									this.resetGame(false);
 							}
 						});
 
@@ -370,7 +370,7 @@ export class Part1Scene extends Phaser.Scene {
 								this.myScoreText.setText(score.toString());
 								// console.log("GH " + this.gameHost + " My " + this.myScore + "/" + score);
 								if (this.myScore >= 3)
-									this.resetGame();
+									this.resetGame(false);
 							}
 						});
 
@@ -502,6 +502,19 @@ export class Part1Scene extends Phaser.Scene {
 		}
 	}
 
+	async push_match_stats(score: number) {
+		await fetch('http://localhost:3333/profil/match_stats', {
+			method: 'POST',
+			headers : {
+				'Content-Type': 'application/json',
+			},
+			body : JSON.stringify({
+				currentUser,
+				score,
+			})
+		});
+	}
+
 	startMatch(): void {
 		// Reset score
 		this.myScore = 0;
@@ -511,9 +524,11 @@ export class Part1Scene extends Phaser.Scene {
 		this.countDown();
 	}
 
-	resetGame(): void {
+	resetGame(home_button: boolean): void {
 		// Print the winner
 		// console.log("-----------RESET GAME -----------");
+		if (!home_button)
+			this.push_match_stats(this.myScore);
 
 		// Wait for new game host
 		this.gameHost = false;
@@ -566,7 +581,7 @@ export class Part1Scene extends Phaser.Scene {
 		// Handle scores from server if host
 		if (this.ball && (this.ball.x < 0 || this.ball.x > this.cameras.main.width)) {
 			if (this.myScore >= 3 || this.opponentScore >= 3)
-				this.resetGame();
+				this.resetGame(false);
 			else
 				this.resetBall();
 		}

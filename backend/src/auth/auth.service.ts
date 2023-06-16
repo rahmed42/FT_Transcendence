@@ -59,9 +59,14 @@ export class AuthService {
             // If not, create it
             if (!check_id)
             {
-                    await this.prisma.user.create({
-                        data: user,
-                    });
+                await this.prisma.user.create({
+                    data: user,
+                });
+                await this.prisma.stats.create({
+                    data: {
+                        userId: user.id,
+                    }
+                })
             }
             // Push the URL code in Data Model of our DataBase
             await this.prisma.data.create({

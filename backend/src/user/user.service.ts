@@ -53,18 +53,32 @@ export class UserService {
             })
         }
     }
-    // async update_user_stats(body: any) {
-    //     if (body.score > 2)
-    //     {
-    //         console.log('YOU WON');
-    //         await this.prisma.stats.update({
-    //             where: {
-    //                 userId: body.currentUser.id,
-    //             },
-    //             data: {
-    //                 wins: +1,
-    //             }
-    //         })
-    //     }
-    // }
+    async update_user_stats(body: any) {
+        if (body.score > 2)
+        {
+            await this.prisma.stats.update({
+                where: {
+                    userId: body.currentUser.id,
+                },
+                data: {
+                    wins: {
+                        increment: 1,
+                    }
+                }
+            })
+        }
+        else
+        {
+            await this.prisma.stats.update({
+                where: {
+                    userId: body.currentUser.id,
+                },
+                data: {
+                    losses: {
+                        increment: 1,
+                    }
+                }
+            })
+        }
+    }
 }
