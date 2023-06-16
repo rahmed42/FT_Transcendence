@@ -52,7 +52,7 @@ export class Part2Scene extends Phaser.Scene {
 
 	// Constructor of the scene
 	constructor() {
-		console.log("Part2Scene constructor");
+		// console.log("Part2Scene constructor");
 		// active false to prevent the scene from starting automatically
 		super({ key: "part2", active: false });
 		this.activeScene = 'Part2Scene';

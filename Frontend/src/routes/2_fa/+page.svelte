@@ -1,5 +1,3 @@
-<!-- Config page content  -->
-
 <script lang="ts">
 	import { beforeUpdate, onMount } from 'svelte';
 
@@ -22,6 +20,7 @@
         }
         generate_qrCode();
     })
+    // Autres instructions à exécuter après la déconnexion de l'utilisateur
     async function send_code() {
         const response = await fetch('http://localhost:3333/auth/2fa_code', {
             method: 'POST',
@@ -38,7 +37,7 @@
             const data = await response.json();
             if (data.valide)
             {
-                sessionStorage.setItem('profile_username', JSON.stringify(username));
+                sessionStorage.setItem('isLogged', JSON.stringify(true));
                 window.location.href = '/home';
                 return;
             }

@@ -80,7 +80,7 @@
 	async function getToken(code: string) {
 		// Fetch token from the server
 		// fetch endpoint to 2fa authenticate
-		const response = await fetch('http://localhost:3333/auth/login?code=' + code, {
+		const response = await fetch('http://localhost:3333/auth/userInfo?code=' + code, {
 			method: 'POST',
 			credentials: 'include'
 		});
@@ -110,6 +110,18 @@
 		}
 		return false;
 	}
+	async function loginUser() {
+		await fetch('http://localhost:3333/auth/login', {
+			method: 'POST',
+			credentials: 'include',
+		});
+	}
+	async function logoutUser() {
+		await fetch('http://localhost:3333/auth/logout', {
+			method: 'POST',
+			credentials: 'include',
+		});
+	}
 
 	async function getUserInfo() {
 		// Fetch user informations from the server
@@ -124,7 +136,8 @@
 			const data = await response.json();
 			// update the user store
 			setUser(data);
-			// console.log('in getUserInfo', currentUser!.avatar);
+			await loginUser();
+			// need to post gatabase to set connected variable to true;
 		}
 		// redirect to login Page if not logged in
 		if ((!currentUser || !currentUser.login || !sessionStorage.getItem('user')) && window.location.pathname !== '/')
@@ -132,11 +145,11 @@
 	}
 
 	// Logout process - if LOGOUT button is clicked
-	function handleLogOut() {
+	async function handleLogOut() {
 		// Clear the user store
 		resetUser();
 		// Clear the cookie
-		document.cookie = 'jwt=;';
+		// document.cookie = 'jwt=;';
 		// sessionStorage.setItem('isLogged', JSON.stringify(false));
 		// sessionStorage cleaning
 		sessionStorage.removeItem('user');
@@ -145,6 +158,8 @@
 		sessionStorage.removeItem('user2FaActivate');
 		// reset currentUser
 		currentUser = null;
+		await logoutUser();
+		// need to post gatabase to set connected variable to false;
 	}
 </script>
 

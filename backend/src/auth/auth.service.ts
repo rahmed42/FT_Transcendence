@@ -60,8 +60,8 @@ export class AuthService {
             if (!check_id)
             {
                     await this.prisma.user.create({
-                    data: user,
-                });
+                        data: user,
+                    });
             }
             // Push the URL code in Data Model of our DataBase
             await this.prisma.data.create({
@@ -89,6 +89,34 @@ export class AuthService {
             token,
         };
     }
+    async loginUser(tokenObject: {jwt: string}) {
+        const user = await this.jwt.decode(tokenObject.jwt);
+        if (typeof user === 'object')
+        {
+            await this.prisma.user.update({
+                where : {
+                    id: user.id
+                },
+                data: {
+                    connected: true,
+                }
+            })
+        }
+    }
+    async logoutUser(tokenObject: { jwt: string }) {
+        const user = await this.jwt.decode(tokenObject.jwt);
+        if (typeof user === 'object') {
+            await this.prisma.user.update({
+                where: {
+                    id: user.id
+                },
+                data: {
+                    connected: false,
+                }
+            })
+        }
+    }
+
     // if the User want 2fa on his account, update a variable in his User Model
     async push_settings(body: any, tokenObject: { jwt: string }) {
         const user = await this.jwt.decode(tokenObject.jwt);
