@@ -70,7 +70,7 @@ export class Part1Room extends Room<Part1State> {
 		// Handle score for opponent
 		this.onMessage("hostScore", (client, value) => {
 			const score = this.state.scores.get(client.sessionId);
-			if (value) console.log("Score info srv opponentScore=" + value);
+			// if (value) console.log("Score info srv opponentScore=" + value);
 
 			// invert score but host is on left side
 			if (score)
@@ -83,7 +83,7 @@ export class Part1Room extends Room<Part1State> {
 		// Handle score for player
 		this.onMessage("clientScore", (client, value) => {
 			const score = this.state.scores.get(client.sessionId);
-			if (value) console.log("Score info srv myScore=" + value);
+			// if (value) console.log("Score info srv myScore=" + value);
 
 			// invert score but host is on left side
 			if (score)

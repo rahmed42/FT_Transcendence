@@ -354,19 +354,23 @@ export class Part1Scene extends Phaser.Scene {
 						// Update score from server host
 						this.room.onMessage("opponentScore", (score: number) => {
 							if (!this.gameHost && this.runningGame) {
-								console.log("remote opponentScore", score);
+								// console.log("remote opponentScore", score);
 								this.opponentScore = score;
 								this.opponentScoreText.setText(score.toString());
-								console.log("GH " + this.gameHost + " Opp " + this.opponentScore + "/" + score);
+								// console.log("GH " + this.gameHost + " Opp " + this.opponentScore + "/" + score);
+								if (this.opponentScore >= 3)
+									this.resetGame();
 							}
 						});
 
 						this.room.onMessage("myScore", (score: number) => {
 							if (!this.gameHost && this.runningGame) {
-								console.log("remote myScore", score);
+								// console.log("remote myScore", score);
 								this.myScore = score;
 								this.myScoreText.setText(score.toString());
-								console.log("GH " + this.gameHost + " My " + this.myScore + "/" + score);
+								// console.log("GH " + this.gameHost + " My " + this.myScore + "/" + score);
+								if (this.myScore >= 3)
+									this.resetGame();
 							}
 						});
 
@@ -486,18 +490,14 @@ export class Part1Scene extends Phaser.Scene {
 			this.ball.y = this.cameras.main.centerY;
 
 			if (this.gameHost) {
-				console.log("I WILL HOST THE BALL position");
-
 				// Launch the ball to random direction
-				let velocityX = Phaser.Math.Between(300, 450);
-				let velocityY = Phaser.Math.Between(200, 350);
+				let velocityX = Phaser.Math.Between(350, 550);
+				let velocityY = Phaser.Math.Between(200, 300);
 
 				// random negative or positive
 				velocityX *= Math.random() < 0.5 ? 1 : -1;
 				velocityY *= Math.random() < 0.5 ? 1 : -1;
 				this.ball.setVelocity(velocityX, velocityY);
-			} else {
-				console.log("I will refresh from server position !");
 			}
 		}
 	}
@@ -513,7 +513,7 @@ export class Part1Scene extends Phaser.Scene {
 
 	resetGame(): void {
 		// Print the winner
-		console.log("-----------RESET GAME -----------");
+		// console.log("-----------RESET GAME -----------");
 
 		// Wait for new game host
 		this.gameHost = false;
@@ -546,36 +546,17 @@ export class Part1Scene extends Phaser.Scene {
 		// skip loop if not connected with room yet.
 		if (!this.room) { return; }
 
-		// // Reset the ball if outbounds + ball size (30)
-		// if (this.ball && (this.ball.x < -30 || this.ball.x > this.cameras.main.width + 30)) {
-		// 	if (this.ball.x < -30) {
-		// 		this.opponentScore++;
-		// 		// Send score to server
-		// 		console.log(this.opponentScore);
-		// 		// this.room.send("opponentScore", this.opponentScore);
-		// 	} else {
-		// 		this.myScore++;
-		// 		// Send score to server
-		// 		console.log(this.myScore);
-		// 		// this.room.send("myScore", this.myScore);
-		// 	}
-		// 	if (this.myScore >= 3 || this.opponentScore >= 3)
-		// 		this.resetGame();
-		// 	else
-		// 		this.resetBall();
-		// }
-
 		// Update scores
 		if (this.ball && this.gameHost) {
 			if (this.ball.x > this.cameras.main.width) {
 				this.myScore++;
-				console.log("++ My score : ", this.myScore);
+				// console.log("++ My score : ", this.myScore);
 
 				// Send score to server
 				this.room.send("hostScore", this.myScore);
 			} else if (this.ball.x < 0) {
 				this.opponentScore++;
-				console.log("++ Opponent score : ", this.opponentScore);
+				// console.log("++ Opponent score : ", this.opponentScore);
 
 				// Send score to server
 				this.room.send("clientScore", this.opponentScore);
