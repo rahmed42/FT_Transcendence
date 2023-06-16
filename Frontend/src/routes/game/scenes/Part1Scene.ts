@@ -210,7 +210,7 @@ export class Part1Scene extends Phaser.Scene {
 
 		// Add a pointerdown event to go back to the menu
 		homeButton.on("pointerdown", () => {
-			this.resetGame();
+			this.resetGame(true);
 			this.myScore = 0;
 			this.opponentScore = 0;
 			// Refresh the score
@@ -356,7 +356,7 @@ export class Part1Scene extends Phaser.Scene {
 							console.log("remote sync", sync, this.myScore, this.opponentScore);
 							if (sync === true) {
 								if (this.myScore >= 3 || this.opponentScore >= 3)
-									this.resetGame();
+									this.resetGame(false);
 								else
 									this.resetBall();
 
@@ -501,14 +501,28 @@ export class Part1Scene extends Phaser.Scene {
 		this.countDown();
 	}
 
-	resetGame(): void {
+	// async push_match_data(score: number) {
+	// 	await fetch("http://localhost:3333/profil/game_data", {
+	// 		method: 'POST',
+	// 		headers: {
+	// 			'Content-Type': 'application/json',
+	// 		},
+	// 		body: JSON.stringify({
+	// 			currentUser,
+	// 			score,
+	// 		})
+	// 	})
+	// }
 
+	resetGame(menu_button: boolean): void {
 		// Reset ball and stop it
 		if (this.ball) {
 			this.resetBall();
 			this.ball.setVelocity(0);
 			this.ball.setVisible(false);
 		}
+		// if (!menu_button)
+		// 	this.push_match_data(this.myScore);
 		// Wait for new game host
 		this.gameHost = false;
 

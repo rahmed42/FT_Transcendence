@@ -27,7 +27,7 @@
 				type: Phaser.AUTO,
 				// Set the fps
 				fps: {
-					target: 60,
+					target: 30,
 					forceSetTimeOut: true,
 					smoothStep: true
 				},
@@ -35,7 +35,7 @@
 				physics: {
 					default: 'arcade'
 				},
-				pixelArt: false,
+				pixelArt: true,
 				// Set the size of the game
 				width: 800,
 				height: 600,
