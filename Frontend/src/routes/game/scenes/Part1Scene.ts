@@ -32,6 +32,7 @@ export class Part1Scene extends Phaser.Scene {
 		start: false,
 		ballX: 400,
 		ballY: 300,
+		name: "",
 	};
 
 	// Set Paddle
@@ -57,6 +58,7 @@ export class Part1Scene extends Phaser.Scene {
 
 	// Player Name
 	myName: string | undefined;
+	opponentName: string | undefined;
 
 
 	// Constructor of the scene
@@ -103,8 +105,7 @@ export class Part1Scene extends Phaser.Scene {
 		//Get player name
 		if (currentUser && currentUser.login)
 			this.myName = currentUser.login; // To fetch from DB / discard current stored user
-		else
-			this.myName = "Player";
+
 		this.gameInit();
 
 		// connect to the room
@@ -288,6 +289,8 @@ export class Part1Scene extends Phaser.Scene {
 	// Game listeners
 	gameListeners(): void {
 		//https://learn.colyseus.io/phaser/1-basic-player-movement.html
+		if (!this.room) { return; }
+
 		// Listen for new players
 		this.room.state.players.onAdd((player, sessionId) => {
 			if (this.room && this.room.state.players.size <= 2) {
@@ -299,7 +302,7 @@ export class Part1Scene extends Phaser.Scene {
 					this.createLocalPaddle();
 
 					//Keep reference to this remote Paddle
-					const entity = this.localPaddle;
+					const entity = this.localPaddle!;
 					this.playerEntities[sessionId] = entity;
 				}
 
@@ -318,7 +321,7 @@ export class Part1Scene extends Phaser.Scene {
 						this.createRemotePaddle();
 
 						// Keep reference to this remote Paddle
-						const entity = this.remotePaddle;
+						const entity = this.remotePaddle!;
 						this.playerEntities[sessionId] = entity;
 
 						//Triggered when 'y' property changes
@@ -326,6 +329,14 @@ export class Part1Scene extends Phaser.Scene {
 							// console.log("remote y", value);
 							if (this.remotePaddle)
 								this.remotePaddle.y = value;
+						});
+
+						//Triggered when 'name' property changes
+						player.listen("name", (value: string) => {
+							console.log("Opponent name", value);
+
+							// Update opponent name
+							this.opponentName = value;
 						});
 
 						// Getting starting game from server
@@ -352,7 +363,7 @@ export class Part1Scene extends Phaser.Scene {
 							if (!this.gameHost && this.runningGame) {
 								// console.log("remote opponentScore", score);
 								this.opponentScore = score;
-								this.opponentScoreText.setText(score.toString());
+								this.opponentScoreText!.setText(score.toString());
 								// console.log("GH " + this.gameHost + " Opp " + this.opponentScore + "/" + score);
 								if (this.opponentScore >= 3)
 									this.resetGame(false);
@@ -363,7 +374,7 @@ export class Part1Scene extends Phaser.Scene {
 							if (!this.gameHost && this.runningGame) {
 								// console.log("remote myScore", score);
 								this.myScore = score;
-								this.myScoreText.setText(score.toString());
+								this.myScoreText!.setText(score.toString());
 								// console.log("GH " + this.gameHost + " My " + this.myScore + "/" + score);
 								if (this.myScore >= 3)
 									this.resetGame(false);
@@ -588,6 +599,7 @@ export class Part1Scene extends Phaser.Scene {
 			if ((this.input.y !== undefined) && (this.inputPayload.y !== this.input.y)) {
 				// console.log("client input : " + this.inputPayload.y + "/ input local " + this.input.y);
 				this.inputPayload.y = this.input.y;
+				this.inputPayload.name = this.myName;
 				this.room.send(0, this.inputPayload);
 			}
 

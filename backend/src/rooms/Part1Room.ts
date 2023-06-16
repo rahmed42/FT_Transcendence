@@ -25,6 +25,9 @@ export class Part1Room extends Room<Part1State> {
 
 			if (input.y)
 				player.y = input.y;
+
+			if (input.name)
+				player.name = input.name;
 		});
 
 		// Handle startButton from player
