@@ -140,4 +140,33 @@ export class SocialService {
       });
       return deletedFriend;
     }
+    async getUserStats(userLogin: string): Promise<any> {
+      const user = await this.prisma.user.findUnique({ where: { login: userLogin } });
+      if(!user){
+        throw new NotFoundException('User not found');
+      }
+  
+      const userStats = await this.prisma.stats.findUnique({ where: { userId: user.id } });
+  
+      if (!userStats) {
+        throw new NotFoundException('No stats available for this user');
+      }
+  
+      return userStats;
+    }
+  
+    async getUserMatchHistory(userLogin: string): Promise<any> {
+      const user = await this.prisma.user.findUnique({ where: { login: userLogin } });
+      if(!user){
+        throw new NotFoundException('User not found');
+      }
+  
+      const matchHistory = await this.prisma.matchHistory.findMany({ where: { userId: user.id } });
+  
+      if (!matchHistory || matchHistory.length === 0) {
+        throw new NotFoundException('No match history available for this user');
+      }
+  
+      return matchHistory;
+    }
   }

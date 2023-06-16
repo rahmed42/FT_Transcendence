@@ -4,7 +4,9 @@ import { ChatDtoAdminOperation, ChatDtoBlockUser, ChatDtoCreateRoom, ChatDtoGetR
 import { ExtractJwt } from 'passport-jwt';
 import { Request } from 'express';
 import { UserService } from 'src/user/user.service';
+import { AuthGuard } from '@nestjs/passport';
 
+@UseGuards(AuthGuard('jwt'))
 @Controller('chat')
 export class ChatController {
     constructor(private readonly ChatService : ChatService, private userService : UserService) {}
@@ -61,7 +63,7 @@ export class ChatController {
     @Get('privateRooms')
     async getPrivateRooms(@Req() req: Request) {
         const userInfo = await this.userService.getInfo({jwt : ExtractJwt.fromAuthHeaderAsBearerToken()(req)});
-        const id = (userInfo as { id: number, [key: string]: any }).id;
+		const id = (userInfo as { id: number, [key: string]: any }).id;
         const body: ChatDtoGetRoom = {
             idUser: id,
             roomName: ''

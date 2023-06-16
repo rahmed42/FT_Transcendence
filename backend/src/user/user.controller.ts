@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, Req, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
 import { Request } from 'express';
 import { AuthGuard } from '@nestjs/passport';
@@ -24,9 +24,13 @@ export class UserController {
         await this.userService.upload_username(token, body);
         return await this.userService.getInfo(token);
     }
+
+    @Get('friends')
+    async getFriendInfo(@Query('login') username: string) {
+        return await this.userService.getFriendInfo(username);
+    }
     @Post('game_data')
     async update_game_data(@Body() body: any) {
         // await this.userService.update_user_stats(body);
         // console.log(body);
-    }
 }

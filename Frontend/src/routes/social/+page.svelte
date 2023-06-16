@@ -1,18 +1,24 @@
 <script>
-	import { onMount } from 'svelte';
 	import { notification } from '../../stores/notificationStore.js';
+	import { user } from '../../stores/user';
 
 	// Create a ".env" file at the root of Frontend folder and add "VITE_API_URL=http://localhost:3333"
     const apiUrl = import.meta.env.VITE_API_URL;
 
 	let pendingRequests = [];
 	let friends = [];
-	let userLogin;
 	let requesteeLogin;
   
+	// Define a reactive statement that triggers when $user.login changes
+	$: {
+		if ($user.login) {
+			refreshData();
+		}
+	}
+
 	async function refreshData() {
-	  pendingRequests = await getFriendRequests(userLogin);
-	  friends = await getFriendList(userLogin);
+		pendingRequests = await getFriendRequests($user.login);
+		friends = await getFriendList($user.login);
 	}
   
 	async function getFriendRequests(userLogin) {
@@ -39,7 +45,7 @@
 	  const res = await fetch(`${apiUrl}/social/friend-request`, {
 		method: 'POST', 
 		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify({ requesterLogin: userLogin, requesteeLogin }) 
+		body: JSON.stringify({ requesterLogin: $user.login, requesteeLogin }) 
 	  });
 	  
 	  if (res.ok) { 
@@ -61,65 +67,228 @@
       await refreshData();
 	}
 
-	async function loginUser() {
-        if(userLogin) {
-            refreshData();
-        } else {
-            notification.set('Please enter a valid login!');
-            setTimeout(() => {
-                notification.set('');
-            }, 5000);
-        }
-    }
+	let friendRequestModalOpen = false;
+  	let requesteeLoginModal = '';
+
+	function openFriendRequestModal() {
+		friendRequestModalOpen = true;
+	}
+
+	function closeFriendRequestModal() {
+		friendRequestModalOpen = false;
+		requesteeLoginModal = "";
+	}
+
+	async function sendFriendRequestModal() {
+		requesteeLogin = requesteeLoginModal;
+		await sendFriendRequest();
+		closeFriendRequestModal();
+	}
+
 </script>
 
-<style>
-  .login-container {
-    display: flex;
-    gap: 4px;
-  }
-
-  .login-input {
-    width: 200px;
-  }
-
-  .login-button {
-    width: 100px;
-  }
-</style>
-
-<div class="login-container">
-  <input type="text" bind:value={userLogin} placeholder="Type the user's login" class="login-input"/>
-  <button on:click={loginUser} class="login-button">Search</button>
-</div>
-
 <section>
-	<h2>Pending friend requests</h2>
-	{#each pendingRequests as request (request.id)}
-	  <div>
-		<p>{request.requester.login} wants to be your friend.</p>
-		<button on:click={() => acceptFriendRequest(request.id)}>Accept</button>
-		<button on:click={() => rejectFriendRequest(request.id)}>Reject</button>
-	  </div>
-	{/each}
-</section>
-  
-<section>
-	<h2>Your friends</h2>
-	{#each friends as friend (friend.id)}
-	  <div>
-        <img src={friend.friend.small_pic} alt="{friend.friend.login}'s picture" width="50" height="50" />
-		<a href={`/profile/${friend.friend.login}`}>{friend.friend.login}</a>
-		<button on:click={() => deleteFriend(friend.id)}>Delete Friend</button>
-	  </div>
-	{/each}
-</section>
-  
-<section>
-	<h2>Send a friend request</h2>
-	<input type="text" bind:value={requesteeLogin} placeholder="Friend's user login" />
-	<button on:click={sendFriendRequest}>Send friend request</button>
+	<button class="btn" on:click={openFriendRequestModal}>Send a friend request</button>
+
+	{#if friendRequestModalOpen}
+		<div class="modal">
+			<div class="modal-content">
+				<input type="text" bind:value={requesteeLoginModal} placeholder="Friend's user login" />
+				<button on:click={sendFriendRequestModal}>Send friend request</button>
+				<button on:click={closeFriendRequestModal}>Cancel</button>
+			</div>
+		</div>
+	{/if}
+
 	{#if $notification} <!-- Display the notification message if it exists -->
 		<p>{$notification}</p>
 	{/if}
 </section>
+
+<section>
+	<h2 class="section-heading">Pending friend requests</h2>
+	<div class="friends-container">
+		{#each pendingRequests as request (request.id)}
+		<div class="friend-card">
+			<img src={request.requester.small_pic} alt="{request.requester.login}'s picture" class="friend-image"/>
+			<h3 class="friend-name">{request.requester.login}</h3>
+			<button class="accept-button" on:click={() => acceptFriendRequest(request.id)}>Accept</button>
+			<button class="reject-button" on:click={() => rejectFriendRequest(request.id)}>Reject</button>
+		</div>
+		{/each}
+	</div>
+</section>
+  
+<section>
+	<h2 class="section-heading">Your friends</h2>
+	<div class="friends-container">
+		{#each friends as friend (friend.id)}
+		<div class="friend-card">
+			<div class="delete-icon" on:click={() => deleteFriend(friend.id)}>X</div>
+			<img src={friend.friend.small_pic} alt="{friend.friend.login}'s picture" class="friend-image"/>
+			<h3 class="friend-name">{friend.friend.login}</h3>
+			<a href={`/profile/info/?login=${friend.friend.login}`} class="friend-button">View Profile</a>
+		</div>
+		{/each}
+	</div>
+</section>
+
+<style>
+	.section-heading {
+		font-weight: bold;
+		font-size: 20px;
+	}
+
+	.modal {
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background-color: rgba(0, 0, 0, 0.5);
+		display: flex;
+		justify-content: center;
+		align-items: center;
+	}
+  
+	.modal-content {
+		background-color: #5446da;
+		padding: 20px;
+		border-radius: 4px;
+	}
+
+	.btn {
+		font-family:"Comic Sans MS";
+		font-size: 1.2rem;
+		color: #fff;
+		background-color: #007fff;
+		border: none;
+		border-radius: 75px;
+		transition: background-color 0.2s ease;
+		cursor: pointer;
+		margin-bottom: 10px;
+		width: 150px;
+	}
+	.btn:hover {
+		background-color: #0f6402;
+	}
+
+	.accept-button, .reject-button {
+		padding: 5px 10px;
+		border: none;
+		border-radius: 5px;
+		color: #fff;
+		cursor: pointer;
+		transition: background-color 0.3s ease;
+	}
+
+	.accept-button {
+		background-color: #4CAF50;
+	}
+
+	.accept-button:hover {
+		background-color: #45a049;
+	}
+
+	.reject-button {
+		background-color: #f44336;
+	}
+
+	.reject-button:hover {
+		background-color: #da190b;
+	}
+
+	.friends-container {
+		display: flex;
+		flex-wrap: nowrap;
+		overflow-x: auto;
+		justify-content: flex-start;
+		gap: 10px;
+	}
+
+	.friend-card {
+		position: relative;
+		flex: 0 0 auto;
+		width: 100px;
+		border: 1px solid #ccc;
+		border-radius: 10px;
+		margin: 10px;
+		padding: 10px;
+		box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		text-align: center;
+	}
+
+	.delete-icon {
+		position: absolute;
+		top: 5px;
+		right: 5px;
+		color: #f44336;
+		cursor: pointer;
+		font-weight: bold;
+	}
+
+	.friend-image {
+		width: 80px;
+		height: 80px;
+		border-radius: 50%;
+		object-fit: cover;
+	}
+
+	.friend-name {
+		margin: 10px 0;
+	}
+
+	.friend-button, .delete-button {
+		margin-top: 5px;
+		padding: 2px 2px;
+		border: none;
+		border-radius: 5px;
+		color: #fff;
+		cursor: pointer;
+	}
+
+	.friend-button {
+		background-color: #007BFF;
+	}
+
+	.friend-button:hover {
+		background-color: #0056b3;
+		text-decoration: none;
+	}
+
+	.delete-button {
+		background-color: #dc3545;
+	}
+
+	.delete-button:hover {
+		background-color: #c82333;
+	}
+
+	.accept-button, .reject-button {
+		margin-top: 5px;
+		padding: 5px 10px;
+		border: none;
+		border-radius: 5px;
+		color: #fff;
+		cursor: pointer;
+	}
+
+	.accept-button {
+		background-color: #4CAF50;
+	}
+
+	.accept-button:hover {
+		background-color: #45a049;
+	}
+
+	.reject-button {
+		background-color: #f44336;
+	}
+
+	.reject-button:hover {
+		background-color: #da190b;
+	}
+</style>

@@ -37,7 +37,6 @@
             const data = await response.json();
             if (data.valide)
             {
-                // need to post database to set connected variable to true;
                 sessionStorage.setItem('isLogged', JSON.stringify(true));
                 window.location.href = '/home';
                 return;
