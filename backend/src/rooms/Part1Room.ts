@@ -25,7 +25,6 @@ export class Part1Room extends Room<Part1State> {
 
 			if (input.y)
 				player.y = input.y;
-			// console.log("player.y = " + player.y);
 		});
 
 		// Handle startButton from player
@@ -35,7 +34,6 @@ export class Part1Room extends Room<Part1State> {
 			const player = this.state.startButton.get(client.sessionId);
 
 			player.begin = input.start;
-			// console.log("player.begin = " + player.begin);
 
 			// send to all the room the startGame message
 			this.broadcast("startGame", player.begin);
@@ -44,7 +42,6 @@ export class Part1Room extends Room<Part1State> {
 		// Handle ball movement from player
 		this.onMessage("ball", (client, position) => {
 			const ball = this.state.balls.get(client.sessionId);
-			// if (position) console.log("Ball info srv X=" + position.ballX + " - Y=" + position.ballY);
 
 			// invert ball position but host is on left side
 			if (position.ballX)
@@ -57,20 +54,9 @@ export class Part1Room extends Room<Part1State> {
 			this.broadcast("ballY", ball.ballY);
 		});
 
-		// // Handle score for player
-		// this.onMessage("opponentScore", (client, score) => {
-		// 	const scorePlayer = this.state.scores.get(client.sessionId);
-		// 	if (score) console.log("Score info srv myScore=" + score);
-
-		// 	// invert score but host is on left side
-		// 	if (score)
-		// 		scorePlayer.myScore = score;
-		// });
-
 		// Handle score for opponent
 		this.onMessage("hostScore", (client, value) => {
 			const score = this.state.scores.get(client.sessionId);
-			// if (value) console.log("Score info srv opponentScore=" + value);
 
 			// invert score but host is on left side
 			if (score)
@@ -83,7 +69,6 @@ export class Part1Room extends Room<Part1State> {
 		// Handle score for player
 		this.onMessage("clientScore", (client, value) => {
 			const score = this.state.scores.get(client.sessionId);
-			// if (value) console.log("Score info srv myScore=" + value);
 
 			// invert score but host is on left side
 			if (score)
@@ -92,14 +77,6 @@ export class Part1Room extends Room<Part1State> {
 			// send to all the room the score
 			this.broadcast("myScore", score.myScore);
 		});
-
-		// // Handle score from player
-		// this.onMessage("score", (client, message) => {
-		// 	score = this.state.scores.get("score");
-		// 	score.myScore = message.myScore;
-		// 	score.opponentScore = message.opponentScore;
-		// 	this.state.scores.set("score", score);
-		// });
 	}
 
 	onJoin(client: Client, options: any) {
@@ -150,9 +127,5 @@ export class Part1Room extends Room<Part1State> {
 
 	onDispose() {
 		console.log("room", this.roomId, "disposing...");
-
-		// destroy the current room
-		// this.disconnect();
 	}
-
 }

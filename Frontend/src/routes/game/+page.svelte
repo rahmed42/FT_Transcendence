@@ -35,7 +35,7 @@
 				physics: {
 					default: 'arcade'
 				},
-				pixelArt: true,
+				pixelArt: false,
 				// Set the size of the game
 				width: 800,
 				height: 600,

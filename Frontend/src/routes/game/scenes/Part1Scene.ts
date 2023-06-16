@@ -3,21 +3,19 @@ import { Room, Client } from "colyseus.js";
 import { BACKEND_URL } from "../backend";
 import { user, type User } from '../../../stores/user';
 
-// User getter
-let currentUser: User | undefined;
-
 //Style Default
 import boardDefault from '$lib/assets/default/backgroundDefault.png';
 import ballDefault from '$lib/assets/default/ballDefault.png';
 import paddleDefault from '$lib/assets/default/paddleDefault.png';
 
+// User getter
+let currentUser: User | undefined;
+
 export class Part1Scene extends Phaser.Scene {
 	//room reference
 	room: Room | undefined;
 
-	// Players
-	// we will assign each player visual representation here
-	// by their `sessionId`
+	// Players we will assign each player visual representation here by their `sessionId`
 	playerEntities: { [sessionId: string]: Phaser.Types.Physics.Arcade.ImageWithDynamicBody } = {};
 
 	// mouse pointer
@@ -63,14 +61,12 @@ export class Part1Scene extends Phaser.Scene {
 
 	// Constructor of the scene
 	constructor() {
-		// console.log("Part1Scene constructor");
 		// active false to prevent the scene from starting automatically
 		super({ key: "part1", active: false });
 		this.activeScene = 'Part1Scene';
 
 		// Initialize the room
 		this.room = new Room("Original");
-		// console.log("Init %s Pong Room", this.room.name);
 
 		// Initialize the game state
 		this.myScore = 0;
