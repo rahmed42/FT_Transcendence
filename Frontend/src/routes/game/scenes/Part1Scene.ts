@@ -501,20 +501,7 @@ export class Part1Scene extends Phaser.Scene {
 		this.countDown();
 	}
 
-	// async push_match_data(score: number) {
-	// 	await fetch("http://localhost:3333/profil/game_data", {
-	// 		method: 'POST',
-	// 		headers: {
-	// 			'Content-Type': 'application/json',
-	// 		},
-	// 		body: JSON.stringify({
-	// 			currentUser,
-	// 			score,
-	// 		})
-	// 	})
-	// }
-
-	resetGame(menu_button: boolean): void {
+	resetGame(): void {
 		// Reset ball and stop it
 		if (this.ball) {
 			this.resetBall();
