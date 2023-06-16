@@ -26,7 +26,7 @@ export class Part1Scene extends Phaser.Scene {
 	//Start state
 	startState: boolean;
 	gameHost: boolean;
-	playersReady: number;
+	runningGame: boolean;
 
 	// local input cache
 	inputPayload: any = {
@@ -79,7 +79,7 @@ export class Part1Scene extends Phaser.Scene {
 		// Init start state
 		this.startState = false;
 		this.gameHost = false;
-		this.playersReady = 0;
+		this.runningGame = false;
 
 		const unsubscribe = user.subscribe((value) => {
 			// update currentUser with last user value at store changes
@@ -351,17 +351,26 @@ export class Part1Scene extends Phaser.Scene {
 								this.ball.y = ballY;
 						});
 
-						// get the sync message from server to reset the game
-						this.room.onMessage("top", (sync: boolean) => {
-							console.log("remote sync", sync, this.myScore, this.opponentScore);
-							if (sync === true) {
-								if (this.myScore >= 3 || this.opponentScore >= 3)
-									this.resetGame();
-								else
-									this.resetBall();
-
+						// Update score from server host
+						this.room.onMessage("opponentScore", (score: number) => {
+							if (!this.gameHost && this.runningGame) {
+								console.log("remote opponentScore", score);
+								this.opponentScore = score;
+								this.opponentScoreText.setText(score.toString());
+								console.log("GH " + this.gameHost + " Opp " + this.opponentScore + "/" + score);
 							}
 						});
+
+						this.room.onMessage("myScore", (score: number) => {
+							if (!this.gameHost && this.runningGame) {
+								console.log("remote myScore", score);
+								this.myScore = score;
+								this.myScoreText.setText(score.toString());
+								console.log("GH " + this.gameHost + " My " + this.myScore + "/" + score);
+							}
+						});
+
+
 					}
 					// Set start clickable button
 					this.startButtonText("🏓 Start Game 🏓", true);
@@ -418,6 +427,7 @@ export class Part1Scene extends Phaser.Scene {
 					this.time.delayedCall(1000, () => {
 						this.startButton?.destroy();
 						this.ball?.setVisible(true);
+						this.runningGame = true;
 						this.resetBall();
 					});
 				});
@@ -503,6 +513,11 @@ export class Part1Scene extends Phaser.Scene {
 
 	resetGame(): void {
 		// Print the winner
+		console.log("-----------RESET GAME -----------");
+
+		// Wait for new game host
+		this.gameHost = false;
+		this.runningGame = false;
 
 		// Reset ball and stop it
 		if (this.ball) {
@@ -510,8 +525,6 @@ export class Part1Scene extends Phaser.Scene {
 			this.ball.setVelocity(0);
 			this.ball.setVisible(false);
 		}
-		// Wait for new game host
-		this.gameHost = false;
 
 		this.startButtonText("🏓 Start Game 🏓", true);
 		this.startAnim();
@@ -533,33 +546,51 @@ export class Part1Scene extends Phaser.Scene {
 		// skip loop if not connected with room yet.
 		if (!this.room) { return; }
 
-		// Reset the ball if outbounds + ball size (30)
-		if (this.ball && (this.ball.x < -30 || this.ball.x > this.cameras.main.width + 30)) {
-			if (this.ball.x < -30) {
-				this.opponentScore++;
-				// Send score to server
-				console.log(this.opponentScore);
-				// this.room.send("opponentScore", this.opponentScore);
-			} else {
+		// // Reset the ball if outbounds + ball size (30)
+		// if (this.ball && (this.ball.x < -30 || this.ball.x > this.cameras.main.width + 30)) {
+		// 	if (this.ball.x < -30) {
+		// 		this.opponentScore++;
+		// 		// Send score to server
+		// 		console.log(this.opponentScore);
+		// 		// this.room.send("opponentScore", this.opponentScore);
+		// 	} else {
+		// 		this.myScore++;
+		// 		// Send score to server
+		// 		console.log(this.myScore);
+		// 		// this.room.send("myScore", this.myScore);
+		// 	}
+		// 	if (this.myScore >= 3 || this.opponentScore >= 3)
+		// 		this.resetGame();
+		// 	else
+		// 		this.resetBall();
+		// }
+
+		// Update scores
+		if (this.ball && this.gameHost) {
+			if (this.ball.x > this.cameras.main.width) {
 				this.myScore++;
+				console.log("++ My score : ", this.myScore);
+
 				// Send score to server
-				console.log(this.myScore);
-				// this.room.send("myScore", this.myScore);
+				this.room.send("hostScore", this.myScore);
+			} else if (this.ball.x < 0) {
+				this.opponentScore++;
+				console.log("++ Opponent score : ", this.opponentScore);
+
+				// Send score to server
+				this.room.send("clientScore", this.opponentScore);
 			}
-			// if (this.myScore >= 3 || this.opponentScore >= 3)
-			// 	this.resetGame();
-			// else
-			// 	this.resetBall();
-
-			//send sync to server
-			this.room.send("sync", true);
-
-
 		}
 
-		// if (this.playersReady == 2)
+		// Handle scores from server if host
+		if (this.ball && (this.ball.x < 0 || this.ball.x > this.cameras.main.width)) {
+			if (this.myScore >= 3 || this.opponentScore >= 3)
+				this.resetGame();
+			else
+				this.resetBall();
+		}
 
-
+		// Update input player
 		if (this.inputPayload !== undefined) {
 			// send input to the server if changes to avoid server spamming
 			if ((this.input.y !== undefined) && (this.inputPayload.y !== this.input.y)) {
