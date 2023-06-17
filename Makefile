@@ -6,7 +6,7 @@
 #    By: rahmed <rahmed@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/05/09 12:57:06 by rahmed            #+#    #+#              #
-#    Updated: 2023/05/20 21:41:10 by rahmed           ###   ########.fr        #
+#    Updated: 2023/06/17 21:24:40 by rahmed           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -83,7 +83,7 @@ front :
 	@echo "${TXT_GREEN}"
 	@printf "Launching ${name} Front...\n"
 	@echo "${FANCY_RESET}"
-	cd Frontend && npm install && npm run dev -- --open
+	cd Frontend && npm install && npm run dev -- --open  --host
 
 bgame :
 	@echo "${TXT_YELLOW}"
