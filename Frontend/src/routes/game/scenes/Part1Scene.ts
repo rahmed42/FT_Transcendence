@@ -4,9 +4,7 @@ import { BACKEND_URL } from "../backend";
 import { user, type User } from '../../../stores/user';
 
 //Style Default
-import boardDefault from '$lib/assets/default/backgroundDefault.png';
-import ballDefault from '$lib/assets/default/ballDefault.png';
-import paddleDefault from '$lib/assets/default/paddleDefault.png';
+import { skins } from "./SceneSelector";
 
 // User getter
 let currentUser: User | undefined;
@@ -93,9 +91,9 @@ export class Part1Scene extends Phaser.Scene {
 	// preload basic assets
 	preload() {
 		//Default style
-		this.load.image('ballDefault', ballDefault);
-		this.load.image('paddleDefault', paddleDefault);
-		this.load.image('boardDefault', boardDefault);
+		for (const skin of skins) {
+			this.load.image(skin.name, skin.src);
+		}
 	}
 
 	async create() {
@@ -143,12 +141,12 @@ export class Part1Scene extends Phaser.Scene {
 	gameInit(): void {
 		/* SETUP STYLES */
 		// Display styled background
-		const background = this.add.image(0, 0, 'boardDefault');
+		const background = this.add.image(0, 0, 'boardSkin');
 		background.setDisplaySize(this.cameras.main.width, this.cameras.main.height);
 		background.setOrigin(0, 0);
 
 		// Display ball
-		this.ball = this.physics.add.image(this.cameras.main.centerX, this.cameras.main.centerY, 'ballDefault');
+		this.ball = this.physics.add.image(this.cameras.main.centerX, this.cameras.main.centerY, 'ballSkin');
 		this.ball.setOrigin(0.5, 0.5);
 		this.ball.setVisible(false);
 
@@ -248,7 +246,7 @@ export class Part1Scene extends Phaser.Scene {
 			'x': 20,
 			'pos': posY,
 		};
-		this.localPaddle = this.physics.add.image(paddle.x, paddle.pos, 'paddleDefault');
+		this.localPaddle = this.physics.add.image(paddle.x, paddle.pos, 'myPaddleSkin');
 		this.localPaddle.setOrigin(0.5, 0.5);
 		this.localPaddle.setCollideWorldBounds(true);
 		this.localPaddle.setImmovable(true);
@@ -275,7 +273,7 @@ export class Part1Scene extends Phaser.Scene {
 			'x': 20,
 			'pos': posY,
 		};
-		this.remotePaddle = this.physics.add.image(this.cameras.main.width - paddle.x, this.cameras.main.centerY, 'paddleDefault');
+		this.remotePaddle = this.physics.add.image(this.cameras.main.width - paddle.x, this.cameras.main.centerY, 'otherPaddleSkin');
 		this.remotePaddle.setOrigin(0.5, 0.5);
 		this.remotePaddle.setCollideWorldBounds(true);
 		this.remotePaddle.setImmovable(true);
@@ -512,10 +510,10 @@ export class Part1Scene extends Phaser.Scene {
 	async push_match_stats(score: number) {
 		await fetch('http://localhost:3333/profil/match_stats', {
 			method: 'POST',
-			headers : {
+			headers: {
 				'Content-Type': 'application/json',
 			},
-			body : JSON.stringify({
+			body: JSON.stringify({
 				currentUser,
 				score,
 			})
