@@ -425,6 +425,7 @@ export class Part1Scene extends Phaser.Scene {
 	// Utils
 	countDown(): void {
 		//Count from 3 to 0 each second then pop & reset the ball
+		currentUser!.inGame = true;
 		this.startButtonText("3", false);
 		//wait 1 second
 		this.time.delayedCall(1000, () => {
@@ -539,6 +540,7 @@ export class Part1Scene extends Phaser.Scene {
 
 		// Wait for new game host
 		this.gameHost = false;
+		currentUser!.inGame = false;
 		this.runningGame = false;
 
 		// Reset ball and stop it
@@ -547,6 +549,7 @@ export class Part1Scene extends Phaser.Scene {
 			this.ball.setVelocity(0);
 			this.ball.setVisible(false);
 		}
+		// set currentUser variable to Ingame = false
 
 		this.startButtonText("🏓 Start Game 🏓", true);
 		this.startAnim();

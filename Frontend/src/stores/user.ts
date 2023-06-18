@@ -18,6 +18,7 @@ export interface User {
 	two_fa_secret: string,
 	isLogged: boolean;
 	avatar: string,
+	inGame: Boolean,
 }
 
 // Retrieve the user from the session storage if exist else return an empty object
@@ -38,6 +39,7 @@ const defaultUser: User = {
 	two_fa_secret: '',
 	isLogged: false,
 	avatar: '',
+	inGame: false,
 };
 
 // Create a store with a default value
