@@ -509,7 +509,7 @@ export class Part1Scene extends Phaser.Scene {
 		}
 	}
 
-	async push_match_stats(score: number) {
+	async push_match_stats(myScore: number, opponentName:string | undefined, opponentScore: number) {
 		await fetch('http://localhost:3333/profil/match_stats', {
 			method: 'POST',
 			headers : {
@@ -517,7 +517,9 @@ export class Part1Scene extends Phaser.Scene {
 			},
 			body : JSON.stringify({
 				currentUser,
-				score,
+				myScore,
+				opponentName,
+				opponentScore,
 			})
 		});
 	}
@@ -535,7 +537,7 @@ export class Part1Scene extends Phaser.Scene {
 		// Print the winner
 		// console.log("-----------RESET GAME -----------");
 		if (!home_button)
-			this.push_match_stats(this.myScore);
+			this.push_match_stats(this.myScore, this.opponentName, this.opponentScore);
 
 		// Wait for new game host
 		this.gameHost = false;

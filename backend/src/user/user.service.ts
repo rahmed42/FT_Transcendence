@@ -54,8 +54,17 @@ export class UserService {
         }
     }
     async update_user_stats(body: any) {
-        if (body.score > 2)
+        if (body.myScore > 2)
         {
+            await this.prisma.matchHistory.create({
+                data : {
+                    userId: body.currentUser.id,
+                    opponentName: body.opponentName,
+                    opponentScore: body.opponentScore,
+                    gameType: "original",
+                    result : "win",
+                }
+            })
             await this.prisma.stats.update({
                 where: {
                     userId: body.currentUser.id,
@@ -69,6 +78,15 @@ export class UserService {
         }
         else
         {
+            await this.prisma.matchHistory.create({
+                data: {
+                    userId: body.currentUser.id,
+                    opponentName: body.opponentName,
+                    opponentScore: body.opponentScore,
+                    gameType: "original",
+                    result: "loose",
+                }
+            })
             await this.prisma.stats.update({
                 where: {
                     userId: body.currentUser.id,
@@ -80,5 +98,10 @@ export class UserService {
                 }
             })
         }
+        const userMatches = await this.prisma.user.findUnique({
+            where: { login: body.currentUser.login },
+        }).matchHistory();
+
+        console.log(userMatches);
     }
 }
