@@ -70,7 +70,7 @@
 
 <div class="center">
 	<div class="text-column">
-		<div id="game-container" />
+		<div class="game" id="game-container" />
 	</div>
 </div>
 
@@ -79,5 +79,11 @@
 		display: flex;
 		justify-content: center;
 		align-items: center;
+	}
+	.game {
+		width: 800px;
+		height: 600px;
+		border: 10px solid rgb(88, 44, 231);
+		border-radius: 25px;
 	}
 </style>
