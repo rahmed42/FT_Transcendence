@@ -7,9 +7,9 @@ import button from '$lib/assets/buttons/blue.png';
 import backgroundMenu from '$lib/images/backArcade.jpg';
 
 import boardLink from '$lib/assets/boards/boardModern.png';
-import ballLink from '$lib/assets/balls/ballRahmed.png';
-import myPaddleLink from '$lib/assets/paddles/myPaddle/mypaddleBlue.png';
-import otherPaddleLink from '$lib/assets/paddles/otherPaddle/otherpaddleRed.png';
+import ballLink from '$lib/assets/balls/ballGold.png';
+import myPaddleLink from '$lib/assets/paddles/myPaddle/mypaddlePink.png';
+import otherPaddleLink from '$lib/assets/paddles/otherPaddle/otherpaddleOrange.png';
 
 //Skins to export
 export const skins = [

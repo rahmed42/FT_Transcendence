@@ -554,8 +554,8 @@ export class Part1Scene extends Phaser.Scene {
 		}
 		else {
 			this.myScoreText!.setColor('#ff0000');
-			this.myScoreText!.setText(this.myScore.toString() + "\n You LOSE !");
-			this.startButtonText("🏓 Revenge ? 🏓", true);
+			this.myScoreText!.setText(this.myScore.toString() + "\n You  LOSE!");
+			this.startButtonText("🏓  Revenge ?  🏓", true);
 		}
 		this.startAnim();
 	}

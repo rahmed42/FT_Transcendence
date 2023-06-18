@@ -508,7 +508,7 @@ export class Part2Scene extends Phaser.Scene {
 		}
 	}
 
-	async push_match_stats(score: number) {
+	async push_match_stats(myScore: number, opponentName:string | undefined, opponentScore: number) {
 		await fetch('http://localhost:3333/profil/match_stats', {
 			method: 'POST',
 			headers: {
@@ -516,7 +516,9 @@ export class Part2Scene extends Phaser.Scene {
 			},
 			body: JSON.stringify({
 				currentUser,
-				score,
+				myScore,
+				opponentName,
+				opponentScore,
 			})
 		});
 	}
@@ -532,7 +534,7 @@ export class Part2Scene extends Phaser.Scene {
 
 	resetGame(home_button: boolean): void {
 		if (!home_button)
-			this.push_match_stats(this.myScore);
+			this.push_match_stats(this.myScore, this.opponentName, this.opponentScore);
 
 		// Wait for new game host
 		this.gameHost = false;
@@ -552,8 +554,8 @@ export class Part2Scene extends Phaser.Scene {
 		}
 		else {
 			this.myScoreText!.setColor('#ff0000');
-			this.myScoreText!.setText(this.myScore.toString() + "\n You LOSE !");
-			this.startButtonText("🏓 Revenge ? 🏓", true);
+			this.myScoreText!.setText(this.myScore.toString() + "\n You  LOSE!");
+			this.startButtonText("🏓  Revenge ?  🏓", true);
 		}
 		this.startAnim();
 	}
