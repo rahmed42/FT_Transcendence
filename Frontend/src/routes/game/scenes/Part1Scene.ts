@@ -62,7 +62,7 @@ export class Part1Scene extends Phaser.Scene {
 	// Constructor of the scene
 	constructor() {
 		// active false to prevent the scene from starting automatically
-		super({ key: "part1", active: false });
+		super({ key: "Part1", active: false });
 		this.activeScene = 'Part1Scene';
 
 		// Initialize the room
@@ -111,7 +111,6 @@ export class Part1Scene extends Phaser.Scene {
 
 		// listen for new players in the room
 		this.gameListeners();
-
 	}
 
 	// Connect with the room
@@ -224,8 +223,8 @@ export class Part1Scene extends Phaser.Scene {
 			}
 			// console.log("after delete Paddles", this.localPaddle, this.remotePaddle);
 			this.setActiveScene("menu");
-			// Stop the current scene (part1)
-			this.scene.stop('part1');
+			// Stop the current scene (Part1)
+			this.scene.stop('Part1');
 			// console.log(`Going back to ${this.activeScene}`);
 			// Start the menu scene
 			this.scene.start('menu')
@@ -378,8 +377,6 @@ export class Part1Scene extends Phaser.Scene {
 									this.resetGame(false);
 							}
 						});
-
-
 					}
 					// Set start clickable button
 					this.startButtonText("🏓 Start Game 🏓", true);
@@ -415,7 +412,7 @@ export class Part1Scene extends Phaser.Scene {
 					alert("The other player left ! Back to the menu...");
 					this.setActiveScene("menu");
 					// console.log(`Going back to ${this.activeScene}`);
-					this.scene.stop('part1');
+					this.scene.stop('Part1');
 					this.scene.start('menu')
 				}
 			}
@@ -424,6 +421,10 @@ export class Part1Scene extends Phaser.Scene {
 
 	// Utils
 	countDown(): void {
+		this.myScoreText!.setColor('#ffffff');
+		this.myScoreText!.setText(this.myScore.toString());
+		this.opponentScoreText!.setText(this.opponentScore.toString());
+
 		//Count from 3 to 0 each second then pop & reset the ball
 		currentUser!.inGame = true;
 		this.startButtonText("3", false);
@@ -533,8 +534,6 @@ export class Part1Scene extends Phaser.Scene {
 	}
 
 	resetGame(home_button: boolean): void {
-		// Print the winner
-		// console.log("-----------RESET GAME -----------");
 		if (!home_button)
 			this.push_match_stats(this.myScore, this.opponentName, this.opponentScore);
 
@@ -551,7 +550,16 @@ export class Part1Scene extends Phaser.Scene {
 		}
 		// set currentUser variable to Ingame = false
 
-		this.startButtonText("🏓 Start Game 🏓", true);
+		if (this.myScore > this.opponentScore) {
+			this.myScoreText!.setColor('#00ff00');
+			this.myScoreText!.setText(this.myScore.toString() + "\n You  WIN !");
+			this.startButtonText("🏓 Beat again ? 🏓", true);
+		}
+		else {
+			this.myScoreText!.setColor('#ff0000');
+			this.myScoreText!.setText(this.myScore.toString() + "\n You LOSE !");
+			this.startButtonText("🏓 Revenge ? 🏓", true);
+		}
 		this.startAnim();
 	}
 
