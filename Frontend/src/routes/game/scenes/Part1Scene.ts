@@ -62,7 +62,7 @@ export class Part1Scene extends Phaser.Scene {
 	// Constructor of the scene
 	constructor() {
 		// active false to prevent the scene from starting automatically
-		super({ key: "part1", active: false });
+		super({ key: "Part1", active: false });
 		this.activeScene = 'Part1Scene';
 
 		// Initialize the room
@@ -223,8 +223,8 @@ export class Part1Scene extends Phaser.Scene {
 			}
 			// console.log("after delete Paddles", this.localPaddle, this.remotePaddle);
 			this.setActiveScene("menu");
-			// Stop the current scene (part1)
-			this.scene.stop('part1');
+			// Stop the current scene (Part1)
+			this.scene.stop('Part1');
 			// console.log(`Going back to ${this.activeScene}`);
 			// Start the menu scene
 			this.scene.start('menu')
@@ -412,7 +412,7 @@ export class Part1Scene extends Phaser.Scene {
 					alert("The other player left ! Back to the menu...");
 					this.setActiveScene("menu");
 					// console.log(`Going back to ${this.activeScene}`);
-					this.scene.stop('part1');
+					this.scene.stop('Part1');
 					this.scene.start('menu')
 				}
 			}
