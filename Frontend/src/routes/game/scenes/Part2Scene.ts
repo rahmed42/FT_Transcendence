@@ -3,11 +3,8 @@ import { Room, Client } from "colyseus.js";
 import { BACKEND_URL } from "../backend";
 import { user, type User } from '../../../stores/user';
 
-//Style modern
-import boardStyle1 from '$lib/assets/style1/Board.png';
-import ballStyle1 from '$lib/assets/style1/Ball.png';
-import myPaddleStyle1 from '$lib/assets/style1/mypaddle.png';
-import opponentPaddleStyle1 from '$lib/assets/style1/otherpaddle.png';
+//Style Default
+import { skins } from "./SceneSelector";
 
 // User getter
 let currentUser: User | undefined;
@@ -33,6 +30,7 @@ export class Part2Scene extends Phaser.Scene {
 		start: false,
 		ballX: 400,
 		ballY: 300,
+		name: "",
 	};
 
 	// Set Paddle
@@ -58,6 +56,8 @@ export class Part2Scene extends Phaser.Scene {
 
 	// Player Name
 	myName: string | undefined;
+	opponentName: string | undefined;
+
 
 	// Constructor of the scene
 	constructor() {
@@ -90,11 +90,10 @@ export class Part2Scene extends Phaser.Scene {
 
 	// preload basic assets
 	preload() {
-		//Style Modern1
-		this.load.image('ballStyle1', ballStyle1);
-		this.load.image('myPaddleStyle1', myPaddleStyle1);
-		this.load.image('opponentPaddleStyle1', opponentPaddleStyle1);
-		this.load.image('boardStyle1', boardStyle1);
+		//Default style
+		for (const skin of skins) {
+			this.load.image(skin.name, skin.src);
+		}
 	}
 
 	async create() {
@@ -104,8 +103,7 @@ export class Part2Scene extends Phaser.Scene {
 		//Get player name
 		if (currentUser && currentUser.login)
 			this.myName = currentUser.login; // To fetch from DB / discard current stored user
-		else
-			this.myName = "Player";
+
 		this.gameInit();
 
 		// connect to the room
@@ -143,12 +141,12 @@ export class Part2Scene extends Phaser.Scene {
 	gameInit(): void {
 		/* SETUP STYLES */
 		// Display styled background
-		const background = this.add.image(0, 0, 'boardStyle1');
+		const background = this.add.image(0, 0, 'boardSkin');
 		background.setDisplaySize(this.cameras.main.width, this.cameras.main.height);
 		background.setOrigin(0, 0);
 
 		// Display ball
-		this.ball = this.physics.add.image(this.cameras.main.centerX, this.cameras.main.centerY, 'ballStyle1');
+		this.ball = this.physics.add.image(this.cameras.main.centerX, this.cameras.main.centerY, 'ballSkin');
 		this.ball.setOrigin(0.5, 0.5);
 		this.ball.setVisible(false);
 
@@ -226,7 +224,7 @@ export class Part2Scene extends Phaser.Scene {
 			}
 			// console.log("after delete Paddles", this.localPaddle, this.remotePaddle);
 			this.setActiveScene("menu");
-			// Stop the current scene
+			// Stop the current scene (Part2)
 			this.scene.stop('part2');
 			// console.log(`Going back to ${this.activeScene}`);
 			// Start the menu scene
@@ -248,7 +246,7 @@ export class Part2Scene extends Phaser.Scene {
 			'x': 20,
 			'pos': posY,
 		};
-		this.localPaddle = this.physics.add.image(paddle.x, paddle.pos, 'myPaddleStyle1');
+		this.localPaddle = this.physics.add.image(paddle.x, paddle.pos, 'myPaddleSkin');
 		this.localPaddle.setOrigin(0.5, 0.5);
 		this.localPaddle.setCollideWorldBounds(true);
 		this.localPaddle.setImmovable(true);
@@ -275,7 +273,7 @@ export class Part2Scene extends Phaser.Scene {
 			'x': 20,
 			'pos': posY,
 		};
-		this.remotePaddle = this.physics.add.image(this.cameras.main.width - paddle.x, this.cameras.main.centerY, 'opponentPaddleStyle1');
+		this.remotePaddle = this.physics.add.image(this.cameras.main.width - paddle.x, this.cameras.main.centerY, 'otherPaddleSkin');
 		this.remotePaddle.setOrigin(0.5, 0.5);
 		this.remotePaddle.setCollideWorldBounds(true);
 		this.remotePaddle.setImmovable(true);
@@ -289,6 +287,8 @@ export class Part2Scene extends Phaser.Scene {
 	// Game listeners
 	gameListeners(): void {
 		//https://learn.colyseus.io/phaser/1-basic-player-movement.html
+		if (!this.room) { return; }
+
 		// Listen for new players
 		this.room.state.players.onAdd((player, sessionId) => {
 			if (this.room && this.room.state.players.size <= 2) {
@@ -300,7 +300,7 @@ export class Part2Scene extends Phaser.Scene {
 					this.createLocalPaddle();
 
 					//Keep reference to this remote Paddle
-					const entity = this.localPaddle;
+					const entity = this.localPaddle!;
 					this.playerEntities[sessionId] = entity;
 				}
 
@@ -319,7 +319,7 @@ export class Part2Scene extends Phaser.Scene {
 						this.createRemotePaddle();
 
 						// Keep reference to this remote Paddle
-						const entity = this.remotePaddle;
+						const entity = this.remotePaddle!;
 						this.playerEntities[sessionId] = entity;
 
 						//Triggered when 'y' property changes
@@ -327,6 +327,14 @@ export class Part2Scene extends Phaser.Scene {
 							// console.log("remote y", value);
 							if (this.remotePaddle)
 								this.remotePaddle.y = value;
+						});
+
+						//Triggered when 'name' property changes
+						player.listen("name", (value: string) => {
+							console.log("Opponent name", value);
+
+							// Update opponent name
+							this.opponentName = value;
 						});
 
 						// Getting starting game from server
@@ -353,7 +361,7 @@ export class Part2Scene extends Phaser.Scene {
 							if (!this.gameHost && this.runningGame) {
 								// console.log("remote opponentScore", score);
 								this.opponentScore = score;
-								this.opponentScoreText.setText(score.toString());
+								this.opponentScoreText!.setText(score.toString());
 								// console.log("GH " + this.gameHost + " Opp " + this.opponentScore + "/" + score);
 								if (this.opponentScore >= 3)
 									this.resetGame(false);
@@ -364,7 +372,7 @@ export class Part2Scene extends Phaser.Scene {
 							if (!this.gameHost && this.runningGame) {
 								// console.log("remote myScore", score);
 								this.myScore = score;
-								this.myScoreText.setText(score.toString());
+								this.myScoreText!.setText(score.toString());
 								// console.log("GH " + this.gameHost + " My " + this.myScore + "/" + score);
 								if (this.myScore >= 3)
 									this.resetGame(false);
@@ -502,10 +510,10 @@ export class Part2Scene extends Phaser.Scene {
 	async push_match_stats(score: number) {
 		await fetch('http://localhost:3333/profil/match_stats', {
 			method: 'POST',
-			headers : {
+			headers: {
 				'Content-Type': 'application/json',
 			},
-			body : JSON.stringify({
+			body: JSON.stringify({
 				currentUser,
 				score,
 			})
@@ -589,6 +597,7 @@ export class Part2Scene extends Phaser.Scene {
 			if ((this.input.y !== undefined) && (this.inputPayload.y !== this.input.y)) {
 				// console.log("client input : " + this.inputPayload.y + "/ input local " + this.input.y);
 				this.inputPayload.y = this.input.y;
+				this.inputPayload.name = this.myName;
 				this.room.send(0, this.inputPayload);
 			}
 

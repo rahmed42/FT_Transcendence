@@ -2,9 +2,22 @@ import * as Phaser from "phaser"; // will import all the Phaser types
 
 // To import images in assets folder
 // Menu
-import backgroundMenu from '$lib/images/backArcade.jpg';
 import logo from '$lib/images/42PongLogo.png';
 import button from '$lib/assets/buttons/blue.png';
+import backgroundMenu from '$lib/images/backArcade.jpg';
+
+import boardLink from '$lib/assets/boards/boardModern.png';
+import ballLink from '$lib/assets/balls/ballWhite.png';
+import myPaddleLink from '$lib/assets/paddles/myPaddle/mypaddleBlue.png';
+import otherPaddleLink from '$lib/assets/paddles/otherPaddle/otherpaddleRed.png';
+
+//Skins to export
+export const skins = [
+	{ name: 'boardSkin', src: boardLink },
+	{ name: 'ballSkin', src: ballLink },
+	{ name: 'myPaddleSkin', src: myPaddleLink },
+	{ name: 'otherPaddleSkin', src: otherPaddleLink },
+];
 
 export class GameSelector extends Phaser.Scene {
 	// Adding game parts list
