@@ -83,7 +83,7 @@
 	.game {
 		width: 800px;
 		height: 600px;
-		border: 10px solid rgb(88, 44, 231);
+		border: 2px solid rgb(88, 44, 231);
 		border-radius: 25px;
 	}
 </style>

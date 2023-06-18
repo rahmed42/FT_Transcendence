@@ -1,77 +1,14 @@
 <script lang="ts">
-	// Import boards
-	import boardDefault from '$lib/assets/boards/boardDefault.png';
-	import boardModern from '$lib/assets/boards/boardModern.png';
 
-	// Import balls
-	import ballBaseball from '$lib/assets/balls/ballBaseball.png';
-	import ballBasket from '$lib/assets/balls/ballBasket.png';
-	import ballBeach from '$lib/assets/balls/ballBeach.png';
-	import ballBlack from '$lib/assets/balls/ballBlack.png';
-	import ballBlue from '$lib/assets/balls/ballBlue.png';
-	import ballCyan from '$lib/assets/balls/ballCyan.png';
-	import ballFoot from '$lib/assets/balls/ballFoot.png';
-	import ballGold from '$lib/assets/balls/ballGold.png';
-	import ballGolf from '$lib/assets/balls/ballGolf.png';
-	import ballGreen from '$lib/assets/balls/ballGreen.png';
-	import ballGrey from '$lib/assets/balls/ballGrey.png';
-	import ballPink from '$lib/assets/balls/ballPink.png';
-	import ballRahmed from '$lib/assets/balls/ballRahmed.png';
-	import ballRed from '$lib/assets/balls/ballRed.png';
-	import ballRedLined from '$lib/assets/balls/ballRedLined.png';
-	import ballReflect from '$lib/assets/balls/ballReflect.png';
-	import ballTennis from '$lib/assets/balls/ballTennis.png';
-	import ballWhite from '$lib/assets/balls/ballWhite.png';
-	import ballYellow from '$lib/assets/balls/ballYellow.png';
-
-	// Import paddles
-	// Default paddles
-	import defaultPaddleBlack from '$lib/assets/paddles/defaultPaddle/defaultPaddleBlack.png';
-	import defaultPaddleBlue from '$lib/assets/paddles/defaultPaddle/defaultPaddleBlue.png';
-	import defaultPaddleCyan from '$lib/assets/paddles/defaultPaddle/defaultPaddleCyan.png';
-	import defaultPaddleGreen from '$lib/assets/paddles/defaultPaddle/defaultPaddleGreen.png';
-	import defaultPaddleGrey from '$lib/assets/paddles/defaultPaddle/defaultPaddleGrey.png';
-	import defaultPaddleLightBlue from '$lib/assets/paddles/defaultPaddle/defaultPaddleLightBlue.png';
-	import defaultPaddleOrange from '$lib/assets/paddles/defaultPaddle/defaultPaddleOrange.png';
-	import defaultPaddlePink from '$lib/assets/paddles/defaultPaddle/defaultPaddlePink.png';
-	import defaultPaddleRed from '$lib/assets/paddles/defaultPaddle/defaultPaddleRed.png';
-	import defaultPaddleWhite from '$lib/assets/paddles/defaultPaddle/defaultPaddleWhite.png';
-	import defaultPaddleYellow from '$lib/assets/paddles/defaultPaddle/defaultPaddleYellow.png';
-
-	// My paddles
-	import myPaddleBlack from '$lib/assets/paddles/myPaddle/mypaddleBlack.png';
-	import myPaddleBlue from '$lib/assets/paddles/myPaddle/mypaddleBlue.png';
-	import myPaddleCyan from '$lib/assets/paddles/myPaddle/mypaddleCyan.png';
-	import myPaddleGreen from '$lib/assets/paddles/myPaddle/mypaddleGreen.png';
-	import myPaddleGrey from '$lib/assets/paddles/myPaddle/mypaddleGrey.png';
-	import myPaddleLightBlue from '$lib/assets/paddles/myPaddle/mypaddleLightBlue.png';
-	import myPaddleOrange from '$lib/assets/paddles/myPaddle/mypaddleOrange.png';
-	import myPaddlePink from '$lib/assets/paddles/myPaddle/mypaddlePink.png';
-	import myPaddleRed from '$lib/assets/paddles/myPaddle/mypaddleRed.png';
-	import myPaddleWhite from '$lib/assets/paddles/myPaddle/mypaddleWhite.png';
-	import myPaddleYellow from '$lib/assets/paddles/myPaddle/mypaddleYellow.png';
-
-	// Opponent paddles
-	import otherPaddleBlack from '$lib/assets/paddles/otherPaddle/otherpaddleBlack.png';
-	import otherPaddleBlue from '$lib/assets/paddles/otherPaddle/otherpaddleBlue.png';
-	import otherPaddleCyan from '$lib/assets/paddles/otherPaddle/otherpaddleCyan.png';
-	import otherPaddleGreen from '$lib/assets/paddles/otherPaddle/otherpaddleGreen.png';
-	import otherPaddleGrey from '$lib/assets/paddles/otherPaddle/otherpaddleGrey.png';
-	import otherPaddleLightBlue from '$lib/assets/paddles/otherPaddle/otherpaddleLightBlue.png';
-	import otherPaddleOrange from '$lib/assets/paddles/otherPaddle/otherpaddleOrange.png';
-	import otherPaddlePink from '$lib/assets/paddles/otherPaddle/otherpaddlePink.png';
-	import otherPaddleRed from '$lib/assets/paddles/otherPaddle/otherpaddleRed.png';
-	import otherPaddleWhite from '$lib/assets/paddles/otherPaddle/otherpaddleWhite.png';
-	import otherPaddleYellow from '$lib/assets/paddles/otherPaddle/otherpaddleYellow.png';
-
-	// Fetch from DB / or get theses default values if not found
-	let selectedBoard = boardDefault;
-	let selectedBall = ballWhite;
-	let selectedMyPaddle = defaultPaddleWhite;
-	let selectedOpponentPaddle = defaultPaddleWhite;
+	// Fetch DB / or get theses default values if not found
+	let selectedBoard : string = "src/lib/assets/boards/boardDefault.png";
+	let selectedMyPaddle : string = "src/lib/assets/paddles/defaultPaddle/defaultPaddleWhite.png";
+	let selectedOpponentPaddle : string = "src/lib/assets/paddles/defaultPaddle/defaultPaddleWhite.png";
+	let selectedBall : string = "src/lib/assets/balls/ballWhite.png";
 
 	function applySettings() {
-		console.log('Send config to DB');
+		console.log("Send config to DB");
+		// SEND to DB new values selected by user
 	}
 </script>
 
@@ -92,26 +29,82 @@
 		<tr>
 			<th>
 				<select bind:value={selectedBoard}>
-					<option value="boardDefault">Default</option>
-					<option value="boardModern">Modern</option>
+					<option value=src/lib/assets/boards/boardDefault.png>Default</option>
+					<option value=src/lib/assets/boards/boardModern.png>Modern</option>
 				</select>
 			</th>
 			<th>
 				<select bind:value={selectedMyPaddle}>
-					<option value="defaultPaddleWhite">defaultPaddleWhite</option>
-					<option value="myPaddleWhite">myPaddleWhite</option>
+					<option value="src/lib/assets/paddles/defaultPaddle/defaultPaddleWhite.png">Original Paddle White</option>
+					<option value="src/lib/assets/paddles/defaultPaddle/defaultPaddleBlack.png">Original Paddle Black</option>
+					<option value="src/lib/assets/paddles/defaultPaddle/defaultPaddleBlue.png">Original Paddle Blue</option>
+					<option value="src/lib/assets/paddles/defaultPaddle/defaultPaddleCyan.png">Original Paddle Cyan</option>
+					<option value="src/lib/assets/paddles/defaultPaddle/defaultPaddleGreen.png">Original Paddle Green</option>
+					<option value="src/lib/assets/paddles/defaultPaddle/defaultPaddleGrey.png">Original Paddle Grey</option>
+					<option value="src/lib/assets/paddles/defaultPaddle/defaultPaddleLightBlue.png">Original Paddle LightBlue</option>
+					<option value="src/lib/assets/paddles/defaultPaddle/defaultPaddleOrange.png">Original Paddle Orange</option>
+					<option value="src/lib/assets/paddles/defaultPaddle/defaultPaddlePink.png">Original Paddle Pink</option>
+					<option value="src/lib/assets/paddles/defaultPaddle/defaultPaddleRed.png">Original Paddle Red</option>
+					<option value="src/lib/assets/paddles/defaultPaddle/defaultPaddleYellow.png">Original Paddle Yellow</option>
+					<option value="src/lib/assets/paddles/myPaddle/mypaddleWhite.png">Modern Paddle White</option>
+					<option value="src/lib/assets/paddles/myPaddle/mypaddleBlack.png">Modern Paddle Black</option>
+					<option value="src/lib/assets/paddles/myPaddle/mypaddleBlue.png">Modern Paddle Blue</option>
+					<option value="src/lib/assets/paddles/myPaddle/mypaddleCyan.png">Modern Paddle Cyan</option>
+					<option value="src/lib/assets/paddles/myPaddle/mypaddleGreen.png">Modern Paddle Green</option>
+					<option value="src/lib/assets/paddles/myPaddle/mypaddleGrey.png">Modern Paddle Grey</option>
+					<option value="src/lib/assets/paddles/myPaddle/mypaddleLightBlue.png">Modern Paddle LightBlue</option>
+					<option value="src/lib/assets/paddles/myPaddle/mypaddleOrange.png">Modern Paddle Orange</option>
+					<option value="src/lib/assets/paddles/myPaddle/mypaddlePink.png">Modern Paddle Pink</option>
+					<option value="src/lib/assets/paddles/myPaddle/mypaddleRed.png">Modern Paddle Red</option>
+					<option value="src/lib/assets/paddles/myPaddle/mypaddleYellow.png">Modern Paddle Yellow</option>
 				</select>
 			</th>
 			<th>
 				<select bind:value={selectedOpponentPaddle}>
-					<option value="defaultPaddleWhite">defaultPaddleWhite</option>
-					<option value="otherPaddleWhite">otherPaddleWhite</option>
+					<option value="src/lib/assets/paddles/defaultPaddle/defaultPaddleWhite.png">Original Paddle White</option>
+					<option value="src/lib/assets/paddles/defaultPaddle/defaultPaddleBlack.png">Original Paddle Black</option>
+					<option value="src/lib/assets/paddles/defaultPaddle/defaultPaddleBlue.png">Original Paddle Blue</option>
+					<option value="src/lib/assets/paddles/defaultPaddle/defaultPaddleCyan.png">Original Paddle Cyan</option>
+					<option value="src/lib/assets/paddles/defaultPaddle/defaultPaddleGreen.png">Original Paddle Green</option>
+					<option value="src/lib/assets/paddles/defaultPaddle/defaultPaddleGrey.png">Original Paddle Grey</option>
+					<option value="src/lib/assets/paddles/defaultPaddle/defaultPaddleLightBlue.png">Original Paddle LightBlue</option>
+					<option value="src/lib/assets/paddles/defaultPaddle/defaultPaddleOrange.png">Original Paddle Orange</option>
+					<option value="src/lib/assets/paddles/defaultPaddle/defaultPaddlePink.png">Original Paddle Pink</option>
+					<option value="src/lib/assets/paddles/defaultPaddle/defaultPaddleRed.png">Original Paddle Red</option>
+					<option value="src/lib/assets/paddles/defaultPaddle/defaultPaddleYellow.png">Original Paddle Yellow</option>
+					<option value="src/lib/assets/paddles/otherPaddle/otherpaddleWhite.png">Modern Paddle White</option>
+					<option value="src/lib/assets/paddles/otherPaddle/otherpaddleBlack.png">Modern Paddle Black</option>
+					<option value="src/lib/assets/paddles/otherPaddle/otherpaddleBlue.png">Modern Paddle Blue</option>
+					<option value="src/lib/assets/paddles/otherPaddle/otherpaddleCyan.png">Modern Paddle Cyan</option>
+					<option value="src/lib/assets/paddles/otherPaddle/otherpaddleGreen.png">Modern Paddle Green</option>
+					<option value="src/lib/assets/paddles/otherPaddle/otherpaddleGrey.png">Modern Paddle Grey</option>
+					<option value="src/lib/assets/paddles/otherPaddle/otherpaddleLightBlue.png">Modern Paddle LightBlue</option>
+					<option value="src/lib/assets/paddles/otherPaddle/otherpaddleOrange.png">Modern Paddle Orange</option>
+					<option value="src/lib/assets/paddles/otherPaddle/otherpaddlePink.png">Modern Paddle Pink</option>
+					<option value="src/lib/assets/paddles/otherPaddle/otherpaddleRed.png">Modern Paddle Red</option>
+					<option value="src/lib/assets/paddles/otherPaddle/otherpaddleYellow.png">Modern Paddle Yellow</option>
 				</select>
 			</th>
 			<th>
 				<select bind:value={selectedBall}>
-					<option value="ballWhite">ballWhite</option>
-					<option value="ballBeach">ballBeach</option>
+					<option value="src/lib/assets/balls/ballWhite.png">White</option>
+					<option value="src/lib/assets/balls/ballBlack.png">Black</option>
+					<option value="src/lib/assets/balls/ballBlue.png">Blue</option>
+					<option value="src/lib/assets/balls/ballCyan.png">Cyan</option>
+					<option value="src/lib/assets/balls/ballGreen.png">Green</option>
+					<option value="src/lib/assets/balls/ballGrey.png">Grey</option>
+					<option value="src/lib/assets/balls/ballPink.png">Pink</option>
+					<option value="src/lib/assets/balls/ballRed.png">Red</option>
+					<option value="src/lib/assets/balls/ballYellow.png">Yellow</option>
+					<option value="src/lib/assets/balls/ballGold.png">Gold</option>
+					<option value="src/lib/assets/balls/ballRedLined.png">RedLined</option>
+					<option value="src/lib/assets/balls/ballRedReflect.png">RedReflect</option>
+					<option value="src/lib/assets/balls/ballBaseball.png">Baseball</option>
+					<option value="src/lib/assets/balls/ballGolf.png">Golf</option>
+					<option value="src/lib/assets/balls/ballBasket.png">Basket</option>
+					<option value="src/lib/assets/balls/ballBeach.png">Beach</option>
+					<option value="src/lib/assets/balls/ballTennis.png">Tennis</option>
+					<option value="src/lib/assets/balls/ballRahmed.png">rahmed</option>
 				</select>
 			</th>
 		</tr>
@@ -161,7 +154,7 @@
 		position: relative;
 		width: 800px;
 		height: 600px;
-		border: 10px solid rgb(88, 44, 231);
+		border: 2px solid rgb(88, 44, 231);
 		border-radius: 25px;
 		margin-top: 30px;
 	}
