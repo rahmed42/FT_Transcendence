@@ -54,6 +54,7 @@ model Stats {
 model MatchHistory {
   id        Int      @id @default(autoincrement())
   user      User     @relation(fields: [userId], references: [id])
+  myScore Int @default(0)
   opponentName String @default("")
   opponentScore Int @default(0)
   userId    Int

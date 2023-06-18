@@ -59,6 +59,7 @@ export class UserService {
             await this.prisma.matchHistory.create({
                 data : {
                     userId: body.currentUser.id,
+                    myScore: body.myScore,
                     opponentName: body.opponentName,
                     opponentScore: body.opponentScore,
                     gameType: "original",
