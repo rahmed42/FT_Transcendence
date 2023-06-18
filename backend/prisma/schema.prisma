@@ -40,6 +40,7 @@ model User {
   avatar String?
   friendRequestSent     Friend[]      @relation("FriendRequestSent")
   friendRequestReceived Friend[]      @relation("FriendRequestReceived")
+  matchHistory MatchHistory[]
 }
 
 model Stats {
@@ -48,11 +49,13 @@ model Stats {
   wins         Int      @default(0)
   losses       Int      @default(0)
   ladderLevel  Int      @default(0)
-  achievements String[]
 }
 
 model MatchHistory {
   id        Int      @id @default(autoincrement())
+  user      User     @relation(fields: [userId], references: [id])
+  opponentName String @default("")
+  opponentScore Int @default(0)
   userId    Int
   gameType  String
   result    String
