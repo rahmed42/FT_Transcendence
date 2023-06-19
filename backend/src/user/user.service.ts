@@ -54,13 +54,13 @@ export class UserService {
         }
     }
     async update_user_stats(body: any) {
-        if (body.myScore > 2)
+        if (body.score > 2)
         {
             await this.prisma.matchHistory.create({
                 data : {
                     userId: body.currentUser.id,
-                    myScore: body.myScore,
-                    opponentName: body.opponentName,
+                    myScore: body.score,
+                    opponentName: body.name,
                     opponentScore: body.opponentScore,
                     gameType: "original",
                     result : "win",
