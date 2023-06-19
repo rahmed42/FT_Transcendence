@@ -6,7 +6,7 @@
 #    By: rahmed <rahmed@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/05/09 12:57:06 by rahmed            #+#    #+#              #
-#    Updated: 2023/06/17 21:24:40 by rahmed           ###   ########.fr        #
+#    Updated: 2023/06/18 22:47:52 by rahmed           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -31,7 +31,7 @@ clean	:	down
 	@printf "Removing unused ${name} images...\n"
 	@docker system prune -a
 	@sudo rm -rf ./backend/dist
-	@sudo rm -rf ./Frontend/dist
+	@sudo rm -rf ./Frontend/dist ./Frontend/.parcel-cache
 #	@sudo rm -rf $(db)
 
 fclean	:

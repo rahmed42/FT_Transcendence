@@ -29,7 +29,7 @@
 				await getToken(code);
 			}
 
-			async function check_2fa_user() { 
+			async function check_2fa_user() {
 				const response = await fetch('http://localhost:3333/auth/2fa_info', {
 					method: 'GET',
 					credentials: 'include',
@@ -73,7 +73,7 @@
 	afterUpdate(async () => {
 		// redirect the user if isLogged is true
 		// redirect to home Page if logged in and on login Page / To add on backend checks
-		if (sessionStorage.getItem('user') && window.location.pathname === '/') 
+		if (sessionStorage.getItem('user') && window.location.pathname === '/')
 			window.location.href = '/home'
 	});
 
@@ -162,11 +162,6 @@
 		// need to post gatabase to set connected variable to false;
 	}
 </script>
-
-<head>
-	<!-- Preload image to avoid flickering -->
-	<link rel="preload" as="image" href={logo} />
-</head>
 
 <header>
 	<ul>

@@ -1,22 +1,85 @@
 <!-- Single-Page Application (SPA) tree -->
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" />
 
 <head>
 	<meta charset="utf-8" />
-	<link rel="manifest" href="../src/site.webmanifest">
-	<link rel="apple-touch-icon" sizes="180x180" href="lib/static/apple-touch-icon.png">
-	<link rel="icon" type="image/png" sizes="32x32" href="lib/static/favicon-32x32.png">
-	<link rel="icon" type="image/png" sizes="16x16" href="lib/static/favicon-16x16.png">
-	<link rel="android-chrome 192x192" type="image/png" sizes="192x192" href="lib/static/android-chrome-192x192.png">
-	<link rel="android-chrome 512x512" type="image/png" sizes="512x512" href="lib/static/android-chrome-512x512.png">
+	<!-- favicon -->
+	<link rel="icon" type="image/png" href="lib/static/favicon.ico" />
+	<link rel="icon" type="image/png" sizes="32x32" href="lib/static/favicon-32x32.png" />
+	<link rel="icon" type="image/png" sizes="16x16" href="lib/static/favicon-16x16.png" />
+	<link rel="apple-touch-icon" sizes="180x180" href="lib/static/apple-touch-icon.png" />
+	<link rel="android-chrome 192x192" type="image/png" sizes="192x192" href="lib/static/android-chrome-192x192.png" />
+	<link rel="android-chrome 512x512" type="image/png" sizes="512x512" href="lib/static/android-chrome-512x512.png" />
+	<link rel="manifest" href="../src/site.webmanifest" />
 	<meta name="viewport" content="width=device-width" />
+
+	<!-- Add all my assets in dist -->
+	<link rel="boardDefault" type="image/png" href="lib/assets/boards/boardDefault.png" />
+	<link rel="boardModern" type="image/png" href="lib/assets/boards/boardModern.png" />
+
+	<link rel="ballBaseball" type="image/png" href="lib/assets/balls/ballBaseball.png" />
+	<link rel="ballBasket" type="image/png" href="lib/assets/balls/ballBasket.png" />
+	<link rel="ballBeach" type="image/png" href="lib/assets/balls/ballBeach.png" />
+	<link rel="ballBlack" type="image/png" href="lib/assets/balls/ballBlack.png" />
+	<link rel="ballBlue" type="image/png" href="lib/assets/balls/ballBlue.png" />
+	<link rel="ballCyan" type="image/png" href="lib/assets/balls/ballCyan.png" />
+	<link rel="ballFoot" type="image/png" href="lib/assets/balls/ballFoot.png" />
+	<link rel="ballGold" type="image/png" href="lib/assets/balls/ballGold.png" />
+	<link rel="ballGolf" type="image/png" href="lib/assets/balls/ballGolf.png" />
+	<link rel="ballGreen" type="image/png" href="lib/assets/balls/ballGreen.png" />
+	<link rel="ballGrey" type="image/png" href="lib/assets/balls/ballGrey.png" />
+	<link rel="ballPink" type="image/png" href="lib/assets/balls/ballPink.png" />
+	<link rel="ballRahmed" type="image/png" href="lib/assets/balls/ballRahmed.png" />
+	<link rel="ballRed" type="image/png" href="lib/assets/balls/ballRed.png" />
+	<link rel="ballRedLined" type="image/png" href="lib/assets/balls/ballRedLined.png" />
+	<link rel="ballRedReflect" type="image/png" href="lib/assets/balls/ballRedReflect.png" />
+	<link rel="ballTennis" type="image/png" href="lib/assets/balls/ballTennis.png" />
+	<link rel="ballWhite" type="image/png" href="lib/assets/balls/ballWhite.png" />
+	<link rel="ballYellow" type="image/png" href="lib/assets/balls/ballYellow.png" />
+
+	<link rel="defaultPaddleBlack" type="image/png" href="lib/assets/paddles/defaultPaddle/defaultPaddleBlack.png" />
+	<link rel="defaultPaddleBlue" type="image/png" href="lib/assets/paddles/defaultPaddle/defaultPaddleBlue.png" />
+	<link rel="defaultPaddleCyan" type="image/png" href="lib/assets/paddles/defaultPaddle/defaultPaddleCyan.png" />
+	<link rel="defaultPaddleGreen" type="image/png" href="lib/assets/paddles/defaultPaddle/defaultPaddleGreen.png" />
+	<link rel="defaultPaddleGrey" type="image/png" href="lib/assets/paddles/defaultPaddle/defaultPaddleGrey.png" />
+	<link rel="defaultPaddleLightBlue" type="image/png" href="lib/assets/paddles/defaultPaddle/defaultPaddleLightBlue.png" />
+	<link rel="defaultPaddleOrange" type="image/png" href="lib/assets/paddles/defaultPaddle/defaultPaddleOrange.png" />
+	<link rel="defaultPaddlePink" type="image/png" href="lib/assets/paddles/defaultPaddle/defaultPaddlePink.png" />
+	<link rel="defaultPaddleRed" type="image/png" href="lib/assets/paddles/defaultPaddle/defaultPaddleRed.png" />
+	<link rel="defaultPaddleWhite" type="image/png" href="lib/assets/paddles/defaultPaddle/defaultPaddleWhite.png" />
+	<link rel="defaultPaddleYellow" type="image/png" href="lib/assets/paddles/defaultPaddle/defaultPaddleYellow.png" />
+
+	<link rel="myPaddleBlack" type="image/png" href="lib/assets/paddles/myPaddle/mypaddleBlack.png" />
+	<link rel="myPaddleBlue" type="image/png" href="lib/assets/paddles/myPaddle/mypaddleBlue.png" />
+	<link rel="myPaddleCyan" type="image/png" href="lib/assets/paddles/myPaddle/mypaddleCyan.png" />
+	<link rel="myPaddleGreen" type="image/png" href="lib/assets/paddles/myPaddle/mypaddleGreen.png" />
+	<link rel="myPaddleGrey" type="image/png" href="lib/assets/paddles/myPaddle/mypaddleGrey.png" />
+	<link rel="myPaddleLightBlue" type="image/png" href="lib/assets/paddles/myPaddle/mypaddleLightBlue.png" />
+	<link rel="myPaddleOrange" type="image/png" href="lib/assets/paddles/myPaddle/mypaddleOrange.png" />
+	<link rel="myPaddlePink" type="image/png" href="lib/assets/paddles/myPaddle/mypaddlePink.png" />
+	<link rel="myPaddleRed" type="image/png" href="lib/assets/paddles/myPaddle/mypaddleRed.png" />
+	<link rel="myPaddleWhite" type="image/png" href="lib/assets/paddles/myPaddle/mypaddleWhite.png" />
+	<link rel="myPaddleYellow" type="image/png" href="lib/assets/paddles/myPaddle/mypaddleYellow.png" />
+
+	<link rel="otherPaddleBlack" type="image/png" href="lib/assets/paddles/otherPaddle/otherpaddleBlack.png" />
+	<link rel="otherPaddleBlue" type="image/png" href="lib/assets/paddles/otherPaddle/otherpaddleBlue.png" />
+	<link rel="otherPaddleCyan" type="image/png" href="lib/assets/paddles/otherPaddle/otherpaddleCyan.png" />
+	<link rel="otherPaddleGreen" type="image/png" href="lib/assets/paddles/otherPaddle/otherpaddleGreen.png" />
+	<link rel="otherPaddleGrey" type="image/png" href="lib/assets/paddles/otherPaddle/otherpaddleGrey.png" />
+	<link rel="otherPaddleLightBlue" type="image/png" href="lib/assets/paddles/otherPaddle/otherpaddleLightBlue.png" />
+	<link rel="otherPaddleOrange" type="image/png" href="lib/assets/paddles/otherPaddle/otherpaddleOrange.png" />
+	<link rel="otherPaddlePink" type="image/png" href="lib/assets/paddles/otherPaddle/otherpaddlePink.png" />
+	<link rel="otherPaddleRed" type="image/png" href="lib/assets/paddles/otherPaddle/otherpaddleRed.png" />
+	<link rel="otherPaddleWhite" type="image/png" href="lib/assets/paddles/otherPaddle/otherpaddleWhite.png" />
+	<link rel="otherPaddleYellow" type="image/png" href="lib/assets/paddles/otherPaddle/otherpaddleYellow.png" />
+
 	%sveltekit.head%
 </head>
 
-<body data-sveltekit-preload-data="hover">
-	<div style="display: contents">%sveltekit.body%</div>
+<body data-sveltekit-preload-data="hover" />
+	<div style="display: contents" />%sveltekit.body%</div>
 </body>
 
 </html>
