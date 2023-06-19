@@ -47,7 +47,7 @@
     <img class="pp" id="avatar" src={$friend.large_pic} alt={`Picture of ${$friend.login}`}/>
 {/if}
 
-<h2>Stats</h2>
+<h2 class="section-heading">Stats</h2>
 {#if stats}
     <ul>
         <li>Wins: {stats.wins}</li>
@@ -58,11 +58,11 @@
     <p>No stats available</p>
 {/if}
 
-<h2>Match History</h2>
+<h2 class="section-heading">Match History</h2>
 {#if matchHistory.length > 0}
     <ul>
         {#each matchHistory as match (match.id)}
-            <li>{match.gameType}: {match.result} - {match.timestamp}</li>
+            <li>Game Type: {match.gameType} | Score: {match.myScore} - {match.opponentScore} ({match.opponentName}) | Result: {match.result} | Date: {match.timestamp}</li>
         {/each}
     </ul>
 {:else}
@@ -70,6 +70,10 @@
 {/if}
 
 <style>
+	.section-heading {
+		font-weight: bold;
+		font-size: 20px;
+	}
     .pp {
         display: block;
         margin-left: auto;
