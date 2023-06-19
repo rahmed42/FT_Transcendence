@@ -41,6 +41,10 @@ model User {
   friendRequestSent     Friend[]      @relation("FriendRequestSent")
   friendRequestReceived Friend[]      @relation("FriendRequestReceived")
   matchHistory MatchHistory[]
+  selectedBoard String @default("src/lib/assets/boards/boardDefault.png")
+  selectedMyPaddle String @default("src/lib/assets/paddles/defaultPaddle/defaultPaddleWhite.png")
+  selectedOpponentPaddle String @default("src/lib/assets/paddles/defaultPaddle/defaultPaddleWhite.png")
+  selectedBall String @default("src/lib/assets/balls/ballWhite.png")
 }
 
 model Stats {
@@ -52,15 +56,15 @@ model Stats {
 }
 
 model MatchHistory {
-  id        Int      @id @default(autoincrement())
-  user      User     @relation(fields: [userId], references: [id])
-  myScore Int @default(0)
+  id        Int       @id @default(autoincrement())
+  user      User      @relation(fields: [userId], references: [id])
+  myScore Int         @default(0)
   opponentName String @default("")
-  opponentScore Int @default(0)
+  opponentScore Int   @default(0)
   userId    Int
   gameType  String
   result    String
-  timestamp DateTime @default(now())
+  timestamp DateTime  @default(now())
 }
 
 model Authenticator {

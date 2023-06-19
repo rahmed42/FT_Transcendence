@@ -517,6 +517,7 @@ export class Part1Scene extends Phaser.Scene {
 			},
 			body: JSON.stringify({
 				currentUser,
+				type: this.room!.name,
 				score: this.myScore,
 				name: this.opponentName,
 				opponentScore: this.opponentScore,

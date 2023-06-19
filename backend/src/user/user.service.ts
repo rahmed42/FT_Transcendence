@@ -59,10 +59,10 @@ export class UserService {
             await this.prisma.matchHistory.create({
                 data : {
                     userId: body.currentUser.id,
+                    gameType: body.type,
                     myScore: body.score,
                     opponentName: body.name,
                     opponentScore: body.opponentScore,
-                    gameType: "original",
                     result : "win",
                 }
             })
@@ -82,9 +82,10 @@ export class UserService {
             await this.prisma.matchHistory.create({
                 data: {
                     userId: body.currentUser.id,
-                    opponentName: body.opponentName,
+                    gameType: body.type,
+                    myScore: body.score,
+                    opponentName: body.name,
                     opponentScore: body.opponentScore,
-                    gameType: "original",
                     result: "loose",
                 }
             })
@@ -104,5 +105,21 @@ export class UserService {
         }).matchHistory();
 
         console.log(userMatches);
+    }
+    async update_choosed_skins(tokebObject: {jwt : string}, body: any) {
+        const user = await this.jwt.decode(tokebObject.jwt);
+        if (typeof user === 'object') {
+            await this.prisma.user.update({
+                where: {
+                    id: user.id,
+                },
+                data: {
+                    selectedBoard: body.board,
+                    selectedMyPaddle: body.myPaddle,
+                    selectedOpponentPaddle: body.opponentPaddle,
+                    selectedBall: body.ball,
+                }
+            })
+        }
     }
 }

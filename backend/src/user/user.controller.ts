@@ -32,6 +32,10 @@ export class UserController {
     @Post('match_stats')
     async update_game_data(@Body() body: any) {
         await this.userService.update_user_stats(body);
-        // console.log(body);
+    }
+    @Post('skins')
+    async update_game_skins(@Req() request: Request, @Body() body: any) {
+        const token = request.cookies;
+        await this.userService.update_choosed_skins(token, body);
     }
 }

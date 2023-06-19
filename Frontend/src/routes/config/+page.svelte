@@ -6,9 +6,20 @@
 	let selectedOpponentPaddle : string = "src/lib/assets/paddles/defaultPaddle/defaultPaddleWhite.png";
 	let selectedBall : string = "src/lib/assets/balls/ballWhite.png";
 
-	function applySettings() {
-		console.log("Send config to DB");
-		// SEND to DB new values selected by user
+	async function applySettings() {
+		await fetch("http://localhost:3333/profil/skins", {
+			method: 'POST',
+			credentials: 'include',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({
+				board: selectedBoard,
+				myPaddle: selectedMyPaddle,
+				opponentPaddle: selectedOpponentPaddle,
+				ball: selectedBall,
+			})
+		})
 	}
 </script>
 
