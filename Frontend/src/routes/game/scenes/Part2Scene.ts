@@ -3,6 +3,8 @@ import { Room, Client } from "colyseus.js";
 import { BACKEND_URL } from "../backend";
 import { user, type User } from '../../../stores/user';
 
+import powerUp from "$lib/assets/others/powerUp.png";
+
 //Style Default
 import { skins } from "./SceneSelector";
 
@@ -23,6 +25,7 @@ export class Part2Scene extends Phaser.Scene {
 	startState: boolean;
 	gameHost: boolean;
 	runningGame: boolean;
+	runningPowerUp: boolean;
 
 	// local input cache
 	inputPayload: any = {
@@ -39,6 +42,9 @@ export class Part2Scene extends Phaser.Scene {
 
 	// Set Ball
 	ball: Phaser.Types.Physics.Arcade.ImageWithDynamicBody | undefined;
+
+	// set PowerUp
+	powerUp: Phaser.Types.Physics.Arcade.ImageWithDynamicBody | undefined;
 
 	// Score
 	myScoreText: Phaser.GameObjects.Text | undefined;
@@ -76,6 +82,7 @@ export class Part2Scene extends Phaser.Scene {
 		this.startState = false;
 		this.gameHost = false;
 		this.runningGame = false;
+		this.runningPowerUp = false;
 
 		const unsubscribe = user.subscribe((value) => {
 			// update currentUser with last user value at store changes
@@ -94,6 +101,7 @@ export class Part2Scene extends Phaser.Scene {
 		for (const skin of skins) {
 			this.load.image(skin.name, skin.src);
 		}
+		this.load.image("powerUp", powerUp);
 	}
 
 	async create() {
@@ -161,6 +169,11 @@ export class Part2Scene extends Phaser.Scene {
 		this.pointer = this.input.activePointer;
 		this.pointer.y = this.cameras.main.centerY;
 
+		// Init powerUp
+		this.powerUp = this.physics.add.image(this.cameras.main.centerX, this.cameras.main.centerY, 'powerUp');
+		this.powerUp.setOrigin(0.5, 0.5);
+		this.powerUp.setVisible(false);
+
 		/* SETUP PHYSICS */
 		// Add map bounds, disable collisions on left/right bounds
 		this.physics.world.setBoundsCollision(false, false, true, true);
@@ -170,6 +183,12 @@ export class Part2Scene extends Phaser.Scene {
 		if (this.ball) {
 			this.ball.setCollideWorldBounds(true);
 			this.ball.setBounce(1);
+		}
+
+		// Add powerUp physics
+		if (this.powerUp) {
+			this.powerUp.setCollideWorldBounds(true);
+			this.powerUp.setBounce(1);
 		}
 
 		/* Adding Menu button */
@@ -254,6 +273,16 @@ export class Part2Scene extends Phaser.Scene {
 			// Add collisions between ball and paddles
 			this.physics.add.collider(this.ball, this.localPaddle);
 		}
+
+		if (this.powerUp && this.localPaddle) {
+			// Add collisions between powerUp and paddles
+			this.physics.add.collider(this.powerUp, this.localPaddle, () => {
+				this.powerUp?.setVisible(false);
+				this.powerUp?.setActive(false);
+				console.log("Local PowerUp taken");
+			});
+		}
+
 		this.input.on('pointermove', () => {
 			if (this.localPaddle && this.pointer)
 				this.localPaddle.y = this.pointer.y;
@@ -280,6 +309,15 @@ export class Part2Scene extends Phaser.Scene {
 		if (this.ball && this.remotePaddle) {
 			// Add collisions between ball and paddles
 			this.physics.add.collider(this.ball, this.remotePaddle);
+		}
+
+		if (this.powerUp && this.remotePaddle) {
+			// Add collisions between powerUp and paddles
+			this.physics.add.collider(this.powerUp, this.remotePaddle, () => {
+				this.powerUp?.setVisible(false);
+				this.powerUp?.setActive(false);
+				console.log("Remote PowerUp taken");
+			});
 		}
 	}
 
@@ -426,6 +464,7 @@ export class Part2Scene extends Phaser.Scene {
 		this.opponentScoreText!.setText(this.opponentScore.toString());
 
 		//Count from 3 to 0 each second then pop & reset the ball
+		currentUser!.inGame = true;
 		this.startButtonText("3", false);
 		//wait 1 second
 		this.time.delayedCall(1000, () => {
@@ -508,7 +547,32 @@ export class Part2Scene extends Phaser.Scene {
 		}
 	}
 
-	async push_match_stats(myScore: number, opponentName:string | undefined, opponentScore: number) {
+	// launch a powerup
+	launchPowerup(): void {
+		if (this.gameHost) {
+			// random powerup
+			// let powerType = Phaser.Math.Between(0, 2);
+
+			// random velocity
+			let powerUpVelocityX = Phaser.Math.Between(300, 600)
+			let powerUpVelocityY = Phaser.Math.Between(200, 500);
+
+			// random scale
+			let powerupScale = Phaser.Math.Between(0.25, 1);
+
+			// random negative or positive
+			powerUpVelocityX *= Math.random() < 0.5 ? 1 : -1;
+			powerUpVelocityY *= Math.random() < 0.5 ? 1 : -1;
+
+			// create powerup
+			this.powerUp?.setScale(powerupScale);
+			this.powerUp?.setVelocity(powerUpVelocityX, powerUpVelocityY);
+
+			this.runningPowerUp = true;
+		}
+	}
+
+	async push_match_stats() {
 		await fetch('http://localhost:3333/profil/match_stats', {
 			method: 'POST',
 			headers: {
@@ -516,9 +580,10 @@ export class Part2Scene extends Phaser.Scene {
 			},
 			body: JSON.stringify({
 				currentUser,
-				myScore,
-				opponentName,
-				opponentScore,
+				type: this.room!.name,
+				score: this.myScore,
+				name: this.opponentName,
+				opponentScore: this.opponentScore,
 			})
 		});
 	}
@@ -534,11 +599,20 @@ export class Part2Scene extends Phaser.Scene {
 
 	resetGame(home_button: boolean): void {
 		if (!home_button)
-			this.push_match_stats(this.myScore, this.opponentName, this.opponentScore);
+			this.push_match_stats();
+
 
 		// Wait for new game host
 		this.gameHost = false;
 		this.runningGame = false;
+		this.runningPowerUp = false;
+
+		// set currentUser variable to Ingame = false
+		currentUser!.inGame = false;
+
+		// Reset powerup and stop it
+		this.powerUp?.setVelocity(0);
+		this.powerUp?.setVisible(false);
 
 		// Reset ball and stop it
 		if (this.ball) {
@@ -547,6 +621,7 @@ export class Part2Scene extends Phaser.Scene {
 			this.ball.setVisible(false);
 		}
 
+		// Display the endgame text
 		if (this.myScore > this.opponentScore) {
 			this.myScoreText!.setColor('#00ff00');
 			this.myScoreText!.setText(this.myScore.toString() + "\n You  WIN !");
@@ -599,6 +674,22 @@ export class Part2Scene extends Phaser.Scene {
 				this.resetGame(false);
 			else
 				this.resetBall();
+		}
+
+		// Launch powerup
+		if (this.runningGame && this.gameHost && !this.powerUp?.visible && !this.runningPowerUp) {
+			console.log("new powerup in 3sec");
+			this.time.delayedCall(3000, () => {
+				this.powerUp?.setVisible(true);
+				this.launchPowerup();
+			});
+		}
+
+		if (this.powerUp && (this.powerUp.x < 0 || this.powerUp.x > this.cameras.main.width)) {
+			console.log("del powerup",this.powerUp.x , this.powerUp.y);
+			this.powerUp.setVisible(false);
+			this.powerUp?.setVelocity(0);
+			this.runningPowerUp = false;
 		}
 
 		// Update input player
