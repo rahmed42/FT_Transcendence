@@ -169,15 +169,18 @@ export class Part2Scene extends Phaser.Scene {
 		this.pointer = this.input.activePointer;
 		this.pointer.y = this.cameras.main.centerY;
 
-		// Init powerUp
-		this.powerUp = this.physics.add.image(this.cameras.main.centerX, this.cameras.main.centerY, 'powerUp');
-		this.powerUp.setOrigin(0.5, 0.5);
-		this.powerUp.setVisible(false);
-
 		/* SETUP PHYSICS */
 		// Add map bounds, disable collisions on left/right bounds
 		this.physics.world.setBoundsCollision(false, false, true, true);
 		this.physics.world.setBounds(0, 0, this.cameras.main.width, this.cameras.main.height);
+
+		// Init powerUp
+		this.powerUp = this.physics.add.image(this.cameras.main.centerX, this.cameras.main.centerY, 'powerUp');
+		this.powerUp.setOrigin(0.5, 0.5);
+		this.powerUp.setVisible(false);
+		this.powerUp.setVelocity(0);
+		this.powerUp.setBounce(1);
+		this.powerUp.setCollideWorldBounds(true);
 
 		// Add ball physics
 		if (this.ball) {
@@ -274,15 +277,6 @@ export class Part2Scene extends Phaser.Scene {
 			this.physics.add.collider(this.ball, this.localPaddle);
 		}
 
-		if (this.powerUp && this.localPaddle) {
-			// Add collisions between powerUp and paddles
-			this.physics.add.collider(this.powerUp, this.localPaddle, () => {
-				this.powerUp?.setVisible(false);
-				this.powerUp?.setActive(false);
-				console.log("Local PowerUp taken");
-			});
-		}
-
 		this.input.on('pointermove', () => {
 			if (this.localPaddle && this.pointer)
 				this.localPaddle.y = this.pointer.y;
@@ -310,12 +304,25 @@ export class Part2Scene extends Phaser.Scene {
 			// Add collisions between ball and paddles
 			this.physics.add.collider(this.ball, this.remotePaddle);
 		}
+	}
 
+	// create the powerup
+	createPowerUp(): void {
+		this.powerUp?.setPosition(this.cameras.main.centerX, this.cameras.main.centerY);
+
+		if (this.powerUp && this.localPaddle) {
+			// Add collisions between powerUp and paddles
+			this.physics.add.collider(this.powerUp, this.localPaddle, () => {
+				this.resetPowerUpState();
+
+				// this.powerUp?.setActive(false);
+				console.log("Local PowerUp taken");
+			});
+		}
 		if (this.powerUp && this.remotePaddle) {
 			// Add collisions between powerUp and paddles
 			this.physics.add.collider(this.powerUp, this.remotePaddle, () => {
-				this.powerUp?.setVisible(false);
-				this.powerUp?.setActive(false);
+				this.resetPowerUpState();
 				console.log("Remote PowerUp taken");
 			});
 		}
@@ -354,6 +361,9 @@ export class Part2Scene extends Phaser.Scene {
 					if (this.remotePaddle === undefined) {
 						// console.log("Create Remote Paddle", this.remotePaddle);
 						this.createRemotePaddle();
+
+						// Add powerup
+						this.createPowerUp();
 
 						// Keep reference to this remote Paddle
 						const entity = this.remotePaddle!;
@@ -549,13 +559,19 @@ export class Part2Scene extends Phaser.Scene {
 
 	// launch a powerup
 	launchPowerup(): void {
-		if (this.gameHost) {
+		this.powerUp?.setVisible(true);
+
+		if (this.gameHost && this.powerUp) {
 			// random powerup
 			// let powerType = Phaser.Math.Between(0, 2);
 
+			// set powerup to center
+			this.powerUp.x = this.cameras.main.centerX;
+			this.powerUp.y = this.cameras.main.centerY;
+
 			// random velocity
-			let powerUpVelocityX = Phaser.Math.Between(300, 600)
-			let powerUpVelocityY = Phaser.Math.Between(200, 500);
+			let powerUpVelocityX = Phaser.Math.Between(350, 550)
+			let powerUpVelocityY = Phaser.Math.Between(200, 300);
 
 			// random scale
 			let powerupScale = Phaser.Math.Between(0.25, 1);
@@ -567,9 +583,16 @@ export class Part2Scene extends Phaser.Scene {
 			// create powerup
 			this.powerUp?.setScale(powerupScale);
 			this.powerUp?.setVelocity(powerUpVelocityX, powerUpVelocityY);
-
-			this.runningPowerUp = true;
 		}
+	}
+
+	resetPowerUpState(): void {
+		this.powerUp?.setVisible(false);
+		this.powerUp?.setVelocity(0);
+
+		//set back to center
+		this.powerUp?.setPosition(this.cameras.main.centerX, this.cameras.main.centerY);
+		this.runningPowerUp = false;
 	}
 
 	async push_match_stats() {
@@ -677,21 +700,20 @@ export class Part2Scene extends Phaser.Scene {
 		}
 
 		// Launch powerup
-		if (this.runningGame && this.gameHost && !this.powerUp?.visible && !this.runningPowerUp) {
-			console.log("new powerup in 3sec");
-			this.time.delayedCall(3000, () => {
-				this.powerUp?.setVisible(true);
-				this.launchPowerup();
-			});
-		}
+		if (this.gameHost) {
+			if (this.runningGame && this.gameHost && !this.powerUp?.visible && !this.runningPowerUp) {
+				console.log("new powerup in 3sec", this.powerUp?.visible, this.runningPowerUp);
+				this.runningPowerUp = true;
+				this.time.delayedCall(3000, () => {
+					this.launchPowerup();
+				});
+			}
 
-		if (this.powerUp && (this.powerUp.x < 0 || this.powerUp.x > this.cameras.main.width)) {
-			console.log("del powerup",this.powerUp.x , this.powerUp.y);
-			this.powerUp.setVisible(false);
-			this.powerUp?.setVelocity(0);
-			this.runningPowerUp = false;
+			if (this.powerUp && (this.powerUp.x < 0 || this.powerUp.x > this.cameras.main.width)) {
+				console.log("del powerup", this.powerUp.x, this.powerUp.y);
+				this.resetPowerUpState();
+			}
 		}
-
 		// Update input player
 		if (this.inputPayload !== undefined) {
 			// send input to the server if changes to avoid server spamming
