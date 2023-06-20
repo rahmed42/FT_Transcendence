@@ -15,11 +15,11 @@ let currentUser = get(user);
 let skins: any[];
 
 
-async function load_skins() {
-	skins = await getUpdatedSkins();
-}
+// async function load_skins() {
+// 	skins = await getUpdatedSkins();
+// }
 
-load_skins();
+// load_skins();
 
 export class Part2Scene extends Phaser.Scene {
 	//room reference
@@ -74,9 +74,9 @@ export class Part2Scene extends Phaser.Scene {
 	myName: string | undefined;
 	opponentName: string | undefined;
 
-	async load_skins() {
-		skins = await getUpdatedSkins();
-	}
+	// async load_skins() {
+	// 	skins = await getUpdatedSkins();
+	// }
 
 	// Constructor of the scene
 	constructor() {
@@ -105,7 +105,8 @@ export class Part2Scene extends Phaser.Scene {
 
 	// preload basic assets
 	async preload() {
-		this.load_skins();
+		skins = await getUpdatedSkins();
+		// this.load_skins();
 		this.load.image(skins[0].name, skins[0].src);
 		this.load.image(skins[1].name, skins[1].src);
 		this.load.image(skins[2].name, skins[2].src);
@@ -480,7 +481,7 @@ export class Part2Scene extends Phaser.Scene {
 	}
 
 	// Utils
-	async countDown(): Promise<void> {
+	countDown(): void {
 		this.myScoreText!.setColor('#ffffff');
 		this.myScoreText!.setText(this.myScore.toString());
 		this.opponentScoreText!.setText(this.opponentScore.toString());
@@ -637,7 +638,7 @@ export class Part2Scene extends Phaser.Scene {
 		this.countDown();
 	}
 
-	async resetGame(home_button: boolean): Promise<void> {
+	resetGame(home_button: boolean): void {
 		// Wait for new game host
 		this.gameHost = false;
 		this.runningGame = false;

@@ -149,7 +149,7 @@
 		// Clear the user store
 		resetUser();
 		// Clear the cookie
-		// document.cookie = 'jwt=;';
+		document.cookie = 'jwt=;';
 		// sessionStorage.setItem('isLogged', JSON.stringify(false));
 		// sessionStorage cleaning
 		sessionStorage.removeItem('user');
