@@ -5,33 +5,24 @@
   import { writable } from 'svelte/store';
 
   let messageInput = '';
-  let messages = [
-    //"tamere la gitane qui radotte du saucisson pleins la bouche de potiron polochon petoqu de la nana dd'en bas ninanana ça va comme ça les pyjamas poupoupou ça va comme ça nananana ça va comme ça ça gaz pour toi meme pas mais wtf pourquoi il met pas tout au meme endroit zebiah ouai ok c'st chelou ce bailOK KOKOKOKOKOKOK MOMOMOMOMO TOTOTOTOTOKKO &#x200"
-    { content: "tamere la gitane qui radotte du saucisson pleins la bouche de potiron polochon petoqu de la nana dd'en bas ninanana ça va comme ça les pyjamas poupoupou ça va comme ça nananana ça va comme ça ça gaz pour toi meme pas mais wtf pourquoi il met pas tout au meme endroit zebiah ouai ok c'st chelou ce bailOK KOKOKOKOKOKOK MOMOMOMOMO TOTOTOTOTOKKO &#x200", username: "manu", user: true },
-    { content: " ", username: "ange", user: false },
-    { content: "ton pere", username: "manu", user: true },
-    { content: "la choucroute", username: "Tim", user: false },
-    { content: "ton frere", username: "manu", user: true },
-    { content: "le gitan", username: "Rabah", user: false },
-    { content: "ta soeur", username: "Dorian", user: false },
-    { content: "la madeleine", username: "manu", user: true },
-    { content: "2-2 sa mere", username: "manu", user: true },
-    { content: "la pute", username: "Joseph", user: false },
-    { content: "Suuuuuh", username: "Louis", user: false },
-    { content: "CR7!!!", username: "Mathéo", user: false },
-    { content: "tamere", username: "manu", user: true },
-    { content: "le saucisson", username: "ange", user: false },
-    { content: "ton pere", username: "manu", user: true },
-    { content: "la choucroute", username: "Tim", user: false },
-    { content: "ton frere", username: "manu", user: true },
-    { content: "le gitan", username: "Rabah", user: false },
-    { content: "ta soeur", username: "Dorian", user: false },
-    { content: "la madeleine", username: "manu", user: true },
-    { content: "2-2 sa mere", username: "manu", user: true },
-    { content: "la pute", username: "Joseph", user: false },
-    { content: "Suuuuuh", username: "Louis", user: false },
-    { content: "CR7!!!", username: "Mathéo", user: false }
-  ];
+  interface Message {
+    content: string;
+    username: string;
+    user: boolean;
+  }
+  let messages:Message[] = [];
+
+  let openAdminModal = false;
+  let changePassword = false;
+  let banUser = false;
+  let muteUser = false;
+  let grantAdmin = false;
+  let expulUser = false;
+  let selectedUserparam = '';
+  let newPassword = '';
+  let muteDuration = 0;
+
+  let isAdmin = false;
   let isInvalidType = false;
   let isInvalidName = false;
   let isInvalidPassword = false;
@@ -53,6 +44,9 @@
   let error: string = '';
   let selectedChannel = '';
   let selectedUser = '';
+  let selectedSection = '';
+  let login: string = '';
+  
   onMount(async () => {
     /*const socket = io('http://localhost:3333', {
       transports: ['websocket'],
@@ -73,12 +67,21 @@
     const storedUser = sessionStorage.getItem('userID');
     */
     let storedUser = sessionStorage.getItem('userID');
+    let storedLogin = sessionStorage.getItem('login');
     if (storedUser && storedUser !== 'undefined' && storedUser !== 'null') {
       userID = parseInt(storedUser || '0');
     } else {
       let test = get(user);
       userID = parseInt(test.id);
       sessionStorage.setItem('userID', JSON.stringify(userID));
+    }
+
+    if (storedLogin && storedLogin !== 'undefined' && storedLogin !== 'null') {
+        login = storedLogin;
+    } else {
+      let test = get(user);
+      login = test.login;
+      sessionStorage.setItem('login', JSON.stringify(login));
     }
     token = sessionStorage.getItem('jwt') || '';
 
@@ -91,12 +94,270 @@
     });
     if (response.ok) {
       const data = await response.json();
+      console.log(data.rooms);
       channelList.set(data.rooms);
     } else {
       const data = await response.json();
       console.log(data.message);
     }
   });
+
+  function selectSection(section: string) {
+    selectedSection = section;
+  }
+
+  async function changeUserPassword(newPassword: string) 
+  {
+    try
+    {
+      const response = await fetch("http://localhost:3333/chat/changePassword", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + token,
+        },
+          body: JSON.stringify({
+          idUser: userID,
+          roomName: selectedChannel,
+          password: newPassword,
+          }),
+        });
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.message);
+        }
+      }
+      catch (err) {
+        if (err instanceof Error)
+          alert(err.message);
+    }
+  }
+
+async function grantUserAdmin() 
+{
+  try
+  {
+    const response = await fetch("http://localhost:3333/chat/giveAdmin", {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: 'Bearer ' + token,
+    },
+      body: JSON.stringify({
+      idAdmin: userID,
+      roomName: selectedChannel,
+      loginUserToExecute: selectedUserparam,
+      }),
+    });
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.message);
+    }
+  }
+  catch (err) {
+    if (err instanceof Error)
+      alert(err.message);
+  }     
+}
+
+async function expulSelectedUser() {
+  try
+  {
+    const response = await fetch("http://localhost:3333/chat/kickUser", {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: 'Bearer ' + token,
+    },
+      body: JSON.stringify({
+      idAdmin: userID,
+      roomName: selectedChannel,
+      loginUserToExecute: selectedUserparam,
+      }),
+    });
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.message);
+    }
+  }
+  catch (err) {
+    if (err instanceof Error)
+      alert(err.message);
+  } 
+}
+
+async function banSelectedUser() {
+  try
+  {
+    const response = await fetch("http://localhost:3333/chat/giveAdmin", {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: 'Bearer ' + token,
+    },
+      body: JSON.stringify({
+      idAdmin: userID,
+      roomName: selectedChannel,
+      loginUserToExecute: selectedUserparam,
+      }),
+    });
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.message);
+    }
+  }
+  catch (err) {
+    if (err instanceof Error)
+      alert(err.message);
+  } 
+}
+
+async function unmuteUser() {
+  try
+  {
+    const response = await fetch("http://localhost:3333/chat/unmuteUser", {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + token,
+      },
+        body: JSON.stringify({
+        idAdmin: userID,
+        roomName: selectedChannel,
+        loginUserToExecute: selectedUserparam,
+        }),
+      });
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.message);
+    }
+  }
+  catch (err) {
+    if (err instanceof Error)
+      alert(err.message);
+  }
+}
+
+async function revokeAdmin() {
+    try {
+        const response = await fetch("http://localhost:3333/chat/removeAdmin", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: 'Bearer ' + token,
+            },
+            body: JSON.stringify({
+                idAdmin: userID,
+                roomName: selectedChannel,
+                loginUserToExecute: selectedUserparam,
+            }),
+        });
+        
+        if (!response.ok) {
+            const data = await response.json();
+            throw new Error(data.message);
+        }
+    } catch (err) {
+        if (err instanceof Error) {
+            alert(err.message);
+        }
+    }
+}
+
+async function unbanUser() {
+    try {
+        const response = await fetch("http://localhost:3333/chat/unbanUser", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: 'Bearer ' + token,
+            },
+            body: JSON.stringify({
+                idAdmin: userID,
+                roomName: selectedChannel,
+                loginUserToExecute: selectedUserparam,
+            }),
+        });
+        
+        if (!response.ok) {
+            const data = await response.json();
+            throw new Error(data.message);
+        }
+    } catch (err) {
+        if (err instanceof Error) {
+            alert(err.message);
+        }
+    }
+}
+
+async function changeChannelType() {
+  try
+  {
+    const response = await fetch("http://localhost:3333/chat/changeRoomType", {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: 'Bearer ' + token,
+    },
+      body: JSON.stringify({
+      idUser: userID,
+      roomName: selectedChannel,
+      password: newPassword,
+      type: newChannelType,
+      }),
+    });
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.message);
+    }
+  }
+  catch (err) {
+    if (err instanceof Error)
+      alert(err.message);
+  } 
+}
+
+async function muteSelectedUser(muteDuration: number) {
+  try
+  {
+    const response = await fetch("http://localhost:3333/chat/giveAdmin", {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: 'Bearer ' + token,
+    },
+      body: JSON.stringify({
+      idAdmin: userID,
+      roomName: selectedChannel,
+      loginUserToExecute: selectedUserparam,
+      muteDuration: muteDuration,
+      }),
+    });
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.message);
+    }
+    else
+      muteDuration = 0;
+  }
+  catch (err) {
+    if (err instanceof Error)
+      alert(err.message);
+  } 
+}
+
+function closeSetupModal() {
+  openAdminModal = false;
+  changePassword = false;
+  banUser = false;
+  muteUser = false;
+  grantAdmin = false;
+  expulUser = false;
+  selectedUserparam = '';
+  newPassword = '';
+  selectedSection = '';
+}
+
 
   function openModal() {
     isModalOpen = true;
@@ -161,7 +422,7 @@
           } else if (response.ok) {
             const newChannel = await response.json();
             channelList.update(channelList => [...channelList, { name: newChannel.room.name }]);
-            // console.log(newChannel.room.name);
+            console.log(newChannel.room.name);
             closeModal();
           }
         }
@@ -238,8 +499,46 @@
   }
 
   async function sendMessage() {
-    console.log(messageInput);
-    messageInput = '';
+    console.log("login : ", login);
+    if (login)
+    {
+      if (messageInput.trim() === '') {
+        return;
+      }
+      messages = [...messages, { content: messageInput, username: login, user: true }];
+      console.log(messages);
+      messageInput = '';
+    }
+  }
+
+  async function confirmSelection() {
+    if (selectedSection === 'changePassword') {
+      changeUserPassword(newPassword);
+    } else if (selectedSection === 'grantAdmin') {
+      grantUserAdmin();
+    } else if (selectedSection === 'expulUser') {
+      expulSelectedUser();
+    } else if (selectedSection === 'banUser') {
+      banSelectedUser();
+    } else if (selectedSection === 'muteUser') {
+      muteSelectedUser(muteDuration);
+    }
+    else if (selectedSection === 'revokeAdmin') {
+      revokeAdmin();
+    }
+    else if (selectedSection === 'unbanUser') {
+      unbanUser();
+    }
+    else if (selectedSection === 'unmuteUser') {
+      unmuteUser();
+    }
+    else if (selectedSection === 'changeChannelType') {
+      changeChannelType();
+    }
+    else {
+      console.log("error");
+    }
+    closeSetupModal();
   }
 
   async function getChannel(channel: string) {
@@ -260,25 +559,168 @@
         if (newChannel)
         {
           	userList.set(newChannel.users);
-            //j'aimerais check la réponse du back, si mon userID est admin, alors j'aimerais mettre un bouton pour les admins
-            //pour toutes les options d'administrateur, et si c'est pas un admin, alors j'aimerais pas qu'il y ai de bouton
-            //pour les options d'administrateur
+            messages = newChannel.messages;
+            if (newChannel.administrators) {
+              newChannel.administrators.forEach((admin: {id: number}) => {
+            if (admin.id === userID) {
+              console.log("User is an admin");
+              isAdmin = true;
 
-            console.log(newChannel);
+            } else {
+              console.log("User is not an admin");
+          }
+        });
+      }
         }
-       }
+      }
     }
     catch (err) {
       if (err instanceof Error)
         alert(err.message);
     }
   }
+
+  async function setup() {
+      openAdminModal = true;
+    }
 </script>
 
 <svelte:head>
   <title>Chat</title>
   <meta name="description" content="Chat Page" />
 </svelte:head>
+
+{#if openAdminModal}
+  <div class="modal">
+    <div class="modal-content">
+      <h3>Setup</h3>
+
+      {#if selectedSection === 'changeChannelType'}
+      <div class="selected-option">
+        <p>Change Type:</p>
+        <label>
+          <input type="radio" value="public" bind:group={newChannelType} /> Public
+        </label>
+        <label>
+          <input type="radio" value="private" bind:group={newChannelType} /> Private
+        </label>
+        <label>
+          <input type="radio" value="protected" bind:group={newChannelType} /> Protected
+        </label>
+    
+        {#if newChannelType === 'protected'}
+          <input bind:value={newPassword} type="password" placeholder="Password" />
+        {/if}
+      </div>
+    {/if}
+
+      {#if selectedSection === 'changePassword'}
+        <div class="selected-option">
+          <p>Change Password:</p>
+          <input bind:value={newPassword} type="password" placeholder="New Password" />
+        </div>
+      {/if}
+
+      {#if selectedSection === 'grantAdmin'}
+        <div class="selected-option">
+          <p>Give Admin:</p>
+          <select bind:value={selectedUserparam}>
+            {#each $userList as user}
+              <option value={user.login}>{user.login}</option>
+            {/each}
+          </select>
+        </div>
+      {/if}
+
+      {#if selectedSection === 'revokeAdmin'}
+        <div class="selected-option">
+          <p>Revoke Admin:</p>
+          <select bind:value={selectedUserparam}>
+            {#each $userList as user}
+              <option value={user.login}>{user.login}</option>
+            {/each}
+          </select>
+        </div>
+      {/if}
+
+      {#if selectedSection === 'expulUser'}
+        <div class="selected-option">
+          <p>Kick User:</p>
+          <select bind:value={selectedUserparam}>
+            {#each $userList as user}
+              <option value={user.login}>{user.login}</option>
+            {/each}
+          </select>
+        </div>
+      {/if}
+
+      {#if selectedSection === 'banUser'}
+        <div class="selected-option">
+          <p>Ban User:</p>
+          <select bind:value={selectedUserparam}>
+            {#each $userList as user}
+              <option value={user.login}>{user.login}</option>
+            {/each}
+          </select>
+        </div>
+      {/if}
+
+      {#if selectedSection === 'muteUser'}
+        <div class="selected-option">
+          <p>Mute User:</p>
+          <select bind:value={selectedUserparam}>
+            {#each $userList as user}
+              <option value={user.login}>{user.login}</option>
+            {/each}
+          </select>
+          <input bind:value={muteDuration} type="number" placeholder="Mute Duration (minutes)" min="1" />
+        </div>
+      {/if}
+
+      {#if selectedSection === 'unbanUser'}
+        <div class="selected-option">
+          <p>Unban User:</p>
+          <select bind:value={selectedUserparam}>
+            {#each $userList as user}
+              <option value={user.login}>{user.login}</option>
+            {/each}
+          </select>
+        </div>
+      {/if}
+
+      {#if selectedSection === 'unmuteUser'}
+        <div class="selected-option">
+          <p>Unmute User:</p>
+          <select bind:value={selectedUserparam}>
+            {#each $userList as user}
+              <option value={user.login}>{user.login}</option>
+            {/each}
+          </select>
+        </div>
+      {/if}
+
+      <div class="section-select">
+        <label for="sectionSelect">Select Section:</label>
+        <select bind:value={selectedSection} id="sectionSelect">
+          <option value="changeChannelType">Change Type</option>
+          <option value="changePassword">Change Password</option>
+          <option value="grantAdmin">Give Admin</option>
+          <option value="revokeAdmin">Revoke Admin</option>
+          <option value="expulUser">Kick User</option>
+          <option value="banUser">Ban User</option>
+          <option value="muteUser">Mute User</option>
+          <option value="unbanUser">Unban User</option>
+          <option value="unmuteUser">Unmute User</option>
+        </select>
+      </div>
+
+      <div class="modal-actions">
+        <button on:click={() => confirmSelection()}>Confirm</button>
+        <button on:click={() => closeSetupModal()}>Cancel</button>
+      </div>
+    </div>
+  </div>
+{/if}
 
 {#if isJoinModalOpen}
   <div class="modal">
@@ -317,9 +759,12 @@
       {#if selectedChannel != null}
         <div class="channel-header">
           <h2>{selectedChannel}</h2>
+          {#if isAdmin}
+            <button on:click={setup} class="button-admin">Setup</button>
+          {/if}
         </div>
       {/if}
-      {#if $channelList !== null && $channelList.length === 0}
+      {#if $channelList != null && $channelList.length === 0}
         <p>No channels joined</p>
       {/if}
     </div>
@@ -332,7 +777,7 @@
     {#if channelList !== null}
       {#each $channelList as channel}
         <button class="channel-button p-anim" on:click={() => getChannel(channel.name)}>
-          {channel.name}
+            {channel.name}
         </button>
       {/each}
     {/if}
@@ -451,10 +896,12 @@
     max-height: 100vh;
     border-right: 1px solid #ccc; /* Ajout de la bordure */
     padding-right: 10px; /* Ajout des marges intérieures */
+    overflow-y: auto;
   }
 
   .channel-button,
-  .user-button {
+  .user-button,
+  .button-admin{
     display: block;
     width: 100%;
     padding: 10px;
@@ -467,6 +914,7 @@
 
   .channel-header {
     text-align: center;
+    font-weight: bold;
   }
 
   .create-channel {

@@ -1,39 +1,43 @@
 import Phaser, { Textures } from "phaser";
 import { Room, Client } from "colyseus.js";
 import { BACKEND_URL } from "../backend";
+import { user, type User } from '../../../stores/user';
 
-//Style modern
-import boardStyle1 from '$lib/assets/style1/Board.png';
-import ballStyle1 from '$lib/assets/style1/Ball.png';
-import myPaddleStyle1 from '$lib/assets/style1/mypaddle.png';
-import opponentPaddleStyle1 from '$lib/assets/style1/otherpaddle.png';
+//Style Default
+import { skins } from "./SceneSelector";
+
+// User getter
+let currentUser: User | undefined;
 
 export class Part2Scene extends Phaser.Scene {
 	//room reference
 	room: Room | undefined;
 
-	// Players
-	// playerEntities: { [sessionId: string]: Phaser.Types.Physics.Arcade.ImageWithDynamicBody } = {};
+	// Players we will assign each player visual representation here by their `sessionId`
+	playerEntities: { [sessionId: string]: Phaser.Types.Physics.Arcade.ImageWithDynamicBody } = {};
 
 	// mouse pointer
 	pointer: Phaser.Input.Pointer | undefined;
 
+	//Start state
+	startState: boolean;
+	gameHost: boolean;
+	runningGame: boolean;
+
 	// local input cache
-	inputPayload = {
-		left: false,
-		right: false,
-		up: false,
-		down: false,
+	inputPayload: any = {
+		y: 300,
+		start: false,
+		ballX: 400,
+		ballY: 300,
+		name: "",
 	};
 
 	// Set Paddle
-	// localPaddle: Phaser.GameObjects.Rectangle | undefined;
 	localPaddle: Phaser.Types.Physics.Arcade.ImageWithDynamicBody | undefined;
-	// remotePaddle: Phaser.GameObjects.Rectangle | undefined;
 	remotePaddle: Phaser.Types.Physics.Arcade.ImageWithDynamicBody | undefined;
 
 	// Set Ball
-	// ball: Phaser.Physics.Arcade.Image | undefined; //Phaser.GameObjects.Rectangle |undefined;
 	ball: Phaser.Types.Physics.Arcade.ImageWithDynamicBody | undefined;
 
 	// Score
@@ -50,19 +54,33 @@ export class Part2Scene extends Phaser.Scene {
 	// scene reference
 	activeScene: string;
 
+	// Player Name
+	myName: string | undefined;
+	opponentName: string | undefined;
+
+
 	// Constructor of the scene
 	constructor() {
 		// active false to prevent the scene from starting automatically
-		super({ key: "part2", active: false });
+		super({ key: "Part2", active: false });
 		this.activeScene = 'Part2Scene';
 
 		// Initialize the room
 		this.room = new Room("Modern");
-		// console.log("Init %s Pong Room", this.room.name);
 
 		// Initialize the game state
 		this.myScore = 0;
 		this.opponentScore = 0;
+
+		// Init start state
+		this.startState = false;
+		this.gameHost = false;
+		this.runningGame = false;
+
+		const unsubscribe = user.subscribe((value) => {
+			// update currentUser with last user value at store changes
+			currentUser = value;
+		});
 	}
 
 	// set the active scene
@@ -72,131 +90,76 @@ export class Part2Scene extends Phaser.Scene {
 
 	// preload basic assets
 	preload() {
-		//Style Modern1
-		this.load.image('ballStyle1', ballStyle1);
-		this.load.image('myPaddleStyle1', myPaddleStyle1);
-		this.load.image('opponentPaddleStyle1', opponentPaddleStyle1);
-		this.load.image('boardStyle1', boardStyle1);
+		//Default style
+		for (const skin of skins) {
+			this.load.image(skin.name, skin.src);
+		}
 	}
 
 	async create() {
 		// Define camera size
-		this.cameras.main = this.cameras.add(0, 0, this.game.config.width, this.game.config.height, false, 'Modern');
+		this.cameras.main = this.cameras.add(0, 0, this.game.config.width as number, this.game.config.height as number, false, 'Modern');
+
+		//Get player name
+		if (currentUser && currentUser.login)
+			this.myName = currentUser.login; // To fetch from DB / discard current stored user
 
 		this.gameInit();
+
+		// connect to the room
+		await this.connect();
+
+		// listen for new players in the room
+		this.gameListeners();
+	}
+
+	// Connect with the room
+	async connect() {
+		// add connection status text
+		const connectionStatusText = this.add
+			.text(50, 0, "Trying to connect \nwith the server...")
+			.setStyle({ color: "#ff0000" })
+			.setPadding(4)
+
+		const client = new Client(BACKEND_URL);
+
+		try {
+			this.room = await client.joinOrCreate("Modern", {});
+			console.log("User : %s - Connected to game : %s", this.myName, this.room.name);
+
+			// connection successful!
+			connectionStatusText.destroy();
+		} catch (e) {
+			console.error("Error connecting to room: ", e);
+			connectionStatusText.setText("Connection error.\nPlease try again later.");
+		}
 	}
 
 	// 	/* Methods */
-	gameListeners(): void {
-		// connect with the room
-		// await this.connect();
-
-		// listen for new players
-		// this.room.state.players.onAdd((player, sessionId) => {
-		// 	console.log("New player joined with sessionId ", player, sessionId);
-
-		// 	const entity = this.physics.add.image(player.x, player.y, 'ship_0001');
-
-		// 	// keep a reference of it on `playerEntities`
-		// 	this.playerEntities[sessionId] = entity;
-
-		// 	// listening for server updates we need all the new coordinates at once with .onChange()
-		// 	player.onChange(() => {
-		// 		//
-		// 		// update local position immediately
-		// 		// (WE WILL CHANGE THIS ON PART 2)
-		// 		//
-		// 		entity.x = player.x;
-		// 		entity.y = player.y;
-		// 	});
-		// });
-
-		// 	// Listen for new players
-		// 	this.room.state.players.onAdd((player, sessionId) => {
-		// 		/* Player one */
-		// 		// create a new player entity
-		// 		const entity = this.physics.add.image(player.x, player.y, 'myPaddle');
-
-		// 		// keep a reference of it on `playerEntities`
-		// 		this.playerEntities[sessionId] = entity;
-
-		// 		// listening for server updates we need all the new coordinates at once with .onChange()
-		// 		player.onChange(() => {
-		// 			// update local position immediately
-		// 			entity.x = player.x;
-		// 			entity.y = player.y;
-		// 		});
-
-		// 		/* Player two */
-		// 		// create second player entity
-		// 		const opponentEntity = this.physics.add.image(player.x, player.y, 'opponentPaddle');
-
-		// 		// keep a reference of it on `playerEntities`
-		// 		this.playerEntities[sessionId] = opponentEntity;
-
-		// 		// listening for server updates we need all the new coordinates at once with .onChange()
-		// 		player.onChange(() => {
-		// 			// update local position immediately
-		// 			opponentEntity.x = player.x;
-		// 			opponentEntity.y = player.y;
-		// 		});
-
-		// 		// listen for ball updates
-		// 		this.room.state.ball.onChange(() => {
-		// 			// update local position immediately
-		// 			ball.x = this.room.state.ball.x;
-		// 			ball.y = this.room.state.ball.y;
-		// 		});
-
-		// 		// listen for score updates
-		// 		this.room.state.score.onChange(() => {
-		// 			// update local position immediately
-		// 			scoreText.setText(`Score: ${this.room.state.score.player1} - ${this.room.state.score.player2}`);
-		// 		});
-
-		// 		// listen for game over
-		// 		this.room.state.gameOver.onChange(() => {
-		// 			// update local position immediately
-		// 			if (this.room.state.gameOver) {
-		// 				gameOverText.setText(`Game Over!`);
-		// 			}
-		// 		});
-
-		// 		// Removing disconnected players
-		// 		// remove local reference when entity is removed from the server
-		// 		this.room.state.players.onRemove((player, sessionId) => {
-		// 			const entity = this.playerEntities[sessionId];
-		// 			if (entity) {
-		// 				// destroy entity
-		// 				entity.destroy();
-		// 				// clear local reference
-		// 				delete this.playerEntities[sessionId]
-		// 			}
-		// 		});
-
-		// 		// Camera settings
-		// 		this.cameras.main.setBounds(0, 0, 800, 600);
-	}
-
-	// Game visual callbacks
+	// Game visual Init
 	gameInit(): void {
 		/* SETUP STYLES */
 		// Display styled background
-		const background = this.add.image(0, 0, 'boardStyle1');
+		const background = this.add.image(0, 0, 'boardSkin');
 		background.setDisplaySize(this.cameras.main.width, this.cameras.main.height);
 		background.setOrigin(0, 0);
 
 		// Display ball
-		this.ball = this.physics.add.image(this.cameras.main.centerX, this.cameras.main.centerY, 'ballStyle1');
+		this.ball = this.physics.add.image(this.cameras.main.centerX, this.cameras.main.centerY, 'ballSkin');
 		this.ball.setOrigin(0.5, 0.5);
+		this.ball.setVisible(false);
 
 		// Display score
-		this.myScoreText = this.add.text(this.cameras.main.centerX / 2, 40, '0', { fontSize: '60px', color: 'white' });
-		this.opponentScoreText = this.add.text(this.cameras.main.centerX / 2 * 3, 40, '0', { fontSize: '60px', color: 'white' });
+		this.myScoreText = this.add.text(this.cameras.main.centerX / 2, 40, '0', {
+			fontSize: '64px', color: '#ffffff', stroke: '#000000', strokeThickness: 1
+		});
+		this.opponentScoreText = this.add.text(this.cameras.main.centerX / 2 * 3, 40, '0', {
+			fontSize: '64px', color: '#ffffff', stroke: '#000000', strokeThickness: 1
+		});
 
 		//Init mouse pointer
 		this.pointer = this.input.activePointer;
-		this.pointer.y = 0;
+		this.pointer.y = this.cameras.main.centerY;
 
 		/* SETUP PHYSICS */
 		// Add map bounds, disable collisions on left/right bounds
@@ -209,54 +172,19 @@ export class Part2Scene extends Phaser.Scene {
 			this.ball.setBounce(1);
 		}
 
-		this.input.on('pointermove', () => {
-			if (this.localPaddle)
-				this.localPaddle.destroy();
-
-			if (this.remotePaddle)
-				this.remotePaddle.destroy();
-
-			let posY;
-			if (this.pointer)
-				posY = this.pointer.y;
-			else
-				posY = this.cameras.main.centerY;
-			// Display Paddle and set bounds
-			const paddle = {
-				'x': 20,
-				'y': 100,
-				'pos': posY,
-			};
-
-			this.localPaddle = this.physics.add.image(paddle.x, paddle.pos, 'myPaddleStyle1');
-			this.localPaddle.setOrigin(0.5, 0.5);
-			this.localPaddle.setCollideWorldBounds(true);
-			this.localPaddle.setImmovable(true);
-
-			this.remotePaddle = this.physics.add.image(this.cameras.main.width - paddle.x, paddle.pos, 'opponentPaddleStyle1');
-			this.remotePaddle.setOrigin(0.5, 0.5);
-			this.remotePaddle.setCollideWorldBounds(true);
-			this.remotePaddle.setImmovable(true);
-
-			if (this.ball && this.localPaddle && this.remotePaddle) {
-				// Add collisions between ball and paddles
-				this.physics.add.collider(this.ball, this.localPaddle);
-				this.physics.add.collider(this.ball, this.remotePaddle);
-			}
-		});
-
-
 		/* Adding Menu button */
 		const homeButton = this.add.image(this.cameras.main.centerX, 25, 'button');
 		homeButton.setScale(0.4);
-
 		homeButton.setOrigin(0.5, 0.5);
+		//set menu button semi transparent
 
 		// setting the text as interactive
 		homeButton.setInteractive();
 
 		// adding text on button
-		const homeButtonText = this.add.text(this.cameras.main.centerX, 25, 'Menu', { font: '32px Arial', color: '#ffffff' });
+		const homeButtonText = this.add.text(this.cameras.main.centerX, 25, 'Menu', {
+			font: '32px Arial', color: '#ffffff', stroke: '#000000', strokeThickness: 1
+		});
 		homeButtonText.setOrigin(0.5, 0.5);
 
 		// Add a hover effect when the mouse is over the button
@@ -276,7 +204,7 @@ export class Part2Scene extends Phaser.Scene {
 
 		// Add a pointerdown event to go back to the menu
 		homeButton.on("pointerdown", () => {
-			this.resetGame();
+			this.resetGame(true);
 			this.myScore = 0;
 			this.opponentScore = 0;
 			// Refresh the score
@@ -284,24 +212,274 @@ export class Part2Scene extends Phaser.Scene {
 				this.myScoreText.setText(this.myScore.toString());
 			if (this.opponentScoreText)
 				this.opponentScoreText.setText(this.opponentScore.toString());
-			this.setActiveScene("menu");
-			//console.log(`Running game ${this.activeScene} : Menu`);
-			this.game.scene.switch("part2", "menu");
-		});
-
-		// Adding start button for the Game
-		this.startButton = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, 'Start Game', { font: '64px Arial', color: '#ffffff' });
-		this.startButton.setOrigin(0.5, 0.5);
-		this.startButton.setInteractive();
-
-		this.startButton.on("pointerdown", () => {
-			// Start the game
-			if (this.startButton) {
-				this.startButton.setVisible(false);
-				this.startButton.disableInteractive();
+			// delete Paddles if exists
+			if (this.localPaddle) {
+				this.localPaddle.destroy();
+				this.localPaddle = undefined;
 			}
-			this.startGame();
+			if (this.remotePaddle) {
+				this.remotePaddle.destroy();
+				this.remotePaddle = undefined;
+			}
+			// console.log("after delete Paddles", this.localPaddle, this.remotePaddle);
+			this.setActiveScene("menu");
+			// Stop the current scene (Part2)
+			this.scene.stop('Part2');
+			// console.log(`Going back to ${this.activeScene}`);
+			// Start the menu scene
+			this.scene.start('menu')
+			if (this.room)
+				this.leave(this.room);
 		});
+	}
+
+	createLocalPaddle(): void {
+		let posY;
+		if (this.pointer)
+			posY = this.pointer.y;
+		else
+			posY = this.cameras.main.centerY;
+
+		// Display Paddle and set bounds
+		const paddle = {
+			'x': 20,
+			'pos': posY,
+		};
+		this.localPaddle = this.physics.add.image(paddle.x, paddle.pos, 'myPaddleSkin');
+		this.localPaddle.setOrigin(0.5, 0.5);
+		this.localPaddle.setCollideWorldBounds(true);
+		this.localPaddle.setImmovable(true);
+
+		if (this.ball && this.localPaddle) {
+			// Add collisions between ball and paddles
+			this.physics.add.collider(this.ball, this.localPaddle);
+		}
+		this.input.on('pointermove', () => {
+			if (this.localPaddle && this.pointer)
+				this.localPaddle.y = this.pointer.y;
+		});
+	}
+
+	createRemotePaddle(): void {
+		let posY;
+		if (this.pointer)
+			posY = this.pointer.y;
+		else
+			posY = this.cameras.main.centerY;
+
+		// Display Paddle and set bounds
+		const paddle = {
+			'x': 20,
+			'pos': posY,
+		};
+		this.remotePaddle = this.physics.add.image(this.cameras.main.width - paddle.x, this.cameras.main.centerY, 'otherPaddleSkin');
+		this.remotePaddle.setOrigin(0.5, 0.5);
+		this.remotePaddle.setCollideWorldBounds(true);
+		this.remotePaddle.setImmovable(true);
+
+		if (this.ball && this.remotePaddle) {
+			// Add collisions between ball and paddles
+			this.physics.add.collider(this.ball, this.remotePaddle);
+		}
+	}
+
+	// Game listeners
+	gameListeners(): void {
+		//https://learn.colyseus.io/phaser/1-basic-player-movement.html
+		if (!this.room) { return; }
+
+		// Listen for new players
+		this.room.state.players.onAdd((player, sessionId) => {
+			if (this.room && this.room.state.players.size <= 2) {
+				// console.log("Paddles", this.localPaddle, this.remotePaddle);
+
+				//Setup my Paddle
+				if (this.localPaddle === undefined) {
+					// console.log("Create Local Paddle", this.localPaddle);
+					this.createLocalPaddle();
+
+					//Keep reference to this remote Paddle
+					const entity = this.localPaddle!;
+					this.playerEntities[sessionId] = entity;
+				}
+
+				// waiting for other player
+				if (this.room.state.players.size === 1) {
+					// Start the animation loop if there is only one player
+					this.startButtonText("Waiting for duel", false);
+					this.startAnim();
+				}
+
+				// Second player added
+				if (this.room.state.players.size === 2) {
+					// Setup his paddle
+					if (this.remotePaddle === undefined) {
+						// console.log("Create Remote Paddle", this.remotePaddle);
+						this.createRemotePaddle();
+
+						// Keep reference to this remote Paddle
+						const entity = this.remotePaddle!;
+						this.playerEntities[sessionId] = entity;
+
+						//Triggered when 'y' property changes
+						player.listen("y", (value: number) => {
+							// console.log("remote y", value);
+							if (this.remotePaddle)
+								this.remotePaddle.y = value;
+						});
+
+						//Triggered when 'name' property changes
+						player.listen("name", (value: string) => {
+							console.log("Opponent name", value);
+
+							// Update opponent name
+							this.opponentName = value;
+						});
+
+						// Getting starting game from server
+						this.room.onMessage("startGame", (start: boolean) => {
+							// console.log("started client from broadcast ", start);
+							if (start === true)
+								this.startMatch();
+						});
+
+						// Get ball position from server if not hosting
+						this.room.onMessage("ballX", (ballX: number) => {
+							// console.log("remote MballX", ballX);
+							if (!this.gameHost && this.ball)
+								this.ball.x = ballX;
+						});
+						this.room.onMessage("ballY", (ballY: number) => {
+							// console.log("remote MballY", ballY);
+							if (!this.gameHost && this.ball)
+								this.ball.y = ballY;
+						});
+
+						// Update score from server host
+						this.room.onMessage("opponentScore", (score: number) => {
+							if (!this.gameHost && this.runningGame) {
+								// console.log("remote opponentScore", score);
+								this.opponentScore = score;
+								this.opponentScoreText!.setText(score.toString());
+								// console.log("GH " + this.gameHost + " Opp " + this.opponentScore + "/" + score);
+								if (this.opponentScore >= 3)
+									this.resetGame(false);
+							}
+						});
+
+						this.room.onMessage("myScore", (score: number) => {
+							if (!this.gameHost && this.runningGame) {
+								// console.log("remote myScore", score);
+								this.myScore = score;
+								this.myScoreText!.setText(score.toString());
+								// console.log("GH " + this.gameHost + " My " + this.myScore + "/" + score);
+								if (this.myScore >= 3)
+									this.resetGame(false);
+							}
+						});
+					}
+					// Set start clickable button
+					this.startButtonText("🏓 Start Game 🏓", true);
+					this.startAnim();
+				}
+			}
+		});
+
+		// Listen for removed players
+		this.room.state.players.onRemove((player, sessionId) => {
+			// console.log("onRemove ", sessionId);
+			// delete Paddles if exists
+			if (this.localPaddle) {
+				this.localPaddle.destroy();
+				this.localPaddle = undefined;
+			}
+			if (this.remotePaddle) {
+				this.remotePaddle.destroy();
+				this.remotePaddle = undefined;
+			}
+			// If the other player leaves the game we have to stop the game
+			if (this.room && this.room.state.players.size < 2) {
+				// remove player entity from scene
+				const entity = this.playerEntities[sessionId];
+				if (entity) {
+					// console.log("remote entity ", entity);
+					entity.destroy();
+					delete this.playerEntities[sessionId];
+				}
+				// Kick the last player
+				if (this.room.state.players.size === 1) {
+					this.leave(this.room);
+					alert("The other player left ! Back to the menu...");
+					this.setActiveScene("menu");
+					// console.log(`Going back to ${this.activeScene}`);
+					this.scene.stop('Part2');
+					this.scene.start('menu')
+				}
+			}
+		});
+	}
+
+	// Utils
+	countDown(): void {
+		this.myScoreText!.setColor('#ffffff');
+		this.myScoreText!.setText(this.myScore.toString());
+		this.opponentScoreText!.setText(this.opponentScore.toString());
+
+		//Count from 3 to 0 each second then pop & reset the ball
+		this.startButtonText("3", false);
+		//wait 1 second
+		this.time.delayedCall(1000, () => {
+			this.startButtonText("2", false);
+			this.time.delayedCall(1000, () => {
+				this.startButtonText("1", false);
+				this.time.delayedCall(1000, () => {
+					this.startButtonText("GO !", false);
+					this.time.delayedCall(1000, () => {
+						this.startButton?.destroy();
+						this.ball?.setVisible(true);
+						this.runningGame = true;
+						this.resetBall();
+					});
+				});
+			});
+		});
+	}
+
+	startAnim(): void {
+		// Create a wait animation using Phaser's tweens or animations
+		//https://newdocs.phaser.io/docs/3.52.0/Phaser.Tweens.Events.TWEEN_YOYO
+		const startAnimation = this.tweens.add({
+			targets: this.startButton,
+			alpha: { from: 1, to: 0.3 },
+			ease: 'Power2',
+			duration: 800,
+			yoyo: true,
+			repeat: -1
+		});
+	}
+
+	startButtonText(text: string, clickable: boolean): void {
+		this.startButton?.destroy();
+		this.startButton = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, text, {
+			font: '52px Arial', color: '#ffffff', stroke: '#000000', strokeThickness: 1
+		});
+		this.startButton.setBackgroundColor('#000000');
+		this.startButton.setOrigin(0.5, 0.5);
+		if (clickable) {
+			this.startButton.setInteractive();
+			this.startButton.on("pointerdown", () => {
+				// Start the game
+				if (this.startButton) {
+					this.startButton.setVisible(false);
+					this.startButton.disableInteractive();
+				}
+				// The player who clicked will be the host for the ball update
+				this.gameHost = true;
+				this.startState = true;
+			});
+		}
+		else
+			this.startButton.disableInteractive();
 	}
 
 	// Game logics
@@ -309,77 +487,85 @@ export class Part2Scene extends Phaser.Scene {
 		/* Refresh Score */
 		if (this.myScoreText)
 			this.myScoreText.setText(this.myScore.toString());
-		// this.myScoreText.setText(this.myScore.toString());
 		if (this.opponentScoreText)
 			this.opponentScoreText.setText(this.opponentScore.toString());
-		// this.opponentScoreText.setText(this.opponentScore.toString());
 
 		if (this.ball) {
 			// set the ball to center
 			this.ball.x = this.cameras.main.centerX;
 			this.ball.y = this.cameras.main.centerY;
 
-			// Launch the ball to random direction
-			let velocityX = Phaser.Math.Between(300, 500);
-			let velocityY = Phaser.Math.Between(100, 350);
-			// random negative or positive
-			velocityX *= Math.random() < 0.5 ? 1 : -1;
-			velocityY *= Math.random() < 0.5 ? 1 : -1;
-			this.ball.setVelocity(velocityX, velocityY);
+			if (this.gameHost) {
+				// Launch the ball to random direction
+				let velocityX = Phaser.Math.Between(350, 550);
+				let velocityY = Phaser.Math.Between(200, 300);
 
-			//test
-			//this.ball.setVelocity(300, 0); // to delete
-
-			// Refresh the score
-			if (this.myScoreText)
-				this.myScoreText.setText(this.myScore.toString());
-			if (this.opponentScoreText)
-				this.opponentScoreText.setText(this.opponentScore.toString());
+				// random negative or positive
+				velocityX *= Math.random() < 0.5 ? 1 : -1;
+				velocityY *= Math.random() < 0.5 ? 1 : -1;
+				this.ball.setVelocity(velocityX, velocityY);
+			}
 		}
 	}
 
-	startGame(): void {
+	async push_match_stats(myScore: number, opponentName:string | undefined, opponentScore: number) {
+		await fetch('http://localhost:3333/profil/match_stats', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({
+				currentUser,
+				myScore,
+				opponentName,
+				opponentScore,
+			})
+		});
+	}
+
+	startMatch(): void {
 		// Reset score
 		this.myScore = 0;
 		this.opponentScore = 0;
 
 		// Reset ball
-		this.resetBall();
+		this.countDown();
 	}
 
-	resetGame(): void {
+	resetGame(home_button: boolean): void {
+		if (!home_button)
+			this.push_match_stats(this.myScore, this.opponentName, this.opponentScore);
+
+		// Wait for new game host
+		this.gameHost = false;
+		this.runningGame = false;
+
 		// Reset ball and stop it
 		if (this.ball) {
 			this.resetBall();
 			this.ball.setVelocity(0);
+			this.ball.setVisible(false);
 		}
-		// Show start button
-		if (this.startButton) {
-			this.startButton.setVisible(true);
-			this.startButton.setInteractive();
+
+		if (this.myScore > this.opponentScore) {
+			this.myScoreText!.setColor('#00ff00');
+			this.myScoreText!.setText(this.myScore.toString() + "\n You  WIN !");
+			this.startButtonText("🏓 Beat again ? 🏓", true);
 		}
+		else {
+			this.myScoreText!.setColor('#ff0000');
+			this.myScoreText!.setText(this.myScore.toString() + "\n You  LOSE!");
+			this.startButtonText("🏓  Revenge ?  🏓", true);
+		}
+		this.startAnim();
 	}
 
-	// Connect with the room
-	async connect() {
-		// add connection status text
-		const connectionStatusText = this.add
-			.text(0, 0, "Trying to connect with the server...")
-			.setStyle({ color: "#ff0000" })
-			.setPadding(4)
-
-		const client = new Client(BACKEND_URL);
-
-		try {
-			this.room = await client.joinOrCreate("part2_room", {});
-
-			// connection successful!
-			connectionStatusText.destroy();
-
-		} catch (e) {
-			// couldn't connect
-			connectionStatusText.text = "Could not connect with the server.";
+	leave(room: Room) {
+		if (room) {
+			// Call the leave method on the room instance
+			room.leave();
 		}
+		// console.log('Leaving room');
 	}
 
 	/**
@@ -388,24 +574,63 @@ export class Part2Scene extends Phaser.Scene {
 	 */
 	update(time: number, delta: number): void {
 		// skip loop if not connected with room yet.
-		if (!this.room) {
-			return;
-		}
-		// Reset the ball if outbounds
-		if (this.ball && (this.ball.x < 0 || this.ball.x > this.cameras.main.width)) {
-			if (this.ball.x < 0)
-				this.opponentScore++;
-			else
-				this.myScore++;
+		if (!this.room) { return; }
 
+		// Update scores
+		if (this.ball && this.gameHost) {
+			if (this.ball.x > this.cameras.main.width) {
+				this.myScore++;
+				// console.log("++ My score : ", this.myScore);
+
+				// Send score to server
+				this.room.send("hostScore", this.myScore);
+			} else if (this.ball.x < 0) {
+				this.opponentScore++;
+				// console.log("++ Opponent score : ", this.opponentScore);
+
+				// Send score to server
+				this.room.send("clientScore", this.opponentScore);
+			}
+		}
+
+		// Handle scores from server if host
+		if (this.ball && (this.ball.x < 0 || this.ball.x > this.cameras.main.width)) {
 			if (this.myScore >= 3 || this.opponentScore >= 3)
-				this.resetGame();
+				this.resetGame(false);
 			else
 				this.resetBall();
 		}
-		// send pointer to the server
-		// this.inputPayload.pointerX = this.pointer.x;
-		// this.inputPayload.pointerY = this.pointer.y;
-		// this.room.send(0, this.inputPayload);
+
+		// Update input player
+		if (this.inputPayload !== undefined) {
+			// send input to the server if changes to avoid server spamming
+			if ((this.input.y !== undefined) && (this.inputPayload.y !== this.input.y)) {
+				// console.log("client input : " + this.inputPayload.y + "/ input local " + this.input.y);
+				this.inputPayload.y = this.input.y;
+				this.inputPayload.name = this.myName;
+				this.room.send(0, this.inputPayload);
+			}
+
+			// Add linear interpolation if lag effect is visible
+			//https://learn.colyseus.io/phaser/2-linear-interpolation.html
+
+			// Check change state of start button send to server
+			if ((this.startState !== undefined) && (this.inputPayload.start !== this.startState)) {
+				this.inputPayload.start = this.startState;
+				// console.log("client Start : input " + this.inputPayload.start + "/ start local " + this.startState);
+				this.room.send("start", this.inputPayload);
+
+				// reset state
+				this.startState = false;
+			}
+
+			// send ball position to server
+			if (this.ball && this.gameHost && (this.inputPayload.ballX !== this.ball.x || this.inputPayload.ballY !== this.ball.y)) {
+				// console.log("client ball : input " + this.inputPayload.ballX + " / " + this.inputPayload.ballY + "/ ball local " + this.ball.x + " / " + this.ball.y);
+				this.inputPayload.ballX = this.ball.x;
+				this.inputPayload.ballY = this.ball.y;
+				this.room.send("ball", this.inputPayload);
+			}
+		}
 	}
 }

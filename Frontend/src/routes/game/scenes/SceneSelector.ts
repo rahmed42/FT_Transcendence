@@ -1,10 +1,23 @@
 import * as Phaser from "phaser"; // will import all the Phaser types
 
-// To import images in assets folder
 // Menu
-import backgroundMenu from '$lib/images/backArcade.jpg';
 import logo from '$lib/images/42PongLogo.png';
 import button from '$lib/assets/buttons/blue.png';
+import backgroundMenu from '$lib/images/backArcade.jpg';
+
+// To import images from DB or get this defaults
+let selectedBoard : string = "src/lib/assets/boards/boardDefault.png";
+let selectedMyPaddle : string = "src/lib/assets/paddles/defaultPaddle/defaultPaddleWhite.png";
+let selectedOpponentPaddle : string = "src/lib/assets/paddles/defaultPaddle/defaultPaddleWhite.png";
+let selectedBall : string = "src/lib/assets/balls/ballWhite.png";
+
+//Skins to export
+export const skins = [
+	{ name: 'boardSkin', src: selectedBoard },
+	{ name: 'myPaddleSkin', src: selectedMyPaddle },
+	{ name: 'otherPaddleSkin', src: selectedOpponentPaddle },
+	{ name: 'ballSkin', src: selectedBall },
+];
 
 export class GameSelector extends Phaser.Scene {
 	// Adding game parts list
@@ -21,7 +34,6 @@ export class GameSelector extends Phaser.Scene {
 		// console.log("SceneSelector constructor");
 		super({ key: "menu", active: true });
 		this.activeScene = 'selectorScene';
-
 	}
 
 	/* Methods */
@@ -113,7 +125,7 @@ export class GameSelector extends Phaser.Scene {
 
 				// setting the text as clickable
 				button.on("pointerdown", () => { // set the event when the text is clicked
-					this.setActiveScene(`part${gameType}`); // set the active scene
+					this.setActiveScene(`Part${gameType}`); // set the active scene
 					// console.log(`Running game ${this.activeScene} : ${selector} Pong`);
 					this.runScene(this.activeScene); // run the scene
 				});

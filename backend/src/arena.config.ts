@@ -1,10 +1,10 @@
 import Arena from "@colyseus/arena";
 import { monitor } from "@colyseus/monitor";
+// import { Server } from "colyseus";
 
 /* Import your Room files */
 import { Part1Room } from "./rooms/Part1Room";
 import { Part2Room } from "./rooms/Part2Room";
-
 
 export default Arena({
 	getId: () => "42 Pong",

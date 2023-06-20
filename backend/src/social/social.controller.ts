@@ -36,4 +36,14 @@ export class SocialController {
   async deleteFriend(@Param('id', ParseIntPipe) id: number): Promise<any> {
     return this.socialService.deleteFriend(id);
   }
+
+  @Get('stats/:userLogin')
+  async getUserStats(@Param('userLogin') userLogin: string): Promise<any> {
+    return this.socialService.getUserStats(userLogin);
+  }
+
+  @Get('match-history/:userLogin')
+  async getUserMatchHistory(@Param('userLogin') userLogin: string): Promise<any> {
+    return this.socialService.getUserMatchHistory(userLogin);
+  }
 }
