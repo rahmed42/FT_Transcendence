@@ -102,17 +102,17 @@ export class SocialService {
         },
         include: {
           requester: {
-            select: { login: true, small_pic: true, connected: true, avatar: true }
+            // select: { login: true, small_pic: true, connected: true, avatar: true }
           },
           requestee: {
-            select: { login: true, small_pic: true, connected: true, avatar: true }
+            // select: { login: true, small_pic: true, connected: true, avatar: true }
           },
         },
       });      
     
       return friendList.map((friend) => ({
         id: friend.id,
-        friend: friend.requesterId === user.id ? friend.requestee : friend.requester,
+        // friend: friend.requesterId === user.id ? friend.requestee : friend.requester,
       }));
     }
     

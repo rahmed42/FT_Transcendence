@@ -95,15 +95,6 @@ export class Part2Scene extends Phaser.Scene {
 		this.startState = false;
 		this.gameHost = false;
 		this.runningGame = false;
-<<<<<<< HEAD
-=======
-		this.runningPowerUp = false;
-
-		const unsubscribe = user.subscribe((value) => {
-			// update currentUser with last user value at store changes
-			currentUser = value;
-		});
->>>>>>> 375518213221af6f81be5b6ae03a08b6b69188e0
 	}
 
 	// set the active scene
@@ -119,16 +110,9 @@ export class Part2Scene extends Phaser.Scene {
 		this.load.image(skins[2].name, skins[2].src);
 		this.load.image(skins[3].name, skins[3].src);
 		//Default style
-<<<<<<< HEAD
 		// for (const skin of skins) {
 		// 	this.load.image(skin.name, skin.src);
 		// }
-=======
-		for (const skin of skins) {
-			this.load.image(skin.name, skin.src);
-		}
-		this.load.image("powerUp", powerUp);
->>>>>>> 375518213221af6f81be5b6ae03a08b6b69188e0
 	}
 
 	async create() {
@@ -499,16 +483,12 @@ export class Part2Scene extends Phaser.Scene {
 		this.opponentScoreText!.setText(this.opponentScore.toString());
 
 		//Count from 3 to 0 each second then pop & reset the ball
-<<<<<<< HEAD
 
 		// await fetch('http://localhost:3333/auth/in_game', {
 		// 	method: 'POST',
 		// 	credentials: 'include',
 		// })
 
-=======
-		currentUser!.inGame = true;
->>>>>>> 375518213221af6f81be5b6ae03a08b6b69188e0
 		this.startButtonText("3", false);
 		//wait 1 second
 		this.time.delayedCall(1000, () => {
@@ -591,8 +571,6 @@ export class Part2Scene extends Phaser.Scene {
 		}
 	}
 
-<<<<<<< HEAD
-=======
 	// launch a powerup
 	launchPowerup(): void {
 		this.powerUp?.setVisible(true);
@@ -631,7 +609,6 @@ export class Part2Scene extends Phaser.Scene {
 		this.runningPowerUp = false;
 	}
 
->>>>>>> 375518213221af6f81be5b6ae03a08b6b69188e0
 	async push_match_stats() {
 		await fetch('http://localhost:3333/profil/match_stats', {
 			method: 'POST',
@@ -657,15 +634,7 @@ export class Part2Scene extends Phaser.Scene {
 		this.countDown();
 	}
 
-<<<<<<< HEAD
 	async resetGame(home_button: boolean): Promise<void> {
-=======
-	resetGame(home_button: boolean): void {
-		if (!home_button)
-			this.push_match_stats();
-
-
->>>>>>> 375518213221af6f81be5b6ae03a08b6b69188e0
 		// Wait for new game host
 		this.gameHost = false;
 		// await fetch('http://localhost:3333/auth/login', {
