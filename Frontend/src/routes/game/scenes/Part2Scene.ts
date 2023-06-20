@@ -95,6 +95,7 @@ export class Part2Scene extends Phaser.Scene {
 		this.startState = false;
 		this.gameHost = false;
 		this.runningGame = false;
+		this.runningPowerUp = false;
 	}
 
 	// set the active scene
@@ -113,6 +114,8 @@ export class Part2Scene extends Phaser.Scene {
 		// for (const skin of skins) {
 		// 	this.load.image(skin.name, skin.src);
 		// }
+
+		this.load.image("powerUp", powerUp);
 	}
 
 	async create() {
@@ -637,12 +640,13 @@ export class Part2Scene extends Phaser.Scene {
 	async resetGame(home_button: boolean): Promise<void> {
 		// Wait for new game host
 		this.gameHost = false;
+		this.runningGame = false;
+		this.runningPowerUp = false;
+
 		// await fetch('http://localhost:3333/auth/login', {
 		// 	method: 'POST',
 		// 	credentials: 'include',
 		// })
-		this.runningGame = false;
-		this.runningPowerUp = false;
 
 		// set currentUser variable to Ingame = false
 		currentUser!.inGame = false;
@@ -667,7 +671,7 @@ export class Part2Scene extends Phaser.Scene {
 		else {
 			this.myScoreText!.setColor('#ff0000');
 			this.myScoreText!.setText(this.myScore.toString() + "\n You  LOSE!");
-			this.startButtonText("🏓  Revenge ?  🏓", true);
+			this.startButtonText("🏓 Revenge ? 🏓", true);
 		}
 		this.startAnim();
 		if (!home_button)
@@ -720,7 +724,7 @@ export class Part2Scene extends Phaser.Scene {
 			if (this.runningGame && this.gameHost && !this.powerUp?.visible && !this.runningPowerUp) {
 				console.log("new powerup in few sec", this.powerUp?.visible, this.runningPowerUp);
 				this.runningPowerUp = true;
-				this.time.delayedCall(5000, () => {
+				this.time.delayedCall(3000, () => {
 					this.launchPowerup();
 				});
 			}
