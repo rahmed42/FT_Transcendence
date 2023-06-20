@@ -110,8 +110,12 @@
 	<div class="friends-container">
 		{#each pendingRequests as request (request.id)}
 		<div class="friend-card">
-			<img src={request.requester.small_pic} alt="{request.requester.login}'s picture" class="friend-image"/>
+			<img src={request.requester.avatar ? request.requester.avatar : request.requester.small_pic} alt="{request.requester.login}'s picture" class="friend-image"/>
 			<h3 class="friend-name">{request.requester.login}</h3>
+			<!-- <p class="status">
+				<span class="status-circle {request.requester.connected ? 'connected' : 'disconnected'}"></span>
+				{request.requester.connected ? 'Connected' : 'Disconnected'}
+			</p> -->
 			<button class="accept-button" on:click={() => acceptFriendRequest(request.id)}>Accept</button>
 			<button class="reject-button" on:click={() => rejectFriendRequest(request.id)}>Reject</button>
 		</div>
@@ -124,9 +128,13 @@
 	<div class="friends-container">
 		{#each friends as friend (friend.id)}
 		<div class="friend-card">
-			<div class="delete-icon" on:click={() => deleteFriend(friend.id)}>X</div>
-			<img src={friend.friend.small_pic} alt="{friend.friend.login}'s picture" class="friend-image"/>
+			<button class="delete-icon" on:click={() => deleteFriend(friend.id)}>X</button>
+			<img src={friend.friend.avatar ? friend.friend.avatar : friend.friend.small_pic} alt="{friend.friend.login}'s picture" class="friend-image"/>
 			<h3 class="friend-name">{friend.friend.login}</h3>
+			<p class="status">
+				<span class="status-circle {friend.friend.connected ? 'connected' : 'disconnected'}"></span>
+				{friend.friend.connected ? 'Connected' : 'Disconnected'}
+			</p>			
 			<a href={`/profile/info/?login=${friend.friend.login}`} class="friend-button">View Profile</a>
 		</div>
 		{/each}
@@ -223,8 +231,8 @@
 
 	.delete-icon {
 		position: absolute;
-		top: 5px;
-		right: 5px;
+		top: 2px;
+		right: 2px;
 		color: #f44336;
 		cursor: pointer;
 		font-weight: bold;
@@ -238,10 +246,10 @@
 	}
 
 	.friend-name {
-		margin: 10px 0;
+		margin: 5px 0;
 	}
 
-	.friend-button, .delete-button {
+	.friend-button {
 		margin-top: 5px;
 		padding: 2px 2px;
 		border: none;
@@ -257,14 +265,6 @@
 	.friend-button:hover {
 		background-color: #0056b3;
 		text-decoration: none;
-	}
-
-	.delete-button {
-		background-color: #dc3545;
-	}
-
-	.delete-button:hover {
-		background-color: #c82333;
 	}
 
 	.accept-button, .reject-button {
@@ -291,4 +291,34 @@
 	.reject-button:hover {
 		background-color: #da190b;
 	}
+
+	.status {
+		display: flex;
+		align-items: center;
+		gap: 5px;
+		margin: 3px 0;
+	}
+
+	.status-circle {
+		display: inline-block;
+		width: 10px;
+		height: 10px;
+		border-radius: 50%;
+	}
+
+	@keyframes blink {
+		0% { opacity: 1; }
+		50% { opacity: 0; }
+		100% { opacity: 1; }
+	}
+
+	.status-circle.connected {
+		background-color: #4CAF50; /* green */
+		animation: blink 1s infinite;
+	}
+
+	.status-circle.disconnected {
+		background-color: #f44336; /* red */
+	}
+
 </style>
