@@ -70,12 +70,15 @@
 		}
 	});
 
-	afterUpdate(async () => {
-		// redirect the user if isLogged is true
-		// redirect to home Page if logged in and on login Page / To add on backend checks
-		if (sessionStorage.getItem('user') && window.location.pathname === '/')
-			window.location.href = '/home'
-	});
+	// afterUpdate(async () => {
+	// 	// redirect the user if isLogged is true
+	// 	// redirect to home Page if logged in and on login Page / To add on backend checks
+	// 	// if (sessionStorage.getItem('user') && window.location.pathname === '/')
+	// 	// {
+	// 	// 	console.log(".ew.rt.er.ter,g mosvjreiowhuqwehg");
+	// 	// 	window.location.href = '/home';
+	// 	// }
+	// });
 
 	async function getToken(code: string) {
 		// Fetch token from the server
@@ -148,8 +151,8 @@
 	async function handleLogOut() {
 		// Clear the user store
 		resetUser();
+		await logoutUser();
 		// Clear the cookie
-		document.cookie = 'jwt=;';
 		// sessionStorage.setItem('isLogged', JSON.stringify(false));
 		// sessionStorage cleaning
 		sessionStorage.removeItem('user');
@@ -158,7 +161,7 @@
 		sessionStorage.removeItem('user2FaActivate');
 		// reset currentUser
 		currentUser = null;
-		await logoutUser();
+		document.cookie = 'jwt=;';
 		// need to post gatabase to set connected variable to false;
 	}
 </script>

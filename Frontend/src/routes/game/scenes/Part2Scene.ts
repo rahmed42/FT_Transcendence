@@ -15,11 +15,13 @@ let currentUser = get(user);
 let skins: any[];
 
 
-// async function load_skins() {
-// 	skins = await getUpdatedSkins();
-// }
+async function load_skins() {
+	console.log("Part2Scene load_skins");
+	skins = await getUpdatedSkins();
+	console.log("end loadSkins2", skins);
+}
 
-// load_skins();
+await load_skins();
 
 export class Part2Scene extends Phaser.Scene {
 	//room reference
@@ -74,13 +76,10 @@ export class Part2Scene extends Phaser.Scene {
 	myName: string | undefined;
 	opponentName: string | undefined;
 
-	// async load_skins() {
-	// 	skins = await getUpdatedSkins();
-	// }
-
 	// Constructor of the scene
 	constructor() {
 		// active false to prevent the scene from starting automatically
+		load_skins();
 		super({ key: "Part2", active: false });
 		this.activeScene = 'Part2Scene';
 
@@ -104,17 +103,26 @@ export class Part2Scene extends Phaser.Scene {
 	}
 
 	// preload basic assets
-	async preload() {
-		skins = await getUpdatedSkins();
-		// this.load_skins();
-		this.load.image(skins[0].name, skins[0].src);
-		this.load.image(skins[1].name, skins[1].src);
-		this.load.image(skins[2].name, skins[2].src);
-		this.load.image(skins[3].name, skins[3].src);
-		//Default style
-		// for (const skin of skins) {
-		// 	this.load.image(skin.name, skin.src);
-		// }
+	preload() {
+		console.log("Preloading assets Part2 ...");
+
+		// this.load.image(skins[0].name, skins[0].src);
+		// console.log(skins[0].name, skins[0].src);
+
+		// this.load.image(skins[1].name, skins[1].src);
+		// console.log(skins[1].name, skins[1].src);
+
+		// this.load.image(skins[2].name, skins[2].src);
+		// console.log(skins[2].name, skins[2].src);
+
+		// this.load.image(skins[3].name, skins[3].src);
+		// console.log(skins[3].name, skins[3].src);
+
+		//Loading style
+		for (const skin of skins) {
+			this.load.image(skin.name, skin.src);
+			console.log(skin.name, skin.src);
+		}
 
 		this.load.image("powerUp", powerUp);
 	}
