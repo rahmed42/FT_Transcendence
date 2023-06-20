@@ -318,6 +318,7 @@
         align-items: center;
         justify-content: center;
         text-align: center;
+        width: 33%;
     }
     .stat-item img {
         width: 40px;
