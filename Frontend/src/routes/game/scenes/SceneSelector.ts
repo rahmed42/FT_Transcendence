@@ -26,6 +26,7 @@ async function get_user_skins() {
 		})
 	})
 	const data = await response.json();
+	console.log("get_user_skins data : ", data);
 	selectedBoard = data.boardSkin;
 	selectedMyPaddle = data.myPaddleSkin;
 	selectedOpponentPaddle = data.otherPaddleSkin;
@@ -33,7 +34,15 @@ async function get_user_skins() {
 }
 
 export async function getUpdatedSkins() {
-	await get_user_skins(); 
+	console.log("SS getUpdatedSkins -->>>> ");
+	await get_user_skins();
+	console.log("SS getUpdatedSkins after Await get_user_skins");
+
+	console.log("SS selectedBoard : ", selectedBoard);
+	console.log("SS selectedMyPaddle : ", selectedMyPaddle);
+	console.log("SS selectedOpponentPaddle : ", selectedOpponentPaddle);
+	console.log("SS selectedBall : ", selectedBall);
+
 	return [
 		{ name: 'boardSkin', src: selectedBoard },
 		{ name: 'myPaddleSkin', src: selectedMyPaddle },
@@ -48,10 +57,10 @@ export class GameSelector extends Phaser.Scene {
 		'1': "Original",
 		'2': "Modern",
 	};
-	
+
 	// scene reference
 	activeScene: string;
-	
+
 	// GameSelector constructor
 	constructor() {
 		super({ key: "menu", active: true });
