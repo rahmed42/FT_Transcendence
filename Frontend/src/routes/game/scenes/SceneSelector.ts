@@ -1,4 +1,6 @@
 import * as Phaser from "phaser"; // will import all the Phaser types
+import { get } from "svelte/store";
+import { user, type User } from '../../../stores/user';
 
 // Menu
 import logo from '$lib/images/42PongLogo.png';
@@ -6,18 +8,39 @@ import button from '$lib/assets/buttons/blue.png';
 import backgroundMenu from '$lib/images/backArcade.jpg';
 
 // To import images from DB or get this defaults
-let selectedBoard : string = "src/lib/assets/boards/boardDefault.png";
-let selectedMyPaddle : string = "src/lib/assets/paddles/defaultPaddle/defaultPaddleWhite.png";
-let selectedOpponentPaddle : string = "src/lib/assets/paddles/defaultPaddle/defaultPaddleWhite.png";
-let selectedBall : string = "src/lib/assets/balls/ballWhite.png";
+let selectedBoard : string | undefined
+let selectedMyPaddle : string | undefined
+let selectedOpponentPaddle: string | undefined
+let selectedBall : string | undefined
 
-//Skins to export
-export const skins = [
-	{ name: 'boardSkin', src: selectedBoard },
-	{ name: 'myPaddleSkin', src: selectedMyPaddle },
-	{ name: 'otherPaddleSkin', src: selectedOpponentPaddle },
-	{ name: 'ballSkin', src: selectedBall },
-];
+let currentUser = get(user);
+
+async function get_user_skins() {
+	const response = await fetch("http://localhost:3333/profil/get_skins", {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+		},
+		body: JSON.stringify({
+			currentUser,
+		})
+	})
+	const data = await response.json();
+	selectedBoard = data.boardSkin;
+	selectedMyPaddle = data.myPaddleSkin;
+	selectedOpponentPaddle = data.otherPaddleSkin;
+	selectedBall = data.ballSkin;
+}
+
+export async function getUpdatedSkins() {
+	await get_user_skins(); 
+	return [
+		{ name: 'boardSkin', src: selectedBoard },
+		{ name: 'myPaddleSkin', src: selectedMyPaddle },
+		{ name: 'otherPaddleSkin', src: selectedOpponentPaddle },
+		{ name: 'ballSkin', src: selectedBall },
+	];
+}
 
 export class GameSelector extends Phaser.Scene {
 	// Adding game parts list
@@ -25,14 +48,14 @@ export class GameSelector extends Phaser.Scene {
 		'1': "Original",
 		'2': "Modern",
 	};
-
+	
 	// scene reference
 	activeScene: string;
-
+	
 	// GameSelector constructor
 	constructor() {
-		// console.log("SceneSelector constructor");
 		super({ key: "menu", active: true });
+		// console.log("SceneSelector constructor");
 		this.activeScene = 'selectorScene';
 	}
 
@@ -132,6 +155,4 @@ export class GameSelector extends Phaser.Scene {
 			}
 		}
 	}
-
-
-}
+};

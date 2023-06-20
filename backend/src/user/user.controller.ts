@@ -38,4 +38,8 @@ export class UserController {
         const token = request.cookies;
         await this.userService.update_choosed_skins(token, body);
     }
+    @Post('get_skins')
+    async get_user_skins(@Body() body: any) {
+        return await this.userService.get_skins(body);
+    }
 }

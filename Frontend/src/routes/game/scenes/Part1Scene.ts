@@ -2,12 +2,22 @@ import Phaser, { Textures } from "phaser";
 import { Room, Client } from "colyseus.js";
 import { BACKEND_URL } from "../backend";
 import { user, type User } from '../../../stores/user';
+import { get } from "svelte/store";
 
 //Style Default
-import { skins } from "./SceneSelector";
+// import { skins } from "./SceneSelector";
+import { getUpdatedSkins } from "./SceneSelector";
 
 // User getter
-let currentUser: User | undefined;
+let currentUser = get(user);
+let skins: any[];
+
+
+async function load_skins() {
+	skins = await getUpdatedSkins();
+}
+
+load_skins();
 
 export class Part1Scene extends Phaser.Scene {
 	//room reference
@@ -58,6 +68,9 @@ export class Part1Scene extends Phaser.Scene {
 	myName: string | undefined;
 	opponentName: string | undefined;
 
+	async load_skins() {
+		skins = await getUpdatedSkins();
+	}
 
 	// Constructor of the scene
 	constructor() {
@@ -76,11 +89,6 @@ export class Part1Scene extends Phaser.Scene {
 		this.startState = false;
 		this.gameHost = false;
 		this.runningGame = false;
-
-		const unsubscribe = user.subscribe((value) => {
-			// update currentUser with last user value at store changes
-			currentUser = value;
-		});
 	}
 
 	// set the active scene
@@ -89,11 +97,16 @@ export class Part1Scene extends Phaser.Scene {
 	}
 
 	// preload basic assets
-	preload() {
+	async preload() {
+		this.load_skins();
+		this.load.image(skins[0].name, skins[0].src);
+		this.load.image(skins[1].name, skins[1].src);
+		this.load.image(skins[2].name, skins[2].src);
+		this.load.image(skins[3].name, skins[3].src);
 		//Default style
-		for (const skin of skins) {
-			this.load.image(skin.name, skin.src);
-		}
+		// for (const skin of skins) {
+		// 	this.load.image(skin.name, skin.src);
+		// }
 	}
 
 	async create() {
@@ -420,13 +433,18 @@ export class Part1Scene extends Phaser.Scene {
 	}
 
 	// Utils
-	countDown(): void {
+	async countDown(): Promise<void> {
 		this.myScoreText!.setColor('#ffffff');
 		this.myScoreText!.setText(this.myScore.toString());
 		this.opponentScoreText!.setText(this.opponentScore.toString());
 
 		//Count from 3 to 0 each second then pop & reset the ball
-		currentUser!.inGame = true;
+
+		// await fetch('http://localhost:3333/auth/in_game', {
+		// 	method: 'POST',
+		// 	credentials: 'include',
+		// })
+
 		this.startButtonText("3", false);
 		//wait 1 second
 		this.time.delayedCall(1000, () => {
@@ -534,13 +552,13 @@ export class Part1Scene extends Phaser.Scene {
 		this.countDown();
 	}
 
-	resetGame(home_button: boolean): void {
-		if (!home_button)
-			this.push_match_stats();
-
+	async resetGame(home_button: boolean):	Promise<void> {
 		// Wait for new game host
 		this.gameHost = false;
-		currentUser!.inGame = false;
+		// await fetch('http://localhost:3333/auth/login', {
+		// 	method: 'POST',
+		// 	credentials: 'include',
+		// })
 		this.runningGame = false;
 
 		// Reset ball and stop it
@@ -549,7 +567,6 @@ export class Part1Scene extends Phaser.Scene {
 			this.ball.setVelocity(0);
 			this.ball.setVisible(false);
 		}
-		// set currentUser variable to Ingame = false
 
 		if (this.myScore > this.opponentScore) {
 			this.myScoreText!.setColor('#00ff00');
@@ -562,6 +579,8 @@ export class Part1Scene extends Phaser.Scene {
 			this.startButtonText("🏓  Revenge ?  🏓", true);
 		}
 		this.startAnim();
+		if (!home_button)
+			this.push_match_stats();
 	}
 
 	leave(room: Room) {

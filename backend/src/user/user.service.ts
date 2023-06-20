@@ -100,11 +100,11 @@ export class UserService {
                 }
             })
         }
-        const userMatches = await this.prisma.user.findUnique({
-            where: { login: body.currentUser.login },
-        }).matchHistory();
+        // const userMatches = await this.prisma.user.findUnique({
+        //     where: { login: body.currentUser.login },
+        // }).matchHistory();
 
-        console.log(userMatches);
+        // console.log(userMatches);
     }
     async update_choosed_skins(tokebObject: {jwt : string}, body: any) {
         const user = await this.jwt.decode(tokebObject.jwt);
@@ -121,5 +121,20 @@ export class UserService {
                 }
             })
         }
+    }
+    async get_skins(body: any) {
+        const user = await this.prisma.user.findUnique({
+            where: {
+                id: body.currentUser.id,
+            }
+        })
+        const payload = {
+            boardSkin: user.selectedBoard,
+            myPaddleSkin: user.selectedMyPaddle,
+            otherPaddleSkin: user.selectedOpponentPaddle,
+            ballSkin: user.selectedBall,
+        }
+        // console.log(payload);
+        return payload
     }
 }

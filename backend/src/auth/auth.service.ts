@@ -103,7 +103,7 @@ export class AuthService {
                     id: user.id
                 },
                 data: {
-                    connected: true,
+                    status: "login",
                 }
             })
         }
@@ -116,7 +116,20 @@ export class AuthService {
                     id: user.id
                 },
                 data: {
-                    connected: false,
+                    status: "logout",
+                }
+            })
+        }
+    }
+    async inGameUser(tokenObject: { jwt: string }) {
+        const user = await this.jwt.decode(tokenObject.jwt);
+        if (typeof user === 'object') {
+            await this.prisma.user.update({
+                where: {
+                    id: user.id
+                },
+                data: {
+                    status: "ingame",
                 }
             })
         }
