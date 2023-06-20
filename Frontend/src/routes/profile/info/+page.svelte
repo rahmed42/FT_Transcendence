@@ -10,14 +10,13 @@
     let stats = null;
     let matchHistory = [];
 
-    const friend_username = new URLSearchParams(window.location.search).get('login');
-
     function formatDate(isoDateString) {
         const date = new Date(isoDateString);
         return `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
     }
 
 	onMount(async () => {
+        const friend_username = new URLSearchParams(window.location.search).get('login');
 		async function getUserInfo() {
 			const response = await fetch('http://localhost:3333/profil/friends?login=' + friend_username, {
 				method: 'GET',
