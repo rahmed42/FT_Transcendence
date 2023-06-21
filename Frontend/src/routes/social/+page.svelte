@@ -2,14 +2,15 @@
 	import { notification } from '../../stores/notificationStore.js';
 	import { user } from '../../stores/user';
 
-	// Create a ".env" file at the root of Frontend folder and add "VITE_API_URL=http://localhost:3333"
     const apiUrl = import.meta.env.VITE_API_URL;
 
 	let pendingRequests = [];
 	let friends = [];
 	let requesteeLogin;
+	let friendRequestModalOpen = false;
+  	let requesteeLoginModal = '';
   
-	// Define a reactive statement that triggers when $user.login changes
+	// Reactive statement that triggers when $user.login changes
 	$: {
 		if ($user.login) {
 			refreshData();
@@ -51,13 +52,14 @@
 	  if (res.ok) { 
 		notification.set('Friend request sent successfully!');
 		setTimeout(() => {
-    	  notification.set('');
+    		notification.set('');
     	}, 5000);
 		await refreshData();
-	  } else {
+	  }
+	  else {
 		notification.set('Failed to send friend request!');
 		setTimeout(() => {
-     	  notification.set('');
+     		notification.set('');
    		}, 5000);
 	  }
 	}
@@ -66,9 +68,6 @@
       await fetch(`${apiUrl}/social/friend/${id}`, { method: 'DELETE' });
       await refreshData();
 	}
-
-	let friendRequestModalOpen = false;
-  	let requesteeLoginModal = '';
 
 	function openFriendRequestModal() {
 		friendRequestModalOpen = true;
@@ -84,12 +83,10 @@
 		await sendFriendRequest();
 		closeFriendRequestModal();
 	}
-
 </script>
 
 <section>
 	<button class="btn" on:click={openFriendRequestModal}>Send a friend request</button>
-
 	{#if friendRequestModalOpen}
 		<div class="modal">
 			<div class="modal-content">
@@ -112,10 +109,6 @@
 		<div class="friend-card">
 			<img src={request.requester.avatar ? request.requester.avatar : request.requester.small_pic} alt="{request.requester.login}'s picture" class="friend-image"/>
 			<h3 class="friend-name">{request.requester.login}</h3>
-			<!-- <p class="status">
-				<span class="status-circle {request.requester.connected ? 'connected' : 'disconnected'}"></span>
-				{request.requester.connected ? 'Connected' : 'Disconnected'}
-			</p> -->
 			<button class="accept-button" on:click={() => acceptFriendRequest(request.id)}>Accept</button>
 			<button class="reject-button" on:click={() => rejectFriendRequest(request.id)}>Reject</button>
 		</div>
@@ -132,9 +125,9 @@
 			<img src={friend.friend.avatar ? friend.friend.avatar : friend.friend.small_pic} alt="{friend.friend.login}'s picture" class="friend-image"/>
 			<h3 class="friend-name">{friend.friend.login}</h3>
 			<p class="status">
-				<span class="status-circle {friend.friend.connected ? 'connected' : 'disconnected'}"></span>
-				{friend.friend.connected ? 'Connected' : 'Disconnected'}
-			</p>			
+				<span class={`status-circle ${friend.friend.status}`}></span>
+				{friend.friend.status === 'login' ? 'Connected' : friend.friend.status === 'logout' ? 'Disconnected' : 'In Game'}
+			</p>				
 			<a href={`/profile/info/?login=${friend.friend.login}`} class="friend-button">View Profile</a>
 		</div>
 		{/each}
@@ -146,7 +139,6 @@
 		font-weight: bold;
 		font-size: 20px;
 	}
-
 	.modal {
 		position: fixed;
 		top: 0;
@@ -158,13 +150,11 @@
 		justify-content: center;
 		align-items: center;
 	}
-  
 	.modal-content {
 		background-color: #5446da;
 		padding: 20px;
 		border-radius: 4px;
 	}
-
 	.btn {
 		font-family:"Comic Sans MS";
 		font-size: 1.2rem;
@@ -180,32 +170,7 @@
 	.btn:hover {
 		background-color: #0f6402;
 	}
-
-	.accept-button, .reject-button {
-		padding: 5px 10px;
-		border: none;
-		border-radius: 5px;
-		color: #fff;
-		cursor: pointer;
-		transition: background-color 0.3s ease;
-	}
-
-	.accept-button {
-		background-color: #4CAF50;
-	}
-
-	.accept-button:hover {
-		background-color: #45a049;
-	}
-
-	.reject-button {
-		background-color: #f44336;
-	}
-
-	.reject-button:hover {
-		background-color: #da190b;
-	}
-
+/* Friend Cards */
 	.friends-container {
 		display: flex;
 		flex-wrap: nowrap;
@@ -213,7 +178,6 @@
 		justify-content: flex-start;
 		gap: 10px;
 	}
-
 	.friend-card {
 		position: relative;
 		flex: 0 0 auto;
@@ -228,7 +192,6 @@
 		align-items: center;
 		text-align: center;
 	}
-
 	.delete-icon {
 		position: absolute;
 		top: 2px;
@@ -237,18 +200,15 @@
 		cursor: pointer;
 		font-weight: bold;
 	}
-
 	.friend-image {
 		width: 80px;
 		height: 80px;
 		border-radius: 50%;
 		object-fit: cover;
 	}
-
 	.friend-name {
 		margin: 5px 0;
 	}
-
 	.friend-button {
 		margin-top: 5px;
 		padding: 2px 2px;
@@ -256,17 +216,13 @@
 		border-radius: 5px;
 		color: #fff;
 		cursor: pointer;
-	}
-
-	.friend-button {
 		background-color: #007BFF;
 	}
-
 	.friend-button:hover {
 		background-color: #0056b3;
 		text-decoration: none;
 	}
-
+/* Accept and Reject Buttons */
 	.accept-button, .reject-button {
 		margin-top: 5px;
 		padding: 5px 10px;
@@ -275,7 +231,6 @@
 		color: #fff;
 		cursor: pointer;
 	}
-
 	.accept-button {
 		background-color: #4CAF50;
 	}
@@ -291,34 +246,32 @@
 	.reject-button:hover {
 		background-color: #da190b;
 	}
-
+/* Status */
 	.status {
 		display: flex;
 		align-items: center;
 		gap: 5px;
 		margin: 3px 0;
 	}
-
 	.status-circle {
 		display: inline-block;
 		width: 10px;
 		height: 10px;
 		border-radius: 50%;
 	}
-
 	@keyframes blink {
 		0% { opacity: 1; }
 		50% { opacity: 0; }
 		100% { opacity: 1; }
 	}
-
-	.status-circle.connected {
-		background-color: #4CAF50; /* green */
+	.status-circle.login {
+		background-color: #4CAF50;
+	}
+	.status-circle.logout {
+		background-color: #f44336;
+	}
+	.status-circle.ingame {
+		background-color: yellow;
 		animation: blink 1s infinite;
 	}
-
-	.status-circle.disconnected {
-		background-color: #f44336; /* red */
-	}
-
 </style>
