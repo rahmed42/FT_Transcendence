@@ -53,10 +53,10 @@
 	// Fonction onDestroy - appelée lorsque le composant est détruit
 	onDestroy(() => {
 
-		console.log('Leaving Game');
+		// console.log('Leaving Game');
 		// destroy game instance
 		if (game) {
-			console.log('Destroying Game');
+			// console.log('Destroying Game');
 			game.destroy(true);
 			game = null;
 		}
