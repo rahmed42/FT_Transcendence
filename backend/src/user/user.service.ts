@@ -63,7 +63,7 @@ export class UserService {
                     myScore: body.score,
                     opponentName: body.name,
                     opponentScore: body.opponentScore,
-                    result : "win",
+                    result : "Victory",
                 }
             })
             await this.prisma.stats.update({
@@ -86,7 +86,7 @@ export class UserService {
                     myScore: body.score,
                     opponentName: body.name,
                     opponentScore: body.opponentScore,
-                    result: "loose",
+                    result: "Defeat",
                 }
             })
             await this.prisma.stats.update({
@@ -100,11 +100,6 @@ export class UserService {
                 }
             })
         }
-        // const userMatches = await this.prisma.user.findUnique({
-        //     where: { login: body.currentUser.login },
-        // }).matchHistory();
-
-        // console.log(userMatches);
     }
     async update_choosed_skins(tokebObject: {jwt : string}, body: any) {
         const user = await this.jwt.decode(tokebObject.jwt);

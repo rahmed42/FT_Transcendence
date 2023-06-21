@@ -128,146 +128,122 @@
 
 <h1 class="title">Welcome <strong>{$user.login}</strong></h1>
 
-<div class="container">
-    <div class="profile">
-        <div class="button-row">
-            <button class="btn" on:click={() => fileInput.click()}>Upload Picture</button>
-            <button class="btn" on:click={active_2_fa_auth}>
-                {#if !checked}
-                    {active_message}
-                {:else}
-                    {desactive_message}
-                {/if}
-            </button>
-            <button class="btn" on:click={openModal}>Update Username</button>
-        </div>
+<div>
+    {#if myUser.avatar}
+        <img class="picture" id="avatar" src={myUser.avatar} alt="avatar"/>
+    {:else}
+        <img class="picture" id="avatar" src={$user.large_pic} alt={`Picture of ${$user.login}`}/>
+    {/if}
+</div>
 
-        {#if myUser.avatar}
-            <img class="pp" id="avatar" src={myUser.avatar} alt="avatar"/>
+<div class="buttons">
+    <button class="button" on:click={() => fileInput.click()}>Upload Picture</button>
+    <button class="button" on:click={active_2_fa_auth}>
+        {#if !checked}
+            {active_message}
         {:else}
-            <img class="pp" id="avatar" src={$user.large_pic} alt={`Picture of ${$user.login}`}/>
+            {desactive_message}
         {/if}
+    </button>
+    <button class="button" on:click={openModal}>Update Username</button>
+    <input class="hidden" id="file-to-upload" type="file" accept=".png,.jpg" bind:files bind:this={fileInput} on:change={() => getBase64(files[0])}/>
+</div>
 
-        {#if modalOpen}
-            <div class="modal">
-                <div class="modal-content">
-                    <input bind:value={username} type="username" placeholder="Enter your username"/>
-                    <button class="username_btn" on:click={() => update_username(username)}>OK</button>
-                    <button on:click={closeModal}>Cancel</button>
-                </div>
+{#if modalOpen}
+    <div class="modal">
+        <div class="modal-content">
+            <input bind:value={username} type="username" placeholder="Enter your username"/>
+            <button class="username_btn" on:click={() => update_username(username)}>OK</button>
+            <button on:click={closeModal}>Cancel</button>
+        </div>
+    </div>
+    {/if}
+
+<div class="profile-details">
+    <hr class="section-divider" />
+    <div class="stats-card">
+        {#if stats}
+            <div class="stat-item">
+                <img src={winIcon} alt="Wins Icon">
+                <h3>{stats.wins}</h3>
+                <p>Victory</p>
             </div>
-        {/if}
-        <input class="hidden" id="file-to-upload" type="file" accept=".png,.jpg" bind:files bind:this={fileInput} on:change={() => getBase64(files[0])}/>
-    </div>
-    
-    <div class="profile-details">
-        <hr class="section-divider" />
-        <div class="section-heading-container">
-            <h2 class="section-heading">Stats</h2>
-        </div>
-        <div class="stats-card">
-            {#if stats}
-                <div class="stat-item">
-                    <img src={winIcon} alt="Wins Icon">
-                    <h3>{stats.wins}</h3>
-                    <p>Wins</p>
-                </div>
-                <div class="stat-item">
-                    <img src={lossIcon} alt="Losses Icon">
-                    <h3>{stats.losses}</h3>
-                    <p>Losses</p>
-                </div>
-                <div class="stat-item">
-                    <img src={ladderIcon} alt="Ladder Icon">
-                    <h3>{stats.ladderLevel}</h3>
-                    <p>Ladder Level</p>
-                </div>
-            {:else}
-                <p>No stats available</p>
-            {/if}
-        </div>
-        <hr class="section-divider" />
-        <div class="section-heading-container">
-            <h2 class="section-heading">Match History</h2>
-        </div>
-        {#if matchHistory.length > 0}
-            <table class="match-history-table">
-                <thead>
-                    <tr>
-                        <th>Game Type</th>
-                        <th>Score</th>
-                        <th>Result</th>
-                        <th>Date</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {#each matchHistory as match (match.id)}
-                        <tr>
-                            <td>{match.gameType}</td>
-                            <td>{match.myScore} - {match.opponentScore} (vs. {match.opponentName})</td>
-                            <td>{match.result}</td>
-                            <td>{formatDate(match.timestamp)}</td>
-                        </tr>
-                    {/each}
-                </tbody>
-            </table>
+            <div class="stat-item">
+                <img src={lossIcon} alt="Losses Icon">
+                <h3>{stats.losses}</h3>
+                <p>Losses</p>
+            </div>
+            <div class="stat-item">
+                <img src={ladderIcon} alt="Ladder Icon">
+                <h3>{stats.ladderLevel}</h3>
+                <p>Rank</p>
+            </div>
         {:else}
-            <p>No match history available</p>
+            <p>No stats available</p>
         {/if}
-		<hr class="section-divider2" />
     </div>
+    <hr class="section-divider" />
+    {#if matchHistory.length > 0}
+        <table class="match-history-table">
+            <thead>
+                <tr>
+                    <th>Game Type</th>
+                    <th>Score</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {#each matchHistory as match (match.id)}
+                    <tr>
+                        <td>{match.gameType}</td>
+                        <td>{myUser.login} | {match.myScore} - {match.opponentScore} |  {match.opponentName}</td>
+                        <td>{formatDate(match.timestamp)}</td>
+                    </tr>
+                {/each}
+            </tbody>
+        </table>
+    {:else}
+        <p>No match history available</p>
+    {/if}
 </div>
 
 <style>
-    .container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
-    .profile {
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        margin-bottom: 0px;
-    }
 	.title {
-		color: rgb(212, 203, 29);
+		color: #eca45c;
 		margin-left: center;
 		margin-right: center;
 	}
 	.hidden {
         display: none;
     }
-    .pp {
-        display: flex;
-        justify-content: center;
-        border-radius: 0 100px 0 100px;
-        width: 300px;
-        border: 2px solid rgb(88, 44, 231);
-        padding: 5px;
-        max-width: 500px;
-        max-height: 500px;
-        flex-grow: 1;
+    .picture {
+        margin-left: 200px;
+        width: 600px;
+        max-width: 100%;
     }
-    .button-row {
-        display: flex;
-        flex-direction: column;
-        margin-right: 20px;
+    .buttons {
+        margin-left: 120px;
+        margin-right: auto;
     }
-	.btn {
-		font-family:"Comic Sans MS";
-		font-size: 1.2rem;
-		color: #fff;
-		background-color: #007fff;
-		border: none;
-		border-radius: 75px;
-		transition: background-color 0.2s ease;
-		cursor: pointer;
-		margin-bottom: 10px;
-		width: 150px;
+	.button {
+        display: inline;
+        color: #333333;
+        background-color: #eca45c;
+        font-weight: bold;
+        font-size: 20px;
+        height: 50px;
+        border: 2px solid  #000000;
+        border-radius: 18px;
+        margin-top: 30px;
+        margin-bottom: 20px;
+        margin-right: 30px;
+        padding-top: 10px;
+        padding-bottom: 10px;
+        padding-left: 16px;
+        padding-right: 16px;
 	}
 	button:hover {
-		background-color: #0f6402;
+		background-color: #cf8235;
 	}
 	.modal {
 		position: fixed;
@@ -290,21 +266,12 @@
         border-top: 1px solid white;
         margin: 1em 0;
     }
-    .section-divider2 {
-        border: 0;
-        border-top: 1px solid white;
-        margin: 2em 0;
-    }
-	.section-heading {
-		font-weight: bold;
-		font-size: 24px;
-        color: #ddd;
-
-	}
 /* Stats Section */
     .stats-card {
         display: flex;
         justify-content: space-around;
+        margin-bottom: 20px;
+        margin-top: 20px;
     }
     .stat-item {
         display: flex;
@@ -312,23 +279,29 @@
         align-items: center;
         justify-content: center;
         text-align: center;
-        width: 33%;
+        width: 66%;
     }
     .stat-item img {
-        width: 40px;
-        height: 40px;
+        width: 80px;
+        height: 80px;
     }
     .stat-item h3, .stat-item p {
         margin: 0;
     }
 /* Match History Section */
     .match-history-table {
+        background-color: #eca45c;
+        font-size: 20px;
+        font-weight: bold;
         width: 100%;
         border-collapse: collapse;
-        color: #eee;
+        border: none;
+        color: #333333;
+        margin-top: 40px;
+        border: none;
     }
     .match-history-table th, .match-history-table td {
-        border: 1px solid #ddd;
+        border: 1px solid   #000000;
         padding: 8px;
         text-align: center;
     }
@@ -336,13 +309,13 @@
         background-color: rgba(255, 255, 255, 0.1);
     }
     .match-history-table tr:hover {
-        background-color: rgba(255, 255, 255, 0.2);
+        background-color: rgba(115, 41, 41, 0.2);
     }
     .match-history-table th {
         padding-top: 12px;
         padding-bottom: 12px;
         text-align: center;
-        background-color: rgba(0, 0, 0, 0.8);
-        color: #fff;
+        background-color: #4a76a5;
+        color: #ffffff;
     }
 </style>
