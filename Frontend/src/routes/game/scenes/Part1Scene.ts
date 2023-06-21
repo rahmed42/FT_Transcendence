@@ -13,9 +13,9 @@ let currentUser = get(user);
 let skins: any[];
 
 async function load_skins() {
-	console.log("Part1Scene load_skins");
+	// console.log("Part1Scene load_skins");
 	skins = await getUpdatedSkins();
-	console.log("end loadSkins1", skins);
+	// console.log("end loadSkins1", skins);
 }
 
 await load_skins();
@@ -96,7 +96,7 @@ export class Part1Scene extends Phaser.Scene {
 
 	// preload basic assets
 	preload() {
-		console.log("Preloading assets Part1 ...");
+		// console.log("Preloading assets Part1 ...");
 
 		// this.load.image(skins[0].name, skins[0].src);
 		// console.log(skins[0].name, skins[0].src);
@@ -113,7 +113,7 @@ export class Part1Scene extends Phaser.Scene {
 		//Loading style
 		for (const skin of skins) {
 			this.load.image(skin.name, skin.src);
-			console.log(skin.name, skin.src);
+			// console.log(skin.name, skin.src);
 		}
 	}
 
@@ -351,7 +351,7 @@ export class Part1Scene extends Phaser.Scene {
 
 						//Triggered when 'name' property changes
 						player.listen("name", (value: string) => {
-							console.log("Opponent name", value);
+							// console.log("Opponent name", value);
 
 							// Update opponent name
 							this.opponentName = value;
@@ -441,18 +441,17 @@ export class Part1Scene extends Phaser.Scene {
 	}
 
 	// Utils
-	countDown(): void {
+	async countDown() {
 		this.myScoreText!.setColor('#ffffff');
 		this.myScoreText!.setText(this.myScore.toString());
 		this.opponentScoreText!.setText(this.opponentScore.toString());
 
+		await fetch('http://localhost:3333/auth/in_game', {
+			method: 'POST',
+			credentials: 'include',
+		})
+
 		//Count from 3 to 0 each second then pop & reset the ball
-
-		// await fetch('http://localhost:3333/auth/in_game', {
-		// 	method: 'POST',
-		// 	credentials: 'include',
-		// })
-
 		this.startButtonText("3", false);
 		//wait 1 second
 		this.time.delayedCall(1000, () => {
@@ -536,6 +535,11 @@ export class Part1Scene extends Phaser.Scene {
 	}
 
 	async push_match_stats() {
+		await fetch('http://localhost:3333/auth/login', {
+			method: 'POST',
+			credentials: 'include',
+		})
+
 		await fetch('http://localhost:3333/profil/match_stats', {
 			method: 'POST',
 			headers: {
@@ -560,13 +564,9 @@ export class Part1Scene extends Phaser.Scene {
 		this.countDown();
 	}
 
-	resetGame(home_button: boolean):	void {
+	async resetGame(home_button: boolean) {
 		// Wait for new game host
 		this.gameHost = false;
-		// await fetch('http://localhost:3333/auth/login', {
-		// 	method: 'POST',
-		// 	credentials: 'include',
-		// })
 		this.runningGame = false;
 
 		// Reset ball and stop it
@@ -587,8 +587,9 @@ export class Part1Scene extends Phaser.Scene {
 			this.startButtonText("🏓  Revenge ?  🏓", true);
 		}
 		this.startAnim();
+
 		if (!home_button)
-			this.push_match_stats();
+			await this.push_match_stats();
 	}
 
 	leave(room: Room) {

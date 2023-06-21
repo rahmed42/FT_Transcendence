@@ -8,10 +8,10 @@ import button from '$lib/assets/buttons/blue.png';
 import backgroundMenu from '$lib/images/backArcade.jpg';
 
 // To import images from DB or get this defaults
-let selectedBoard: string | undefined
-let selectedMyPaddle: string | undefined
-let selectedOpponentPaddle: string | undefined
-let selectedBall: string | undefined
+let selectedBoard: string = "Board"
+let selectedMyPaddle: string = "myPaddle"
+let selectedOpponentPaddle: string  = "opponentPaddle"
+let selectedBall: string = "ball"
 
 let currentUser = get(user);
 
@@ -27,7 +27,7 @@ async function get_user_skins() {
 	})
 	if (response.ok) {
 		const data = await response.json();
-		console.log("get_user_skins data : ", data);
+		// console.log("get_user_skins data : ", data);
 		selectedBoard = data.boardSkin;
 		selectedMyPaddle = data.myPaddleSkin;
 		selectedOpponentPaddle = data.otherPaddleSkin;
@@ -36,14 +36,14 @@ async function get_user_skins() {
 }
 
 export async function getUpdatedSkins() {
-	console.log("SS getUpdatedSkins -->>>> ");
+	// console.log("SS getUpdatedSkins -->>>> ");
 	await get_user_skins();
-	console.log("SS getUpdatedSkins after Await get_user_skins");
+	// console.log("SS getUpdatedSkins after Await get_user_skins");
 
-	console.log("SS selectedBoard : ", selectedBoard);
-	console.log("SS selectedMyPaddle : ", selectedMyPaddle);
-	console.log("SS selectedOpponentPaddle : ", selectedOpponentPaddle);
-	console.log("SS selectedBall : ", selectedBall);
+	// console.log("SS selectedBoard : ", selectedBoard);
+	// console.log("SS selectedMyPaddle : ", selectedMyPaddle);
+	// console.log("SS selectedOpponentPaddle : ", selectedOpponentPaddle);
+	// console.log("SS selectedBall : ", selectedBall);
 
 	return [
 		{ name: 'boardSkin', src: selectedBoard },
