@@ -10,14 +10,13 @@
     let stats = null;
     let matchHistory = [];
 
-    const friend_username = new URLSearchParams(window.location.search).get('login');
-
     function formatDate(isoDateString) {
         const date = new Date(isoDateString);
         return `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
     }
 
 	onMount(async () => {
+        const friend_username = new URLSearchParams(window.location.search).get('login');
 		async function getUserInfo() {
 			const response = await fetch('http://localhost:3333/profil/friends?login=' + friend_username, {
 				method: 'GET',
@@ -28,7 +27,6 @@
 				const data = await response.json();
 				friend.set(data);
 			}
-
             const statsResponse = await fetch('http://localhost:3333/social/stats/' + friend_username);
             if (statsResponse.ok) {
                 stats = await statsResponse.json();
@@ -157,15 +155,14 @@
         height: 40px;
     }
     .stat-item h3, .stat-item p {
-        margin: 0;  /* Remove margins to prevent alignment issues */
+        margin: 0;
     }
     .match-history-table {
         width: 100%;
         border-collapse: collapse;
         color: #eee;
     }
-    .match-history-table th,
-    .match-history-table td {
+    .match-history-table th, .match-history-table td {
         border: 1px solid #ddd;
         padding: 8px;
         text-align: center;
