@@ -8,10 +8,10 @@ import button from '$lib/assets/buttons/blue.png';
 import backgroundMenu from '$lib/images/backArcade.jpg';
 
 // To import images from DB or get this defaults
-let selectedBoard : string | undefined
-let selectedMyPaddle : string | undefined
+let selectedBoard: string | undefined
+let selectedMyPaddle: string | undefined
 let selectedOpponentPaddle: string | undefined
-let selectedBall : string | undefined
+let selectedBall: string | undefined
 
 let currentUser = get(user);
 
@@ -25,12 +25,14 @@ async function get_user_skins() {
 			currentUser,
 		})
 	})
-	const data = await response.json();
-	console.log("get_user_skins data : ", data);
-	selectedBoard = data.boardSkin;
-	selectedMyPaddle = data.myPaddleSkin;
-	selectedOpponentPaddle = data.otherPaddleSkin;
-	selectedBall = data.ballSkin;
+	if (response.ok) {
+		const data = await response.json();
+		console.log("get_user_skins data : ", data);
+		selectedBoard = data.boardSkin;
+		selectedMyPaddle = data.myPaddleSkin;
+		selectedOpponentPaddle = data.otherPaddleSkin;
+		selectedBall = data.ballSkin;
+	}
 }
 
 export async function getUpdatedSkins() {
