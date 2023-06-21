@@ -18,8 +18,6 @@ async function load_skins() {
 	// console.log("end loadSkins1", skins);
 }
 
-await load_skins();
-
 export class Part1Scene extends Phaser.Scene {
 	//room reference
 	room: Room | undefined;

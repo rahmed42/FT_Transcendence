@@ -3,7 +3,8 @@
 	import { page } from '$app/stores';
 	import logo from '$lib/images/42PongLogo.png';
 	import { afterUpdate, onMount } from 'svelte';
-	import { setUser, user, resetUser, type User } from '../stores/user';
+	import { setUser, user, resetUser } from '../stores/user';
+	import type { User } from '../stores/user';
 
 	let currentUser: User | null = null;
 
