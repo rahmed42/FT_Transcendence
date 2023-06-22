@@ -13,9 +13,7 @@ let currentUser = get(user);
 let skins: any[];
 
 async function load_skins() {
-	// console.log("Part1Scene load_skins");
 	skins = await getUpdatedSkins();
-	// console.log("end loadSkins1", skins);
 }
 
 export class Part1Scene extends Phaser.Scene {
@@ -92,27 +90,10 @@ export class Part1Scene extends Phaser.Scene {
 		this.activeScene = sceneName;
 	}
 
-	// preload basic assets
 	preload() {
-		// console.log("Preloading assets Part1 ...");
-
-		// this.load.image(skins[0].name, skins[0].src);
-		// console.log(skins[0].name, skins[0].src);
-
-		// this.load.image(skins[1].name, skins[1].src);
-		// console.log(skins[1].name, skins[1].src);
-
-		// this.load.image(skins[2].name, skins[2].src);
-		// console.log(skins[2].name, skins[2].src);
-
-		// this.load.image(skins[3].name, skins[3].src);
-		// console.log(skins[3].name, skins[3].src);
-
 		//Loading style
-		for (const skin of skins) {
+		for (const skin of skins)
 			this.load.image(skin.name, skin.src);
-			// console.log(skin.name, skin.src);
-		}
 	}
 
 	async create() {
@@ -240,11 +221,8 @@ export class Part1Scene extends Phaser.Scene {
 				this.remotePaddle.destroy();
 				this.remotePaddle = undefined;
 			}
-			// console.log("after delete Paddles", this.localPaddle, this.remotePaddle);
 			this.setActiveScene("menu");
-			// Stop the current scene (Part1)
 			this.scene.stop('Part1');
-			// console.log(`Going back to ${this.activeScene}`);
 			// Start the menu scene
 			this.scene.start('menu')
 			if (this.room)
@@ -310,11 +288,8 @@ export class Part1Scene extends Phaser.Scene {
 		// Listen for new players
 		this.room.state.players.onAdd((player, sessionId) => {
 			if (this.room && this.room.state.players.size <= 2) {
-				// console.log("Paddles", this.localPaddle, this.remotePaddle);
-
 				//Setup my Paddle
 				if (this.localPaddle === undefined) {
-					// console.log("Create Local Paddle", this.localPaddle);
 					this.createLocalPaddle();
 
 					//Keep reference to this remote Paddle
@@ -333,7 +308,6 @@ export class Part1Scene extends Phaser.Scene {
 				if (this.room.state.players.size === 2) {
 					// Setup his paddle
 					if (this.remotePaddle === undefined) {
-						// console.log("Create Remote Paddle", this.remotePaddle);
 						this.createRemotePaddle();
 
 						// Keep reference to this remote Paddle
@@ -342,34 +316,28 @@ export class Part1Scene extends Phaser.Scene {
 
 						//Triggered when 'y' property changes
 						player.listen("y", (value: number) => {
-							// console.log("remote y", value);
 							if (this.remotePaddle)
 								this.remotePaddle.y = value;
 						});
 
 						//Triggered when 'name' property changes
 						player.listen("name", (value: string) => {
-							// console.log("Opponent name", value);
-
 							// Update opponent name
 							this.opponentName = value;
 						});
 
 						// Getting starting game from server
 						this.room.onMessage("startGame", (start: boolean) => {
-							// console.log("started client from broadcast ", start);
 							if (start === true)
 								this.startMatch();
 						});
 
 						// Get ball position from server if not hosting
 						this.room.onMessage("ballX", (ballX: number) => {
-							// console.log("remote MballX", ballX);
 							if (!this.gameHost && this.ball)
 								this.ball.x = ballX;
 						});
 						this.room.onMessage("ballY", (ballY: number) => {
-							// console.log("remote MballY", ballY);
 							if (!this.gameHost && this.ball)
 								this.ball.y = ballY;
 						});
@@ -377,10 +345,8 @@ export class Part1Scene extends Phaser.Scene {
 						// Update score from server host
 						this.room.onMessage("opponentScore", (score: number) => {
 							if (!this.gameHost && this.runningGame) {
-								// console.log("remote opponentScore", score);
 								this.opponentScore = score;
 								this.opponentScoreText!.setText(score.toString());
-								// console.log("GH " + this.gameHost + " Opp " + this.opponentScore + "/" + score);
 								if (this.opponentScore >= 3)
 									this.resetGame(false);
 							}
@@ -388,10 +354,8 @@ export class Part1Scene extends Phaser.Scene {
 
 						this.room.onMessage("myScore", (score: number) => {
 							if (!this.gameHost && this.runningGame) {
-								// console.log("remote myScore", score);
 								this.myScore = score;
 								this.myScoreText!.setText(score.toString());
-								// console.log("GH " + this.gameHost + " My " + this.myScore + "/" + score);
 								if (this.myScore >= 3)
 									this.resetGame(false);
 							}
@@ -406,7 +370,6 @@ export class Part1Scene extends Phaser.Scene {
 
 		// Listen for removed players
 		this.room.state.players.onRemove((player, sessionId) => {
-			// console.log("onRemove ", sessionId);
 			// delete Paddles if exists
 			if (this.localPaddle) {
 				this.localPaddle.destroy();
@@ -421,7 +384,6 @@ export class Part1Scene extends Phaser.Scene {
 				// remove player entity from scene
 				const entity = this.playerEntities[sessionId];
 				if (entity) {
-					// console.log("remote entity ", entity);
 					entity.destroy();
 					delete this.playerEntities[sessionId];
 				}
@@ -430,7 +392,6 @@ export class Part1Scene extends Phaser.Scene {
 					this.leave(this.room);
 					alert("The other player left ! Back to the menu...");
 					this.setActiveScene("menu");
-					// console.log(`Going back to ${this.activeScene}`);
 					this.scene.stop('Part1');
 					this.scene.start('menu')
 				}
@@ -462,7 +423,7 @@ export class Part1Scene extends Phaser.Scene {
 						this.startButton?.destroy();
 						this.ball?.setVisible(true);
 						this.runningGame = true;
-						this.resetBall();
+						this.launchBall();
 					});
 				});
 			});
@@ -507,7 +468,7 @@ export class Part1Scene extends Phaser.Scene {
 	}
 
 	// Game logics
-	resetBall(): void {
+	launchBall(): void {
 		/* Refresh Score */
 		if (this.myScoreText)
 			this.myScoreText.setText(this.myScore.toString());
@@ -569,7 +530,7 @@ export class Part1Scene extends Phaser.Scene {
 
 		// Reset ball and stop it
 		if (this.ball) {
-			this.resetBall();
+			this.launchBall();
 			this.ball.setVelocity(0);
 			this.ball.setVisible(false);
 		}
@@ -595,7 +556,6 @@ export class Part1Scene extends Phaser.Scene {
 			// Call the leave method on the room instance
 			room.leave();
 		}
-		// console.log('Leaving room');
 	}
 
 	/**
@@ -610,13 +570,11 @@ export class Part1Scene extends Phaser.Scene {
 		if (this.ball && this.gameHost) {
 			if (this.ball.x > this.cameras.main.width) {
 				this.myScore++;
-				// console.log("++ My score : ", this.myScore);
 
 				// Send score to server
 				this.room.send("hostScore", this.myScore);
 			} else if (this.ball.x < 0) {
 				this.opponentScore++;
-				// console.log("++ Opponent score : ", this.opponentScore);
 
 				// Send score to server
 				this.room.send("clientScore", this.opponentScore);
@@ -628,14 +586,13 @@ export class Part1Scene extends Phaser.Scene {
 			if (this.myScore >= 3 || this.opponentScore >= 3)
 				this.resetGame(false);
 			else
-				this.resetBall();
+				this.launchBall();
 		}
 
 		// Update input player
 		if (this.inputPayload !== undefined) {
 			// send input to the server if changes to avoid server spamming
 			if ((this.input.y !== undefined) && (this.inputPayload.y !== this.input.y)) {
-				// console.log("client input : " + this.inputPayload.y + "/ input local " + this.input.y);
 				this.inputPayload.y = this.input.y;
 				this.inputPayload.name = this.myName;
 				this.room.send(0, this.inputPayload);
@@ -647,7 +604,6 @@ export class Part1Scene extends Phaser.Scene {
 			// Check change state of start button send to server
 			if ((this.startState !== undefined) && (this.inputPayload.start !== this.startState)) {
 				this.inputPayload.start = this.startState;
-				// console.log("client Start : input " + this.inputPayload.start + "/ start local " + this.startState);
 				this.room.send("start", this.inputPayload);
 
 				// reset state
@@ -656,7 +612,6 @@ export class Part1Scene extends Phaser.Scene {
 
 			// send ball position to server
 			if (this.ball && this.gameHost && (this.inputPayload.ballX !== this.ball.x || this.inputPayload.ballY !== this.ball.y)) {
-				// console.log("client ball : input " + this.inputPayload.ballX + " / " + this.inputPayload.ballY + "/ ball local " + this.ball.x + " / " + this.ball.y);
 				this.inputPayload.ballX = this.ball.x;
 				this.inputPayload.ballY = this.ball.y;
 				this.room.send("ball", this.inputPayload);
