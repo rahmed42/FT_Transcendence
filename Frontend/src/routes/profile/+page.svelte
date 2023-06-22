@@ -2,9 +2,9 @@
 	import { get } from 'svelte/store';
 	import { setUser, user } from '../../stores/user';
 	import { onMount } from 'svelte';
-	import winIcon from '../../lib/images/win-icon.png';
+	import winIcon from '../../lib/images/icons8-reward-80.png';
     import lossIcon from '../../lib/images/loss-icon.png';
-    import ladderIcon from '../../lib/images/ladder-icon.png';
+    import ladderIcon from '../../lib/images/icons8-rank-64.png';
 
 	let myUser = get(user);
 	let checked = myUser.two_fa;
@@ -126,7 +126,7 @@
 	<meta name="description" content="User profile" />
 </svelte:head>
 
-<h1 class="title">Welcome <strong>{$user.login}</strong></h1>
+<h1 class="title"><strong>{$user.login}'s profile</strong></h1>
 
 <div>
     {#if myUser.avatar}
@@ -152,12 +152,12 @@
 {#if modalOpen}
     <div class="modal">
         <div class="modal-content">
-            <input bind:value={username} type="username" placeholder="Enter your username"/>
+            <input class="username_input" bind:value={username} type="text" placeholder="Enter your username"/>
             <button class="username_btn" on:click={() => update_username(username)}>OK</button>
-            <button on:click={closeModal}>Cancel</button>
+            <button class ="username_btn" on:click={closeModal}>Cancel</button>
         </div>
     </div>
-    {/if}
+{/if}
 
 <div class="profile-details">
     <hr class="section-divider" />
@@ -165,18 +165,18 @@
         {#if stats}
             <div class="stat-item">
                 <img src={winIcon} alt="Wins Icon">
-                <h3>{stats.wins}</h3>
-                <p>Victory</p>
+                <h3 class="user_stats">{stats.wins}</h3>
+                <p class="stats_string">Victory</p>
             </div>
             <div class="stat-item">
                 <img src={lossIcon} alt="Losses Icon">
-                <h3>{stats.losses}</h3>
-                <p>Losses</p>
+                <h3 class="user_stats">{stats.losses}</h3>
+                <p class="stats_string">Losses</p>
             </div>
             <div class="stat-item">
                 <img src={ladderIcon} alt="Ladder Icon">
-                <h3>{stats.ladderLevel}</h3>
-                <p>Rank</p>
+                <h3 class="user_stats">{stats.ladderLevel}</h3>
+                <p class="stats_string">Rank</p>
             </div>
         {:else}
             <p>No stats available</p>
@@ -196,7 +196,14 @@
                 {#each matchHistory as match (match.id)}
                     <tr>
                         <td>{match.gameType}</td>
-                        <td>{myUser.login} | {match.myScore} - {match.opponentScore} |  {match.opponentName}</td>
+                        <td>
+                            {#if match.result === "win"}
+                                <p class="result_victory">Victory</p>
+                            {:else}
+                                <p class="result_defeat">Defeat</p>
+                            {/if}
+                            {myUser.login} | {match.myScore} - {match.opponentScore} |  {match.opponentName}
+                        </td>
                         <td>{formatDate(match.timestamp)}</td>
                     </tr>
                 {/each}
@@ -217,30 +224,36 @@
         display: none;
     }
     .picture {
-        margin-left: 200px;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
         width: 600px;
-        max-width: 100%;
+        border-radius: 60px;
+        border: 10px, yellow
+        /* max-width: 100%; */
     }
     .buttons {
-        margin-left: 120px;
-        margin-right: auto;
+        display: flex;
+        justify-content: center;
+        margin-bottom: 20px;
+        margin-top: 20px;
     }
 	.button {
-        display: inline;
+        display: flex;
+        justify-content: center;
         color: #333333;
         background-color: #eca45c;
         font-weight: bold;
         font-size: 20px;
-        height: 50px;
+        flex-direction: column;
+        align-items: center;
+        width: 66%;
+        height: 40px;
         border: 2px solid  #000000;
         border-radius: 18px;
         margin-top: 30px;
         margin-bottom: 20px;
-        margin-right: 30px;
-        padding-top: 10px;
-        padding-bottom: 10px;
-        padding-left: 16px;
-        padding-right: 16px;
+        margin-right: 10px;
 	}
 	button:hover {
 		background-color: #cf8235;
@@ -257,10 +270,18 @@
 		align-items: center;
 	}
 	.modal-content {
-		background-color: #5446da;
-		padding: 20px;
-		border-radius: 4px;
+        background-color: #eca45c;
+		padding: 10px;
+		border-radius: 8px;
 	}
+    .username_input {
+        font-weight: bold;
+        color: #a25c5c;
+    }
+    .username_btn {
+        font-size:medium;
+        font-weight:lighter;
+    }
     .section-divider {
         border: 0;
         border-top: 1px solid white;
@@ -280,6 +301,7 @@
         justify-content: center;
         text-align: center;
         width: 66%;
+        /* margin-right:; */
     }
     .stat-item img {
         width: 80px;
@@ -290,7 +312,7 @@
     }
 /* Match History Section */
     .match-history-table {
-        background-color: #eca45c;
+        background-color: #ffd7af;
         font-size: 20px;
         font-weight: bold;
         width: 100%;
@@ -298,7 +320,6 @@
         border: none;
         color: #333333;
         margin-top: 40px;
-        border: none;
     }
     .match-history-table th, .match-history-table td {
         border: 1px solid   #000000;
@@ -317,5 +338,27 @@
         text-align: center;
         background-color: #4a76a5;
         color: #ffffff;
+    }
+    .result_victory {
+        color: rgb(25, 99, 25);
+        font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+        font-weight: bold;
+        font-size: 25px;
+        margin-top: -5px;
+        margin-bottom: 10px;
+    }
+    .result_defeat {
+        color: rgb(147, 46, 21);
+        font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+        font-weight: bold;
+        font-size: 25px;
+        margin-top: -5px;
+        margin-bottom: 10px;
+    }
+    .user_stats {
+        font-size: 40px;
+    }
+    .stats_string {
+        font-size: 30px;
     }
 </style>
