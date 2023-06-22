@@ -22,6 +22,14 @@ export class Ball extends Schema {
   @type('number') ballY: number;
 }
 
+// Powerup class
+export class Powerup extends Schema {
+	  @type('number') powerUpX: number;
+	  @type('number') powerUpY: number;
+	  @type('number') powerupScale: number;
+	  @type('boolean') powerupVisible: boolean;
+}
+
 //Scores for each player
 export class Score extends Schema {
   @type('number') myScore: number;
@@ -35,5 +43,6 @@ export class Part2State extends Schema {
   @type({ map: Player }) players = new MapSchema<Player>();
   @type({ map: Start }) startButton = new MapSchema<Start>();
   @type({ map: Ball }) balls = new MapSchema<Ball>();
+  @type({ map: Powerup }) powerups = new MapSchema<Powerup>();
   @type({ map: Score }) scores = new MapSchema<Score>();
 }

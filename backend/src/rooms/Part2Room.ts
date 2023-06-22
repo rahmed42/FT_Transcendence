@@ -1,5 +1,5 @@
 import { Room, Client } from "colyseus";
-import { Part2State, Start, Score, Ball, Player } from "./Part2State";
+import { Part2State, Start, Score, Ball, Player, Powerup } from "./Part2State";
 
 export class Part2Room extends Room<Part2State> {
 
@@ -52,6 +52,34 @@ export class Part2Room extends Room<Part2State> {
 			// send to all the room the ball position
 			this.broadcast("ballX", ball.ballX);
 			this.broadcast("ballY", ball.ballY);
+		});
+
+		// Handle powerup movement from player
+		this.onMessage("powerUp", (client, position) => {
+			const powerup = this.state.powerups.get(client.sessionId);
+
+			// invert powerup position but host is on left side
+			if (position.powerUpX)
+				powerup.powerUpX = this.state.mapWidth - position.powerUpX;
+			if (position.powerUpY)
+				powerup.powerUpY = position.powerUpY;
+
+			// send to all the room the powerup position
+			this.broadcast("powerUpX", powerup.powerUpX);
+			this.broadcast("powerUpY", powerup.powerUpY);
+		});
+
+		//Powerup changes information
+		this.onMessage("powerUpInfo", (client, position) => {
+			const powerup = this.state.powerups.get(client.sessionId);
+
+			if (position.powerupScale)
+				powerup.powerupScale = position.powerupScale;
+			powerup.powerupVisible = position.powerupVisible;
+
+			// send to all the room
+			this.broadcast("powerUpScale", powerup.powerupScale);
+			this.broadcast("powerUpVisible", powerup.powerupVisible);
 		});
 
 		// Handle score for opponent
@@ -109,6 +137,16 @@ export class Part2Room extends Room<Part2State> {
 		ball.ballY = this.state.mapHeight / 2;
 
 		this.state.balls.set(client.sessionId, ball);
+
+		/* INIT the powerups */
+		// Set up the powerups
+		const powerup = new Powerup();
+		powerup.powerUpX = this.state.mapWidth / 2;
+		powerup.powerUpY = this.state.mapHeight / 2;
+		powerup.powerupScale = 1;
+		powerup.powerupVisible = false;
+
+		this.state.powerups.set(client.sessionId, powerup);
 
 		/* INIT the scores */
 		// Set up the scores
