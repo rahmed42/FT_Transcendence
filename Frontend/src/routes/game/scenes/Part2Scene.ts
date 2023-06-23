@@ -768,6 +768,11 @@ export class Part2Scene extends Phaser.Scene {
 		// Reset powerup and stop it
 		this.resetPowerUpState();
 
+		// reset scales
+		this.localPaddle?.setScale(1);
+		this.remotePaddle?.setScale(1);
+		this.ball?.setScale(1);
+
 		// Reset ball and stop it
 		if (this.ball) {
 			this.launchBall();
