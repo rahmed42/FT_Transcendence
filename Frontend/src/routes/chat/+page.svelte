@@ -13,6 +13,12 @@
   }
   let messages:Message[] = [];
 
+  //invitation modal
+  let isInvitationModalOpen = false;
+  let selectedInvitation = '';
+  
+  
+  //admin modal
   let isUserModalOpen = false;
   let openAdminModal = false;
   let changePassword = false;
@@ -25,11 +31,13 @@
   let muteDuration = 0;
   let loginUserToExecute = '';
 
+  //private message modal
   let isPrivateMessageModalOpen = false;
   let recipientName = '';
   let messageContent = '';
   let privateMessageError = '';
 
+  //channel modal
   let isAdmin = false;
   let isInvalidType = false;
   let isInvalidName = false;
@@ -54,6 +62,7 @@
   let blockList = writable<{ login: string }[]>([]);
   let adminList = writable<{ login: string }[]>([]);
   let privateList = writable<{ login: string }[]>([]);
+  let invitationList = writable<{ login: string }[]>([]);
   let error: string = '';
   let selectedChannel = '';
   let selectedUser = '';
@@ -79,11 +88,10 @@
       console.log(data);
     });
     
-
+    //stored essential data
     let storedUser = sessionStorage.getItem('userID');
     let storedLogin = sessionStorage.getItem('login');
     let storedToken = sessionStorage.getItem('jwt');
-    console.log("premier :", storedLogin);
     if (storedUser && storedUser !== 'undefined' && storedUser !== 'null') {
       userID = parseInt(storedUser || '0');
     } else {
@@ -94,15 +102,12 @@
 
     if (storedLogin && storedLogin !== 'undefined' && storedLogin !== 'null' && storedLogin !== null) {
       login = storedLogin;
-      console.log("login in storedLogin:", login);
     } else {
       let test = get(user);
-      console.log("test :", test);
       if (test && test.login)
       {
         login = test.login;
         sessionStorage.setItem('login', login);
-        console.log("deuxieme :", test.login);
       }
     }
 
@@ -113,10 +118,7 @@
       token = test.jwtToken;
       sessionStorage.setItem('jwt', token);
     }
-    console.log('login : ', login);
-    console.log('jwt : ', token);
-    console.log('id : ', userID);
-
+    //get all the rooms
     const response = await fetch('http://localhost:3333/chat/rooms', {
       method: 'GET',
       headers: {
@@ -127,9 +129,10 @@
     if (response.ok) {
       const data = await response.json();
       console.log(data.rooms);
-      channelList.set(data.rooms);
+      if (data && data.rooms)
+        channelList.set(data.rooms);
     }
-    
+    //get all the private rooms
     const response2 = await fetch('http://localhost:3333/chat/privateRooms', {
       method: 'GET',
       headers: {
@@ -140,9 +143,20 @@
     if (response2.ok)
     {
       const data = await response2.json();
-      privateList.update(currentPrivateList => [...currentPrivateList, { login: data[0].users[0].login }]);
+      if (data && data[0])
+        privateList.update(currentPrivateList => [...currentPrivateList, { login: data[0].users[0].login }]);
     }
   });
+
+  
+  function openInvitationModal() {
+    isInvitationModalOpen = true;
+    selectedInvitation = '';
+  }
+
+  function closeInvitationModal() {
+    isInvitationModalOpen = false;
+  }
 
   function openPrivateMessageModal() {
   isPrivateMessageModalOpen = true;
@@ -665,6 +679,13 @@ function closeSetupModal() {
     closeSetupModal();
   }
 
+  async function declineInvitation(selectedInvitation: string) {
+
+  }
+
+  async function acceptInvitation(selectedInvitation: string) {
+
+  }
   async function sendPrivateMessage() {
     socket.emit('newMessage', { idSender: userID, loginReceiver: recipientName, content: messageContent, type: "private" });
     closePrivateMessageModal();
@@ -706,6 +727,9 @@ function closePrivateMessageModal() {
             banList.set(newChannel.bannedUsers);
             muteList.set(newChannel.mutedUsers);
             adminList.set(newChannel.administrators);
+            invitationList.set(newChannel.invitations);
+            blockList.set(newChannel.blockedUsers);
+            console.log('Contenu de newChannel:', newChannel);
             if (newChannel.administrators) {
               newChannel.administrators.forEach((admin: {id: number}) => {
                 if (admin.id === userID) {
@@ -911,6 +935,30 @@ async function leaveRoom()
   <meta name="description" content="Chat Page" />
 </svelte:head>
 
+{#if isInvitationModalOpen}
+  <div class="modal">
+    <div class="modal-content">
+      <h3>Invitation list</h3>
+      {#if $invitationList}
+        <select name="selectedInvitation" bind:value={selectedInvitation}>
+          <option disabled selected>Select an invitation</option>
+          {#each $invitationList as invitation}
+            <option value={invitation.login}>{invitation.login}</option>
+          {/each}
+        </select>
+        {#if isAdmin && selectedInvitation}
+          <div>
+            <button on:click={() => acceptInvitation(selectedInvitation)}>Accept</button>
+            <button on:click={() => declineInvitation(selectedInvitation)}>Decline</button>
+          </div>
+        {/if}
+      {:else}
+        <p>No invitation</p>
+      {/if}
+      <button on:click={closeInvitationModal}>Close</button>
+    </div>
+  </div>
+{/if}
 
 {#if isUserModalOpen}
   <div class="modal">
@@ -1099,9 +1147,6 @@ async function leaveRoom()
           {/if}
         </div>
       {/if}
-      {#if $channelList != null && $channelList.length === 0}
-        <p>No channels joined</p>
-      {/if}
     </div>
     <button class="create-channel p-anim" on:click={() => openModal()}>
       Create a channel
@@ -1155,8 +1200,10 @@ async function leaveRoom()
   </div>
   <div class="user-list">
     <h3 class="user-list-title">User List</h3>
-    {#if $userList !== null && $userList.length === 0}
-      <p>No users online</p>
+    {#if selectedChannel}
+      <button class="user-button p-anim" on:click={() => openInvitationModal()}>
+        Invitation
+      </button>
     {/if}
     {#each $userList as user}
       <button class="user-button p-anim" on:click={() => selectUser(user.login)}>
