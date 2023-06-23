@@ -40,6 +40,7 @@ export class Part2Scene extends Phaser.Scene {
 	scalePowerUp: number;
 	localPowerupTaken: boolean;
 	remotePowerupTaken: boolean;
+	powerType: number;
 
 	// local input cache
 	inputPayload: any = {
@@ -53,6 +54,7 @@ export class Part2Scene extends Phaser.Scene {
 		powerupVisible: false,
 		localPowerupTaken: false,
 		remotePowerupTaken: false,
+		powerType: 0,
 		name: "",
 	};
 
@@ -107,6 +109,7 @@ export class Part2Scene extends Phaser.Scene {
 		this.scalePowerUp = 1;
 		this.localPowerupTaken = false;
 		this.remotePowerupTaken = false;
+		this.powerType = 0;
 	}
 
 	// set the active scene
@@ -415,7 +418,7 @@ export class Part2Scene extends Phaser.Scene {
 								this.resetPowerUpState();
 
 								// random powerup
-								this.randomPowerUp(false);
+								this.randomPowerUp(false, this.powerType);
 							} else {
 								console.log(">>>>>>>R>>>>>>>>>>remote powerup RESET");
 								this.remotePaddle?.setScale(1);
@@ -434,7 +437,7 @@ export class Part2Scene extends Phaser.Scene {
 								this.resetPowerUpState();
 
 								// random powerup
-								this.randomPowerUp(true);
+								this.randomPowerUp(true, this.powerType);
 							} else {
 								console.log("<<<<<<<<R<<<<<<<<<local powerup RESET");
 								this.localPaddle?.setScale(1);
@@ -599,11 +602,7 @@ export class Part2Scene extends Phaser.Scene {
 		}
 	}
 
-	randomPowerUp(localPlayer: boolean): void {
-		// random powerup
-		// let powerType = Phaser.Math.Between(0, 5);
-		let powerType = 4;
-
+	randomPowerUp(localPlayer: boolean, powerType: number): void {
 		switch (powerType) {
 			case 0:
 				// increase paddle size
@@ -664,7 +663,9 @@ export class Part2Scene extends Phaser.Scene {
 					this.localPowerupTaken = true;
 
 					// random powerup
-					this.randomPowerUp(true);
+					this.powerType = Phaser.Math.Between(0, 5);
+
+					this.randomPowerUp(true, this.powerType);
 				}
 			});
 		}
@@ -678,7 +679,9 @@ export class Part2Scene extends Phaser.Scene {
 					this.remotePowerupTaken = true;
 
 					// random powerup
-					this.randomPowerUp(false);
+					this.powerType = Phaser.Math.Between(0, 5);
+
+					this.randomPowerUp(false, this.powerType);
 				}
 			});
 		}
