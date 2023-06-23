@@ -129,7 +129,8 @@ export class Gateway implements OnModuleInit {
 
     @SubscribeMessage("newMessage")
     handleMessage(@MessageBody() body: any) {
-        if (body.type == "room")
+        console.log("new message received ", body)
+		if (body.type == "room")
         {
             body = body as RoomMessageDto;
             this.sendMessageToRoom(body.roomName, body.content, body.idSender)

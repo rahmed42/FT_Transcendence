@@ -1454,51 +1454,46 @@ export class ChatService {
     {
         if (!body.roomName)
             throw new BadRequestException('Room name is required');
-        const privateRoom = await this.prisma.privateRoom.findFirst({
-            where: {
-                users:
-				{
-					some: {
-						id: body.idUser,
-					},
-				}
-            },
-            select: {
-                id: true,
-                users : {
-                    select : {
-                        id: true,
-                        login: true,
-                    }
-                },
-                messages: {
-                    select : {
-                        content: true,
-                        sender: {
-                            select : {
-                                login: true,
-                            }
-                        },
-                    }
-                },
-            }
-        });
+
+		const user = await this.prisma.user.findFirst({
+			where: {
+				id: body.idUser,
+			},
+		});
+		const user2 = await this.prisma.user.findFirst({
+			where: {
+				login: body.roomName,
+			},
+		});
+		if (!user || !user2)
+		{
+			throw new BadRequestException('User does not exist');
+		}
+		const privateRoom = await this.prisma.privateRoom.findFirst({
+			where : {
+				users: {
+					every : {
+						login : {
+							in : [user.login, user2.login],
+						}
+					}
+				},
+			},
+			select : {
+					users: {
+						where : {
+							login : {
+								notIn : [user.login],
+							},
+						},
+						select : {
+							login : true,
+						}
+					}
+			},
+		});
         if (!privateRoom)
             throw new BadRequestException('Room does not exist');
-        const user = await this.prisma.user.findFirst({
-            where: {
-                id: body.idUser,
-            },
-        });
-        if (!user)
-        {
-            throw new BadRequestException('User does not exist');
-        }
-        const userInRoom = privateRoom.users.find((user) => user.id == body.idUser);
-        if (!userInRoom)
-        {
-            throw new BadRequestException('User is not in room');
-        }
         return privateRoom;
     }
 	async blockUser(body: ChatDtoBlockUser)

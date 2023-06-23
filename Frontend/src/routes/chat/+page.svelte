@@ -3,7 +3,7 @@
   import { onDestroy, onMount } from 'svelte';
   import { get } from 'svelte/store';
   import { writable } from 'svelte/store';
-  //import io from 'socket.io-client';
+  import io from 'socket.io-client';
 
   let messageInput = '';
   interface Message {
@@ -17,8 +17,8 @@
   let isInvitationModalOpen = false;
   let selectedInvitation = '';
   let inviteUser = '';
-  
-  
+
+
   //admin modal
   let isUserModalOpen = false;
   let openAdminModal = false;
@@ -66,14 +66,15 @@
   let invitationList = writable<{ login: string }[]>([]);
   let error: string = '';
   let selectedChannel = '';
+  let selectedPrivateChannel = '';
   let selectedUser = '';
   let selectedSection = '';
   let login: string = '';
   let socket: any;
-  
-  
+
+
   onMount(async () => {
-    /*socket = io('http://localhost:3333', {
+    socket = io('http://localhost:3333', {
       transports: ['websocket'],
       auth: {
         token: sessionStorage.getItem('jwt'),
@@ -87,8 +88,8 @@
     });
     socket.on('newRoomMessage', (data: any) => {
       console.log(data);
-    });*/
-    
+    });
+
     //stored essential data
     let storedUser = sessionStorage.getItem('userID');
     let storedLogin = sessionStorage.getItem('login');
@@ -160,7 +161,7 @@
     selectedChannel = '';
     isAdmin = false;
   }
-  
+
   function openInvitationModal() {
     isInvitationModalOpen = true;
     selectedInvitation = '';
@@ -182,7 +183,7 @@
     selectedSection = section;
   }
 
-  async function changeUserPassword(newPassword: string) 
+  async function changeUserPassword(newPassword: string)
   {
     try
     {
@@ -214,7 +215,7 @@
     }
   }
 
-async function grantUserAdmin() 
+async function grantUserAdmin()
 {
   try
   {
@@ -244,7 +245,7 @@ async function grantUserAdmin()
   catch (err) {
     if (err instanceof Error)
       alert(err.message);
-  }     
+  }
 }
 
 async function expulSelectedUser() {
@@ -276,7 +277,7 @@ async function expulSelectedUser() {
   catch (err) {
     if (err instanceof Error)
       alert(err.message);
-  } 
+  }
 }
 
 async function banSelectedUser() {
@@ -308,7 +309,7 @@ async function banSelectedUser() {
   catch (err) {
     if (err instanceof Error)
       alert(err.message);
-  } 
+  }
 }
 
 async function unmuteUser() {
@@ -357,7 +358,7 @@ async function revokeAdmin() {
                 loginUserToExecute: selectedUserparam,
             }),
         });
-        
+
         if (!response.ok) {
             const data = await response.json();
             throw new Error(data.message);
@@ -435,7 +436,7 @@ async function changeChannelType() {
   catch (err) {
     if (err instanceof Error)
       alert(err.message);
-  } 
+  }
 }
 
 async function muteSelectedUser(muteDuration: number) {
@@ -469,7 +470,7 @@ async function muteSelectedUser(muteDuration: number) {
   catch (err) {
     if (err instanceof Error)
       alert(err.message);
-  } 
+  }
 }
 
 function closeSetupModal() {
@@ -587,7 +588,7 @@ function closeSetupModal() {
 
   async function joinChannel()
   {
-    try 
+    try
     {
       if (joinChannelName.trim() !== '' &&
         joinChannelName.length <= 10 &&
@@ -623,13 +624,13 @@ function closeSetupModal() {
               password: joinChannelPassword,
             }),
           });
-          if (!response.ok) 
+          if (!response.ok)
           {
             const data = await response.json();
             closeJoinModal();
             throw new Error(data.message);
           }
-          else if (response.ok) 
+          else if (response.ok)
           {
             const newChannel = await response.json();
             channelList.update(channelList => [...channelList, { name: newChannel.room.name }]);
@@ -661,6 +662,7 @@ function closeSetupModal() {
     console.log(messageInput);
     messages = [...messages, { username: login, content: messageInput, user: true }];
     messageInput = '';
+
   }
 
   async function confirmSelection() {
@@ -702,15 +704,27 @@ function closeSetupModal() {
   }
 
   async function sendPrivateMessage() {
-    //socket.emit('newMessage', { idSender: userID, loginReceiver: recipientName, content: messageContent, type: "private" });
+	let loginToSend = recipientName;
+	let contentMessage = messageContent;
     closePrivateMessageModal();
-    const response = await fetch('http://localhost:3333/chat/' + selectedChannel, {
+    socket.emit('newMessage', { idSender: userID, loginReceiver: loginToSend, content: contentMessage, type: "private" });
+	// on attend 1 secodne pour que le serveur ait le temps de créer le channel
+	await new Promise(r => setTimeout(r, 1000));
+	const response = await fetch('http://localhost:3333/chat/privateRooms/' + loginToSend, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
         Authorization: 'Bearer ' + token,
       },
     });
+	if (!response.ok) {
+	  const data = await response.json();
+	  console.log("Error : ", data)
+	  throw new Error(data.message);
+	} else if (response.ok) {
+	  const newChannel = await response.json();
+	  privateList.update(privateList => [...privateList, { login: newChannel.users[0].login }]);
+	}
   }
 
 function closePrivateMessageModal() {
@@ -1030,7 +1044,7 @@ async function leaveRoom()
         <label>
           <input type="radio" value="protected" id="protected" name="channelType" bind:group={newChannelType} /> Protected
         </label>
-    
+
         {#if newChannelType === 'protected'}
           <input bind:value={newPassword} type="password" id="channelPassword" placeholder="Password" name = NewPassword />
         {/if}
@@ -1338,7 +1352,7 @@ async function leaveRoom()
 <style>
   .container {
     display: flex;
-    margin-top: 10px; 
+    margin-top: 10px;
   }
 
   .sidebar {
@@ -1498,9 +1512,9 @@ async function leaveRoom()
     color: #EDA11A;
   }
 
-  
+
   @media screen and (max-width: 600px) {
-  .container 
+  .container
   {
     flex-direction: column;
     margin: 10px;
