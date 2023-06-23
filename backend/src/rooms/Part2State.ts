@@ -28,6 +28,8 @@ export class Powerup extends Schema {
 	  @type('number') powerUpY: number;
 	  @type('number') powerupScale: number;
 	  @type('boolean') powerupVisible: boolean;
+	  @type('boolean') remotePowerupTaken: boolean;
+	  @type('boolean') localPowerupTaken: boolean;
 }
 
 //Scores for each player

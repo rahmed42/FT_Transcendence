@@ -305,66 +305,63 @@ export class Part1Scene extends Phaser.Scene {
 				}
 
 				// Second player added
-				if (this.room.state.players.size === 2) {
-					// Setup his paddle
-					if (this.remotePaddle === undefined) {
-						this.createRemotePaddle();
+				if (this.room.state.players.size === 2 && this.remotePaddle === undefined) {
+					this.createRemotePaddle();
 
-						// Keep reference to this remote Paddle
-						const entity = this.remotePaddle!;
-						this.playerEntities[sessionId] = entity;
+					// Keep reference to this remote Paddle
+					const entity = this.remotePaddle!;
+					this.playerEntities[sessionId] = entity;
 
-						//Triggered when 'y' property changes
-						player.listen("y", (value: number) => {
-							if (this.remotePaddle)
-								this.remotePaddle.y = value;
-						});
+					//Triggered when 'y' property changes
+					player.listen("y", (value: number) => {
+						if (this.remotePaddle)
+							this.remotePaddle.y = value;
+					});
 
-						//Triggered when 'name' property changes
-						player.listen("name", (value: string) => {
-							// Update opponent name
-							this.opponentName = value;
-						});
+					//Triggered when 'name' property changes
+					player.listen("name", (value: string) => {
+						// Update opponent name
+						this.opponentName = value;
+					});
 
-						// Getting starting game from server
-						this.room.onMessage("startGame", (start: boolean) => {
-							if (start === true)
-								this.startMatch();
-						});
+					// Getting starting game from server
+					this.room.onMessage("startGame", (start: boolean) => {
+						if (start === true)
+							this.startMatch();
+					});
 
-						// Get ball position from server if not hosting
-						this.room.onMessage("ballX", (ballX: number) => {
-							if (!this.gameHost && this.ball)
-								this.ball.x = ballX;
-						});
-						this.room.onMessage("ballY", (ballY: number) => {
-							if (!this.gameHost && this.ball)
-								this.ball.y = ballY;
-						});
+					// Get ball position from server if not hosting
+					this.room.onMessage("ballX", (ballX: number) => {
+						if (!this.gameHost && this.ball)
+							this.ball.x = ballX;
+					});
+					this.room.onMessage("ballY", (ballY: number) => {
+						if (!this.gameHost && this.ball)
+							this.ball.y = ballY;
+					});
 
-						// Update score from server host
-						this.room.onMessage("opponentScore", (score: number) => {
-							if (!this.gameHost && this.runningGame) {
-								this.opponentScore = score;
-								this.opponentScoreText!.setText(score.toString());
-								if (this.opponentScore >= 3)
-									this.resetGame(false);
-							}
-						});
+					// Update score from server host
+					this.room.onMessage("opponentScore", (score: number) => {
+						if (!this.gameHost && this.runningGame) {
+							this.opponentScore = score;
+							this.opponentScoreText!.setText(score.toString());
+							if (this.opponentScore >= 3)
+								this.resetGame(false);
+						}
+					});
 
-						this.room.onMessage("myScore", (score: number) => {
-							if (!this.gameHost && this.runningGame) {
-								this.myScore = score;
-								this.myScoreText!.setText(score.toString());
-								if (this.myScore >= 3)
-									this.resetGame(false);
-							}
-						});
-					}
-					// Set start clickable button
-					this.startButtonText("🏓 Start Game 🏓", true);
-					this.startAnim();
+					this.room.onMessage("myScore", (score: number) => {
+						if (!this.gameHost && this.runningGame) {
+							this.myScore = score;
+							this.myScoreText!.setText(score.toString());
+							if (this.myScore >= 3)
+								this.resetGame(false);
+						}
+					});
 				}
+				// Set start clickable button
+				this.startButtonText("🏓 Start Game 🏓", true);
+				this.startAnim();
 			}
 		});
 

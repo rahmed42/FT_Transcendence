@@ -33,9 +33,14 @@ export class Part2Scene extends Phaser.Scene {
 	startState: boolean;
 	gameHost: boolean;
 	runningGame: boolean;
+
+	//PowerUp state
 	runningPowerUp: boolean;
 	visiblePowerUp: boolean;
 	scalePowerUp: number;
+	localPowerupTaken: boolean;
+	remotePowerupTaken: boolean;
+	powerType: number;
 
 	// local input cache
 	inputPayload: any = {
@@ -47,6 +52,9 @@ export class Part2Scene extends Phaser.Scene {
 		powerupY: 300,
 		powerupScale: 1,
 		powerupVisible: false,
+		localPowerupTaken: false,
+		remotePowerupTaken: false,
+		powerType: 0,
 		name: "",
 	};
 
@@ -99,6 +107,9 @@ export class Part2Scene extends Phaser.Scene {
 		this.runningPowerUp = false;
 		this.visiblePowerUp = false;
 		this.scalePowerUp = 1;
+		this.localPowerupTaken = false;
+		this.remotePowerupTaken = false;
+		this.powerType = 0;
 	}
 
 	// set the active scene
@@ -188,6 +199,7 @@ export class Part2Scene extends Phaser.Scene {
 		this.powerUp = this.physics.add.image(this.cameras.main.centerX, this.cameras.main.centerY, 'powerUp');
 		this.powerUp.setOrigin(0.5, 0.5);
 		this.powerUp.setVisible(false);
+		// this.powerUp.disableBody(true, true);
 		this.visiblePowerUp = false;
 
 		// Add ball physics
@@ -311,28 +323,6 @@ export class Part2Scene extends Phaser.Scene {
 		}
 	}
 
-	// create the powerup
-	createPowerUp(): void {
-		this.powerUp?.setPosition(this.cameras.main.centerX, this.cameras.main.centerY);
-
-		if (this.powerUp && this.localPaddle) {
-			// Add collisions between powerUp and paddles
-			this.physics.add.collider(this.powerUp, this.localPaddle, () => {
-				this.resetPowerUpState();
-				console.log("--------------Local PowerUp taken--------------");
-				// Set power to local player
-			});
-		}
-		if (this.powerUp && this.remotePaddle) {
-			// Add collisions between powerUp and paddles
-			this.physics.add.collider(this.powerUp, this.remotePaddle, () => {
-				this.resetPowerUpState();
-				console.log("--------------Remote PowerUp taken--------------");
-				// Set power to remote player
-			});
-		}
-	}
-
 	// Game listeners
 	gameListeners(): void {
 		//https://learn.colyseus.io/phaser/1-basic-player-movement.html
@@ -358,91 +348,127 @@ export class Part2Scene extends Phaser.Scene {
 				}
 
 				// Second player added
-				if (this.room.state.players.size === 2) {
-					// Setup his paddle
-					if (this.remotePaddle === undefined) {
-						this.createRemotePaddle();
+				if (this.room.state.players.size === 2 && this.remotePaddle === undefined) {
+					this.createRemotePaddle();
 
-						// Add powerup
-						this.createPowerUp();
+					// Keep reference to this remote Paddle
+					const entity = this.remotePaddle!;
+					this.playerEntities[sessionId] = entity;
 
-						// Keep reference to this remote Paddle
-						const entity = this.remotePaddle!;
-						this.playerEntities[sessionId] = entity;
+					//Triggered when 'y' property changes
+					player.listen("y", (value: number) => {
+						if (this.remotePaddle)
+							this.remotePaddle.y = value;
+					});
 
-						//Triggered when 'y' property changes
-						player.listen("y", (value: number) => {
-							if (this.remotePaddle)
-								this.remotePaddle.y = value;
-						});
+					//Triggered when 'name' property changes
+					player.listen("name", (value: string) => {
+						// Update opponent name
+						this.opponentName = value;
+					});
 
-						//Triggered when 'name' property changes
-						player.listen("name", (value: string) => {
-							// Update opponent name
-							this.opponentName = value;
-						});
+					// Getting starting game from server
+					this.room.onMessage("startGame", (start: boolean) => {
+						if (start === true)
+							this.startMatch();
+					});
 
-						// Getting starting game from server
-						this.room.onMessage("startGame", (start: boolean) => {
-							if (start === true)
-								this.startMatch();
-						});
+					// Get ball position from server if not hosting
+					this.room.onMessage("ballX", (ballX: number) => {
+						if (!this.gameHost && this.ball)
+							this.ball.x = ballX;
+					});
+					this.room.onMessage("ballY", (ballY: number) => {
+						if (!this.gameHost && this.ball)
+							this.ball.y = ballY;
+					});
 
-						// Get ball position from server if not hosting
-						this.room.onMessage("ballX", (ballX: number) => {
-							if (!this.gameHost && this.ball)
-								this.ball.x = ballX;
-						});
-						this.room.onMessage("ballY", (ballY: number) => {
-							if (!this.gameHost && this.ball)
-								this.ball.y = ballY;
-						});
+					// Get PowerUp position from server if not hosting
+					this.room.onMessage("powerUpX", (powerUpX: number) => {
+						if (!this.gameHost && this.powerUp) {
+							this.powerUp.x = powerUpX;
+						}
+					});
 
-						// Get PowerUp position from server if not hosting
-						this.room.onMessage("powerUpX", (powerUpX: number) => {
-							if (!this.gameHost && this.powerUp) {
-								this.powerUp.x = powerUpX;
+					this.room.onMessage("powerUpY", (powerUpY: number) => {
+						if (!this.gameHost && this.powerUp) {
+							this.powerUp.y = powerUpY;
+						}
+					});
+
+					// powerUps infos from server if not hosting
+					this.room.onMessage("powerUpScale", (scale: number) => {
+						if (!this.gameHost && this.powerUp) {
+							this.powerUp.setScale(scale);
+						}
+					});
+
+					this.room.onMessage("powerUpVisible", (visible: boolean) => {
+						if (!this.gameHost && this.powerUp) {
+							this.powerUp.setVisible(visible);
+						}
+					});
+
+					// getting Remote taken powerups from server
+					this.room.onMessage("localPowerupFromServer", (taken: boolean) => {
+						if (!this.gameHost && this.powerUp) {
+							if (taken === true) {
+								console.log(">>>>>>>R>>>>>>>>>>remote powerup taken");
+								this.remotePowerupTaken = true;
+								this.resetPowerUpState();
+
+								// random powerup
+								this.randomPowerUp(false, this.powerType);
+							} else {
+								console.log(">>>>>>>R>>>>>>>>>>remote powerup RESET");
+								this.remotePaddle?.setScale(1);
+								this.ball?.setScale(1);
+
 							}
-						});
+						}
+					});
 
-						this.room.onMessage("powerUpY", (powerUpY: number) => {
-							if (!this.gameHost && this.powerUp) {
-								this.powerUp.y = powerUpY;
-							}
-						});
 
-						// powerUps infos from server if not hosting
-						this.room.onMessage("powerUpScale", (scale: number) => {
-							if (!this.gameHost && this.powerUp) {
-								this.powerUp.setScale(scale);
-							}
-						});
+					this.room.onMessage("remotePowerupFromServer", (taken: boolean) => {
+						if (!this.gameHost && this.powerUp) {
+							if (taken === true) {
+								console.log("<<<<<<<<R<<<<<<<<<local powerup taken");
+								this.localPowerupTaken = true;
+								this.resetPowerUpState();
 
-						this.room.onMessage("powerUpVisible", (visible: boolean) => {
-							if (!this.gameHost && this.powerUp) {
-								this.powerUp.setVisible(visible);
-							}
-						});
+								// random powerup
+								this.randomPowerUp(true, this.powerType);
+							} else {
+								console.log("<<<<<<<<R<<<<<<<<<local powerup RESET");
+								this.localPaddle?.setScale(1);
+								this.ball?.setScale(1);
 
-						// Update score from server host
-						this.room.onMessage("opponentScore", (score: number) => {
-							if (!this.gameHost && this.runningGame) {
-								this.opponentScore = score;
-								this.opponentScoreText!.setText(score.toString());
-								if (this.opponentScore >= 3)
-									this.resetGame(false);
 							}
-						});
+						}
+					});
 
-						this.room.onMessage("myScore", (score: number) => {
-							if (!this.gameHost && this.runningGame) {
-								this.myScore = score;
-								this.myScoreText!.setText(score.toString());
-								if (this.myScore >= 3)
-									this.resetGame(false);
-							}
-						});
-					}
+					// Update score from server host
+					this.room.onMessage("opponentScore", (score: number) => {
+						if (!this.gameHost && this.runningGame) {
+							this.opponentScore = score;
+							this.opponentScoreText!.setText(score.toString());
+							if (this.opponentScore >= 3)
+								this.resetGame(false);
+						}
+					});
+
+					this.room.onMessage("myScore", (score: number) => {
+						if (!this.gameHost && this.runningGame) {
+							this.myScore = score;
+							this.myScoreText!.setText(score.toString());
+							if (this.myScore >= 3)
+								this.resetGame(false);
+						}
+					});
+
+					// Add powerup
+					this.createPowerUpPhysics();
+
 					// Set start clickable button
 					this.startButtonText("🏓 Start Game 🏓", true);
 					this.startAnim();
@@ -565,7 +591,8 @@ export class Part2Scene extends Phaser.Scene {
 			if (this.gameHost) {
 				// Launch the ball to random direction
 				let velocityX = Phaser.Math.Between(350, 550);
-				let velocityY = Phaser.Math.Between(200, 300);
+				let velocityY = Phaser.Math.Between(0, 0);
+				// let velocityY = Phaser.Math.Between(200, 300);
 
 				// random negative or positive
 				velocityX *= Math.random() < 0.5 ? 1 : -1;
@@ -575,22 +602,113 @@ export class Part2Scene extends Phaser.Scene {
 		}
 	}
 
+	randomPowerUp(localPlayer: boolean, powerType: number): void {
+		switch (powerType) {
+			case 0:
+				// increase paddle size
+				if (localPlayer)
+					this.localPaddle?.setScale(1, 2);
+				else
+					this.remotePaddle?.setScale(1, 2);
+				break;
+			case 1:
+				// decrease paddle size
+				if (localPlayer)
+					this.localPaddle?.setScale(1, 0.5);
+				else
+					this.remotePaddle?.setScale(1, 0.5);
+				break;
+			case 2:
+				// increase ball size
+				this.ball?.setScale(2);
+				break;
+			case 3:
+				// decrease ball size
+				this.ball?.setScale(0.5);
+				break;
+			case 4:
+				// increase ball speed few seconds
+				if (this.gameHost) {
+					this.ball?.setVelocity(this.ball.body.velocity.x * 2, this.ball.body.velocity.y * 2);
+					this.time.delayedCall(3000, () => {
+						this.ball?.setVelocity(this.ball.body.velocity.x / 2, this.ball.body.velocity.y / 2);
+					});
+				}
+				break;
+			case 5:
+				// decrease ball speed
+				if (this.gameHost) {
+					this.ball?.setVelocity(this.ball.body.velocity.x / 2, this.ball.body.velocity.y / 2);
+					this.time.delayedCall(3000, () => {
+						this.ball?.setVelocity(this.ball.body.velocity.x * 2, this.ball.body.velocity.y * 2);
+					});
+				}
+				break;
+			default:
+				break;
+		}
+	}
+
+	// create the powerup collisions
+	createPowerUpPhysics(): void {
+		this.resetPowerUpState();
+
+		if (this.powerUp && this.localPaddle) {
+			// Add collisions between powerUp and paddles
+			console.log("added LOCAL powerup physics");
+			this.physics.add.collider(this.powerUp, this.localPaddle, () => {
+				this.resetPowerUpState();
+				if (!this.localPowerupTaken && this.gameHost) {
+					console.log("*****H*********LOCAL powerup taken---------");
+					this.localPowerupTaken = true;
+
+					// random powerup
+					this.powerType = Phaser.Math.Between(0, 5);
+
+					this.randomPowerUp(true, this.powerType);
+				}
+			});
+		}
+
+		if (this.powerUp && this.remotePaddle) {
+			console.log("added REMOTE powerup physics");
+			this.physics.add.collider(this.powerUp, this.remotePaddle, () => {
+				this.resetPowerUpState();
+				if (!this.remotePowerupTaken && this.gameHost) {
+					console.log("*****H*********REMOTE powerup taken---------");
+					this.remotePowerupTaken = true;
+
+					// random powerup
+					this.powerType = Phaser.Math.Between(0, 5);
+
+					this.randomPowerUp(false, this.powerType);
+				}
+			});
+		}
+	}
+
 	// launch a powerup
 	launchPowerup(): void {
 		this.powerUp?.setVisible(true);
+		// this.powerUp?.disableBody(false, false);
 		this.visiblePowerUp = true;
+		this.localPowerupTaken = false;
+		this.remotePowerupTaken = false;
+
+		// reset paddle scales after powerupeffect
+		this.localPaddle?.setScale(1);
+		this.remotePaddle?.setScale(1);
+		this.ball?.setScale(1);
 
 		if (this.gameHost && this.powerUp) {
-			// random powerup
-			// let powerType = Phaser.Math.Between(0, 2);
-
 			// set powerup to center
 			this.powerUp.x = this.cameras.main.centerX;
 			this.powerUp.y = this.cameras.main.centerY;
 
 			// random velocity
-			let powerUpVelocityX = Phaser.Math.Between(80, 100)
-			let powerUpVelocityY = Phaser.Math.Between(0, 400);
+			let powerUpVelocityX = Phaser.Math.Between(300, 300)
+			let powerUpVelocityY = Phaser.Math.Between(0, 0);
+			// let powerUpVelocityY = Phaser.Math.Between(0, 400);
 
 			// random scale
 			this.scalePowerUp = Phaser.Math.Between(1, 3) / 2; // 0.5 to 1.5
@@ -607,6 +725,7 @@ export class Part2Scene extends Phaser.Scene {
 
 	resetPowerUpState(): void {
 		this.powerUp?.setVisible(false);
+		// this.powerUp?.disableBody(true, true);
 		this.visiblePowerUp = false;
 		this.powerUp?.setVelocity(0);
 
@@ -719,7 +838,8 @@ export class Part2Scene extends Phaser.Scene {
 		if (this.gameHost) {
 			if (this.runningGame && this.gameHost && !this.visiblePowerUp && !this.runningPowerUp) {
 				this.runningPowerUp = true;
-				this.time.delayedCall(3000, () => {
+				this.time.delayedCall(2000, () => {
+					this.localPowerupTaken = false;
 					this.launchPowerup();
 				});
 			}
@@ -767,6 +887,20 @@ export class Part2Scene extends Phaser.Scene {
 				this.inputPayload.powerupScale = this.scalePowerUp;
 				this.inputPayload.powerupVisible = this.visiblePowerUp;
 				this.room.send("powerUpInfo", this.inputPayload);
+			}
+
+			// send Local powerup taken state
+			if (this.powerUp && this.gameHost && (this.inputPayload.localPowerupTaken !== this.localPowerupTaken)) {
+				console.log("localPowerupTaken", this.localPowerupTaken);
+				this.inputPayload.localPowerupTaken = this.localPowerupTaken;
+				this.room.send("localPowerupTaken", this.inputPayload);
+			}
+
+			// send Remote powerup taken state
+			if (this.powerUp && this.gameHost && (this.inputPayload.remotePowerupTaken !== this.remotePowerupTaken)) {
+				console.log("remotePowerupTaken", this.remotePowerupTaken);
+				this.inputPayload.remotePowerupTaken = this.remotePowerupTaken;
+				this.room.send("remotePowerupTaken", this.inputPayload);
 			}
 		}
 	}
