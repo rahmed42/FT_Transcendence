@@ -643,6 +643,13 @@ export class Part2Scene extends Phaser.Scene {
 					});
 				}
 				break;
+			case 6:
+				// set ball low visibility
+				this.ball?.setAlpha(0.25);
+				this.time.delayedCall(3000, () => {
+					this.ball?.setAlpha(1);
+				});
+				break;
 			default:
 				break;
 		}
