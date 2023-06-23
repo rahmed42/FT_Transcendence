@@ -33,7 +33,7 @@
 	}
   
 	async function rejectFriendRequest(id) {
-	  await fetch(`${apiUrl}/social/friend-request/${id}`, { method: 'DELETE' });
+	  await fetch(`${apiUrl}/social/friend/${id}`, { method: 'DELETE' });
 	  await refreshData();
 	}
   

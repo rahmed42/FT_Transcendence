@@ -24,6 +24,12 @@
 				// console.log('SessionRestored ', currentUser);
 			}
 		});
+		if (typeof window !== 'undefined') {
+			const code = new URLSearchParams(window.location.search).get('code');
+			if (code) {
+				await getToken(code);
+			}
+		}
 
 		async function check_2fa_user() {
 			const response = await fetch('http://localhost:3333/auth/2fa_info', {
@@ -59,16 +65,6 @@
 			unsubscribe();
 		};
 	});
-
-	// afterUpdate(async () => {
-	// 	// redirect the user if isLogged is true
-	// 	// redirect to home Page if logged in and on login Page / To add on backend checks
-	// 	// if (sessionStorage.getItem('user') && window.location.pathname === '/')
-	// 	// {
-	// 	// 	console.log(".ew.rt.er.ter,g mosvjreiowhuqwehg");
-	// 	// 	window.location.href = '/home';
-	// 	// }
-	// });
 
 	async function getToken(code: string) {
 		// Fetch token from the server

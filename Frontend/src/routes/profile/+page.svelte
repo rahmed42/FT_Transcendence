@@ -24,26 +24,6 @@
 	}
 
 	onMount(async () => {
-		if (typeof window !== 'undefined') {
-			const code = new URLSearchParams(window.location.search).get('code');
-			if (code) {
-				await getToken(code);
-			}
-		}
-		async function getToken(code: string) {
-			const response = await fetch('http://localhost:3333/auth/userInfo?code=' + code, {
-				method: 'POST',
-				credentials: 'include'
-			});
-			const contentType = response.headers.get('Content-Type');
-			if (contentType && contentType.includes('application/json')) {
-				const data = await response.json();
-				if (data !== 'undefined') {
-					document.cookie = 'jwt=' + data.token;
-					sessionStorage.setItem('jwt', data.token);
-				}
-			}
-		}
 		async function getUserInfo() {
 			const response = await fetch('http://localhost:3333/profil/me', {
 				method: 'GET',
