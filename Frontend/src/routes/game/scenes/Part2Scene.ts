@@ -591,7 +591,7 @@ export class Part2Scene extends Phaser.Scene {
 			if (this.gameHost) {
 				// Launch the ball to random direction
 				let velocityX = Phaser.Math.Between(350, 550);
-				let velocityY = Phaser.Math.Between(0, 400);
+				let velocityY = Phaser.Math.Between(200,400);
 
 				// random negative or positive
 				velocityX *= Math.random() < 0.5 ? 1 : -1;
