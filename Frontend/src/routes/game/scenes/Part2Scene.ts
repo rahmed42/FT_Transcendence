@@ -601,7 +601,7 @@ export class Part2Scene extends Phaser.Scene {
 
 	randomPowerUp(localPlayer: boolean): void {
 		// random powerup
-		// let powerType = Phaser.Math.Between(0, 2);
+		// let powerType = Phaser.Math.Between(0, 5);
 		let powerType = 4;
 
 		switch (powerType) {
