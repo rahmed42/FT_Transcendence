@@ -665,7 +665,7 @@ export class Part2Scene extends Phaser.Scene {
 				this.resetPowerUpState();
 				if (!this.localPowerupTaken && this.gameHost) {
 					// random powerup
-					this.powerType = Phaser.Math.Between(0, 5);
+					this.powerType = Phaser.Math.Between(0, 6);
 					this.randomPowerUp(true, this.powerType);
 
 					this.localPowerupTaken = true;
@@ -678,7 +678,7 @@ export class Part2Scene extends Phaser.Scene {
 				this.resetPowerUpState();
 				if (!this.remotePowerupTaken && this.gameHost) {
 					// random powerup
-					this.powerType = Phaser.Math.Between(0, 5);
+					this.powerType = Phaser.Math.Between(0, 6);
 					this.randomPowerUp(false, this.powerType);
 
 					this.remotePowerupTaken = true;
