@@ -3,7 +3,7 @@
   import { onDestroy, onMount } from 'svelte';
   import { get } from 'svelte/store';
   import { writable } from 'svelte/store';
-  import io from 'socket.io-client';
+  //import io from 'socket.io-client';
 
   let messageInput = '';
   interface Message {
@@ -16,6 +16,7 @@
   //invitation modal
   let isInvitationModalOpen = false;
   let selectedInvitation = '';
+  let inviteUser = '';
   
   
   //admin modal
@@ -72,7 +73,7 @@
   
   
   onMount(async () => {
-    socket = io('http://localhost:3333', {
+    /*socket = io('http://localhost:3333', {
       transports: ['websocket'],
       auth: {
         token: sessionStorage.getItem('jwt'),
@@ -86,7 +87,7 @@
     });
     socket.on('newRoomMessage', (data: any) => {
       console.log(data);
-    });
+    });*/
     
     //stored essential data
     let storedUser = sessionStorage.getItem('userID');
@@ -148,10 +149,22 @@
     }
   });
 
+
+  function refreshList() {
+    userList.set([]);
+    banList.set([]);
+    muteList.set([]);
+    blockList.set([]);
+    adminList.set([]);
+    invitationList.set([]);
+    selectedChannel = '';
+    isAdmin = false;
+  }
   
   function openInvitationModal() {
     isInvitationModalOpen = true;
     selectedInvitation = '';
+    inviteUser = '';
   }
 
   function closeInvitationModal() {
@@ -613,6 +626,7 @@ function closeSetupModal() {
           if (!response.ok) 
           {
             const data = await response.json();
+            closeJoinModal();
             throw new Error(data.message);
           }
           else if (response.ok) 
@@ -686,8 +700,9 @@ function closeSetupModal() {
   async function acceptInvitation(selectedInvitation: string) {
 
   }
+
   async function sendPrivateMessage() {
-    socket.emit('newMessage', { idSender: userID, loginReceiver: recipientName, content: messageContent, type: "private" });
+    //socket.emit('newMessage', { idSender: userID, loginReceiver: recipientName, content: messageContent, type: "private" });
     closePrivateMessageModal();
     const response = await fetch('http://localhost:3333/chat/' + selectedChannel, {
       method: 'GET',
@@ -761,6 +776,28 @@ function closePrivateMessageModal() {
       } else if (response.ok) {
         const newProfile = await response.json();
         console.log('Contenu de newProfile:', newProfile);
+      }
+    }
+    catch (err) {
+      if (err instanceof Error)
+        alert(err.message);
+    }
+  }
+  async function inviteUsr(inviteUser: string){
+    try {
+      const response = await fetch('http://localhost:3333/chat/inviteUser/', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + token,
+        },
+      });
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message);
+      } else if (response.ok) {
+        const newProfile = await response.json();
+        throw new Error(newProfile.message);
       }
     }
     catch (err) {
@@ -920,6 +957,7 @@ async function leaveRoom()
     } else {
       const newProfile = await response.json();
       channelList.update(channelList => channelList.filter(channel => channel.name !== selectedChannel));
+      refreshList();
     }
   }
   catch(err)
@@ -939,6 +977,8 @@ async function leaveRoom()
   <div class="modal">
     <div class="modal-content">
       <h3>Invitation list</h3>
+      <input bind:value={inviteUser} id="inviteUser" type="inviteUser" placeholder="inviteUser" name = "inviteUser"/>
+      <button on:click={inviteGame}>Invite</button>
       {#if $invitationList}
         <select name="selectedInvitation" bind:value={selectedInvitation}>
           <option disabled selected>Select an invitation</option>
