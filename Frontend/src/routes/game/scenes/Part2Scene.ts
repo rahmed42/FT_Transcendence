@@ -408,18 +408,39 @@ export class Part2Scene extends Phaser.Scene {
 
 					// getting Remote taken powerups from server
 					this.room.onMessage("localPowerupFromServer", (taken: boolean) => {
-						if (!this.gameHost && this.powerUp && taken) {
-							console.log(">>>>>>>R>>>>>>>>>>remote powerup taken");
-							this.remotePowerupTaken = true;
-							this.resetPowerUpState();
+						if (!this.gameHost && this.powerUp) {
+							if (taken === true) {
+								console.log(">>>>>>>R>>>>>>>>>>remote powerup taken");
+								this.remotePowerupTaken = true;
+								this.resetPowerUpState();
+
+								// random powerup
+								this.randomPowerUp(false);
+							} else {
+								console.log(">>>>>>>R>>>>>>>>>>remote powerup RESET");
+								this.remotePaddle?.setScale(1);
+								this.ball?.setScale(1);
+
+							}
 						}
 					});
 
+
 					this.room.onMessage("remotePowerupFromServer", (taken: boolean) => {
-						if (!this.gameHost && this.powerUp && taken) {
-							console.log("<<<<<<<<R<<<<<<<<<local powerup taken");
-							this.localPowerupTaken = true;
-							this.resetPowerUpState();
+						if (!this.gameHost && this.powerUp) {
+							if (taken === true) {
+								console.log("<<<<<<<<R<<<<<<<<<local powerup taken");
+								this.localPowerupTaken = true;
+								this.resetPowerUpState();
+
+								// random powerup
+								this.randomPowerUp(true);
+							} else {
+								console.log("<<<<<<<<R<<<<<<<<<local powerup RESET");
+								this.localPaddle?.setScale(1);
+								this.ball?.setScale(1);
+
+							}
 						}
 					});
 
@@ -577,6 +598,58 @@ export class Part2Scene extends Phaser.Scene {
 			}
 		}
 	}
+
+	randomPowerUp(localPlayer: boolean): void {
+		// random powerup
+		// let powerType = Phaser.Math.Between(0, 2);
+		let powerType = 4;
+
+		switch (powerType) {
+			case 0:
+				// increase paddle size
+				if (localPlayer)
+					this.localPaddle?.setScale(1, 2);
+				else
+					this.remotePaddle?.setScale(1, 2);
+				break;
+			case 1:
+				// decrease paddle size
+				if (localPlayer)
+					this.localPaddle?.setScale(1, 0.5);
+				else
+					this.remotePaddle?.setScale(1, 0.5);
+				break;
+			case 2:
+				// increase ball size
+				this.ball?.setScale(2);
+				break;
+			case 3:
+				// decrease ball size
+				this.ball?.setScale(0.5);
+				break;
+			case 4:
+				// increase ball speed few seconds
+				if (this.gameHost) {
+					this.ball?.setVelocity(this.ball.body.velocity.x * 2, this.ball.body.velocity.y * 2);
+					this.time.delayedCall(3000, () => {
+						this.ball?.setVelocity(this.ball.body.velocity.x / 2, this.ball.body.velocity.y / 2);
+					});
+				}
+				break;
+			case 5:
+				// decrease ball speed
+				if (this.gameHost) {
+					this.ball?.setVelocity(this.ball.body.velocity.x / 2, this.ball.body.velocity.y / 2);
+					this.time.delayedCall(3000, () => {
+						this.ball?.setVelocity(this.ball.body.velocity.x * 2, this.ball.body.velocity.y * 2);
+					});
+				}
+				break;
+			default:
+				break;
+		}
+	}
+
 	// create the powerup collisions
 	createPowerUpPhysics(): void {
 		this.resetPowerUpState();
@@ -589,6 +662,9 @@ export class Part2Scene extends Phaser.Scene {
 				if (!this.localPowerupTaken && this.gameHost) {
 					console.log("*****H*********LOCAL powerup taken---------");
 					this.localPowerupTaken = true;
+
+					// random powerup
+					this.randomPowerUp(true);
 				}
 			});
 		}
@@ -600,10 +676,12 @@ export class Part2Scene extends Phaser.Scene {
 				if (!this.remotePowerupTaken && this.gameHost) {
 					console.log("*****H*********REMOTE powerup taken---------");
 					this.remotePowerupTaken = true;
+
+					// random powerup
+					this.randomPowerUp(false);
 				}
 			});
 		}
-
 	}
 
 	// launch a powerup
@@ -614,10 +692,12 @@ export class Part2Scene extends Phaser.Scene {
 		this.localPowerupTaken = false;
 		this.remotePowerupTaken = false;
 
-		if (this.gameHost && this.powerUp) {
-			// random powerup
-			// let powerType = Phaser.Math.Between(0, 2);
+		// reset paddle scales after powerupeffect
+		this.localPaddle?.setScale(1);
+		this.remotePaddle?.setScale(1);
+		this.ball?.setScale(1);
 
+		if (this.gameHost && this.powerUp) {
 			// set powerup to center
 			this.powerUp.x = this.cameras.main.centerX;
 			this.powerUp.y = this.cameras.main.centerY;
