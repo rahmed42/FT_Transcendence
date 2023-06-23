@@ -411,39 +411,39 @@ export class Part2Scene extends Phaser.Scene {
 
 					// getting Remote taken powerups from server
 					this.room.onMessage("localPowerupFromServer", (taken: boolean) => {
-						if (!this.gameHost && this.powerUp) {
+						if (!this.gameHost) {
 							if (taken === true) {
-								console.log(">>>>>>>R>>>>>>>>>>remote powerup taken");
 								this.remotePowerupTaken = true;
 								this.resetPowerUpState();
 
 								// random powerup
 								this.randomPowerUp(false, this.powerType);
 							} else {
-								console.log(">>>>>>>R>>>>>>>>>>remote powerup RESET");
 								this.remotePaddle?.setScale(1);
 								this.ball?.setScale(1);
-
 							}
 						}
 					});
 
 
 					this.room.onMessage("remotePowerupFromServer", (taken: boolean) => {
-						if (!this.gameHost && this.powerUp) {
+						if (!this.gameHost) {
 							if (taken === true) {
-								console.log("<<<<<<<<R<<<<<<<<<local powerup taken");
 								this.localPowerupTaken = true;
 								this.resetPowerUpState();
 
 								// random powerup
 								this.randomPowerUp(true, this.powerType);
 							} else {
-								console.log("<<<<<<<<R<<<<<<<<<local powerup RESET");
 								this.localPaddle?.setScale(1);
 								this.ball?.setScale(1);
-
 							}
+						}
+					});
+
+					this.room.onMessage("powerTypeFromServer", (power: number) => {
+						if (!this.gameHost && this.powerUp) {
+							this.powerType = power;
 						}
 					});
 
@@ -591,8 +591,7 @@ export class Part2Scene extends Phaser.Scene {
 			if (this.gameHost) {
 				// Launch the ball to random direction
 				let velocityX = Phaser.Math.Between(350, 550);
-				let velocityY = Phaser.Math.Between(0, 0);
-				// let velocityY = Phaser.Math.Between(200, 300);
+				let velocityY = Phaser.Math.Between(0, 400);
 
 				// random negative or positive
 				velocityX *= Math.random() < 0.5 ? 1 : -1;
@@ -655,33 +654,27 @@ export class Part2Scene extends Phaser.Scene {
 
 		if (this.powerUp && this.localPaddle) {
 			// Add collisions between powerUp and paddles
-			console.log("added LOCAL powerup physics");
 			this.physics.add.collider(this.powerUp, this.localPaddle, () => {
 				this.resetPowerUpState();
 				if (!this.localPowerupTaken && this.gameHost) {
-					console.log("*****H*********LOCAL powerup taken---------");
-					this.localPowerupTaken = true;
-
 					// random powerup
 					this.powerType = Phaser.Math.Between(0, 5);
-
 					this.randomPowerUp(true, this.powerType);
+
+					this.localPowerupTaken = true;
 				}
 			});
 		}
 
 		if (this.powerUp && this.remotePaddle) {
-			console.log("added REMOTE powerup physics");
 			this.physics.add.collider(this.powerUp, this.remotePaddle, () => {
 				this.resetPowerUpState();
 				if (!this.remotePowerupTaken && this.gameHost) {
-					console.log("*****H*********REMOTE powerup taken---------");
-					this.remotePowerupTaken = true;
-
 					// random powerup
 					this.powerType = Phaser.Math.Between(0, 5);
-
 					this.randomPowerUp(false, this.powerType);
+
+					this.remotePowerupTaken = true;
 				}
 			});
 		}
@@ -689,38 +682,41 @@ export class Part2Scene extends Phaser.Scene {
 
 	// launch a powerup
 	launchPowerup(): void {
-		this.powerUp?.setVisible(true);
-		// this.powerUp?.disableBody(false, false);
-		this.visiblePowerUp = true;
-		this.localPowerupTaken = false;
-		this.remotePowerupTaken = false;
+		if (this.runningGame) {
+			this.powerUp?.setVisible(true);
+			// this.powerUp?.disableBody(false, false);
+			this.visiblePowerUp = true;
+			this.localPowerupTaken = false;
+			this.remotePowerupTaken = false;
 
-		// reset paddle scales after powerupeffect
-		this.localPaddle?.setScale(1);
-		this.remotePaddle?.setScale(1);
-		this.ball?.setScale(1);
+			// reset paddle scales after powerupeffect
+			this.localPaddle?.setScale(1);
+			this.remotePaddle?.setScale(1);
+			this.ball?.setScale(1);
 
-		if (this.gameHost && this.powerUp) {
-			// set powerup to center
-			this.powerUp.x = this.cameras.main.centerX;
-			this.powerUp.y = this.cameras.main.centerY;
+			if (this.gameHost && this.powerUp) {
+				// set powerup to center
+				this.powerUp.x = this.cameras.main.centerX;
+				this.powerUp.y = this.cameras.main.centerY;
 
-			// random velocity
-			let powerUpVelocityX = Phaser.Math.Between(300, 300)
-			let powerUpVelocityY = Phaser.Math.Between(0, 0);
-			// let powerUpVelocityY = Phaser.Math.Between(0, 400);
+				// random velocity
+				let powerUpVelocityX = Phaser.Math.Between(400, 550)
+				let powerUpVelocityY = Phaser.Math.Between(0, 400);
 
-			// random scale
-			this.scalePowerUp = Phaser.Math.Between(1, 3) / 2; // 0.5 to 1.5
+				// random scale
+				this.scalePowerUp = Phaser.Math.Between(1, 3) / 2; // 0.5 to 1.5
 
-			// random negative or positive
-			powerUpVelocityX *= Math.random() < 0.5 ? 1 : -1;
-			powerUpVelocityY *= Math.random() < 0.5 ? 1 : -1;
+				// random negative or positive
+				powerUpVelocityX *= Math.random() < 0.5 ? 1 : -1;
+				powerUpVelocityY *= Math.random() < 0.5 ? 1 : -1;
 
-			// create powerup
-			this.powerUp?.setScale(this.scalePowerUp);
-			this.powerUp?.setVelocity(powerUpVelocityX, powerUpVelocityY);
+				// create powerup
+				this.powerUp?.setScale(this.scalePowerUp);
+				this.powerUp?.setVelocity(powerUpVelocityX, powerUpVelocityY);
+			}
 		}
+		else
+			this.resetPowerUpState();
 	}
 
 	resetPowerUpState(): void {
@@ -838,8 +834,7 @@ export class Part2Scene extends Phaser.Scene {
 		if (this.gameHost) {
 			if (this.runningGame && this.gameHost && !this.visiblePowerUp && !this.runningPowerUp) {
 				this.runningPowerUp = true;
-				this.time.delayedCall(2000, () => {
-					this.localPowerupTaken = false;
+				this.time.delayedCall(6000, () => {
 					this.launchPowerup();
 				});
 			}
@@ -891,15 +886,15 @@ export class Part2Scene extends Phaser.Scene {
 
 			// send Local powerup taken state
 			if (this.powerUp && this.gameHost && (this.inputPayload.localPowerupTaken !== this.localPowerupTaken)) {
-				console.log("localPowerupTaken", this.localPowerupTaken);
 				this.inputPayload.localPowerupTaken = this.localPowerupTaken;
+				this.inputPayload.powerType = this.powerType;
 				this.room.send("localPowerupTaken", this.inputPayload);
 			}
 
 			// send Remote powerup taken state
 			if (this.powerUp && this.gameHost && (this.inputPayload.remotePowerupTaken !== this.remotePowerupTaken)) {
-				console.log("remotePowerupTaken", this.remotePowerupTaken);
 				this.inputPayload.remotePowerupTaken = this.remotePowerupTaken;
+				this.inputPayload.powerType = this.powerType;
 				this.room.send("remotePowerupTaken", this.inputPayload);
 			}
 		}
