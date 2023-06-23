@@ -15,6 +15,7 @@
 	onMount(async () => {
 		// SSR server side rendering
 		if (typeof window === 'undefined') return;
+		// console.log('Entering Game', GameSelector, Part1Scene, Part2Scene);
 
 		// Execute on client side only if not server side rendering
 		if (!import.meta.env.SSR) {
@@ -34,7 +35,7 @@
 				physics: {
 					default: 'arcade'
 				},
-				pixelArt: true,
+				pixelArt: false,
 				// Set the size of the game
 				width: 800,
 				height: 600,
@@ -52,10 +53,10 @@
 	// Fonction onDestroy - appelée lorsque le composant est détruit
 	onDestroy(() => {
 
-		console.log('Leaving Game');
+		// console.log('Leaving Game');
 		// destroy game instance
 		if (game) {
-			console.log('Destroying Game');
+			// console.log('Destroying Game');
 			game.destroy(true);
 			game = null;
 		}
@@ -69,7 +70,7 @@
 
 <div class="center">
 	<div class="text-column">
-		<div id="game-container" />
+		<div class="game" id="game-container" />
 	</div>
 </div>
 
@@ -78,5 +79,11 @@
 		display: flex;
 		justify-content: center;
 		align-items: center;
+	}
+	.game {
+		width: 800px;
+		height: 600px;
+		border: 2px solid rgb(88, 44, 231);
+		border-radius: 25px;
 	}
 </style>

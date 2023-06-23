@@ -3,84 +3,73 @@
 	import { page } from '$app/stores';
 	import logo from '$lib/images/42PongLogo.png';
 	import { afterUpdate, onMount } from 'svelte';
-	import { setUser, user, resetUser, type User } from '../stores/user';
+	import { setUser, user, resetUser } from '../stores/user';
+	import type { User } from '../stores/user';
 
 	let currentUser: User | null = null;
 
 	// onMount is called when the component is mounted in the DOM
 	onMount(async () => {
+		// Subscribe to the user store
+		const unsubscribe = user.subscribe((value) => {
+			// update currentUser with last user value at store changes if exist
+			if (value.login) {
+				currentUser = value;
+				sessionStorage.setItem('user', JSON.stringify(value));
+				// console.log('GetValue ', currentUser);
+			}
+			// Fist time user is null, so we check if sessionStorage has a user or it will return null
+			else if (sessionStorage.getItem('user')) {
+				currentUser = JSON.parse(sessionStorage.getItem('user')!);
+				// console.log('SessionRestored ', currentUser);
+			}
+		});
 		if (typeof window !== 'undefined') {
-			// Subscribe to the user store
-			const unsubscribe = user.subscribe((value) => {
-				// update currentUser with last user value at store changes if exist
-				if (value.login) {
-					currentUser = value;
-					sessionStorage.setItem('user', JSON.stringify(value));
-					// console.log('GetValue ', currentUser);
-				}
-				// Fist time user is null, so we check if sessionStorage has a user or it will return null
-				else if (sessionStorage.getItem('user')) {
-					currentUser = JSON.parse(sessionStorage.getItem('user')!);
-					// console.log('SessionRestored ', currentUser);
-				}
-			});
 			const code = new URLSearchParams(window.location.search).get('code');
 			if (code) {
 				await getToken(code);
 			}
+		}
 
-			async function check_2fa_user() { 
-				const response = await fetch('http://localhost:3333/auth/2fa_info', {
-					method: 'GET',
-					credentials: 'include',
-				})
-				const contentType = response.headers.get('Content-Type');
-				if (contentType && contentType.includes('application/json')) {
-					const data = await response.json();
-					if (data.info) {
-						sessionStorage.setItem('user2FaActivate', JSON.stringify(true));
-					}
+		async function check_2fa_user() {
+			const response = await fetch('http://localhost:3333/auth/2fa_info', {
+				method: 'GET',
+				credentials: 'include'
+			});
+			const contentType = response.headers.get('Content-Type');
+			if (contentType && contentType.includes('application/json')) {
+				const data = await response.json();
+				if (data.info) {
+					sessionStorage.setItem('user2FaActivate', JSON.stringify(true));
 				}
 			}
-			if (checkJwtCookie())
-				await check_2fa_user();
-
-			const checkIsUser2FaActivate = sessionStorage.getItem('user2FaActivate');
-			const faAuthValid = sessionStorage.getItem('isLogged');
-
-			if (checkIsUser2FaActivate && !faAuthValid)
-			{
-				if (window.location.pathname !== '/2_fa')
-					window.location.href = '/2_fa';
-			}
-
-			if (checkJwtCookie() && checkIsUser2FaActivate && faAuthValid)
-				await getUserInfo();
-			else if (checkJwtCookie() && !checkIsUser2FaActivate)
-				await getUserInfo();
-
-			// redirect to home Page if logged in and reload on game page
-			if (sessionStorage.getItem('user') && window.location.pathname === '/game')
-				window.location.href = '/home';
-
-			// Clean up the subscription on unmount
-			return () => {
-				unsubscribe();
-			};
 		}
-	});
+		if (checkJwtCookie()) await check_2fa_user();
 
-	afterUpdate(async () => {
-		// redirect the user if isLogged is true
-		// redirect to home Page if logged in and on login Page / To add on backend checks
-		if (sessionStorage.getItem('user') && window.location.pathname === '/') 
-			window.location.href = '/home'
+		const checkIsUser2FaActivate = sessionStorage.getItem('user2FaActivate');
+		const faAuthValid = sessionStorage.getItem('isLogged');
+
+		if (checkIsUser2FaActivate && !faAuthValid) {
+			if (window.location.pathname !== '/2_fa') window.location.href = '/2_fa';
+		}
+
+		if (checkJwtCookie() && checkIsUser2FaActivate && faAuthValid) await getUserInfo();
+		else if (checkJwtCookie() && !checkIsUser2FaActivate) await getUserInfo();
+
+		// redirect to home Page if logged in and reload on game page
+		if (sessionStorage.getItem('user') && window.location.pathname === '/game')
+			window.location.href = '/home';
+
+		// Clean up the subscription on unmount
+		return () => {
+			unsubscribe();
+		};
 	});
 
 	async function getToken(code: string) {
 		// Fetch token from the server
 		// fetch endpoint to 2fa authenticate
-		const response = await fetch('http://localhost:3333/auth/login?code=' + code, {
+		const response = await fetch('http://localhost:3333/auth/userInfo?code=' + code, {
 			method: 'POST',
 			credentials: 'include'
 		});
@@ -101,21 +90,33 @@
 			const cookie = cookies[i].trim();
 
 			if (cookie.startsWith('jwt=')) {
-			const jwtValue = cookie.substring(4);
+				const jwtValue = cookie.substring(4);
 
-			if (jwtValue.length > 0) {
-				return true;
+				if (jwtValue.length > 0) {
+					return true;
 				}
 			}
 		}
 		return false;
+	}
+	async function loginUser() {
+		await fetch('http://localhost:3333/auth/login', {
+			method: 'POST',
+			credentials: 'include'
+		});
+	}
+	async function logoutUser() {
+		await fetch('http://localhost:3333/auth/logout', {
+			method: 'POST',
+			credentials: 'include'
+		});
 	}
 
 	async function getUserInfo() {
 		// Fetch user informations from the server
 		const response = await fetch('http://localhost:3333/profil/me', {
 			method: 'GET',
-			credentials: 'include',
+			credentials: 'include'
 		});
 		// add endpoint to push status: true to tell the user is logged
 		const contentType = response.headers.get('Content-Type');
@@ -124,19 +125,23 @@
 			const data = await response.json();
 			// update the user store
 			setUser(data);
-			// console.log('in getUserInfo', currentUser!.avatar);
+			await loginUser();
+			// need to post gatabase to set connected variable to true;
 		}
 		// redirect to login Page if not logged in
-		if ((!currentUser || !currentUser.login || !sessionStorage.getItem('user')) && window.location.pathname !== '/')
+		if (
+			(!currentUser || !currentUser.login || !sessionStorage.getItem('user')) &&
+			window.location.pathname !== '/'
+		)
 			window.location.href = '/';
 	}
 
 	// Logout process - if LOGOUT button is clicked
-	function handleLogOut() {
+	async function handleLogOut() {
 		// Clear the user store
 		resetUser();
+		await logoutUser();
 		// Clear the cookie
-		document.cookie = 'jwt=;';
 		// sessionStorage.setItem('isLogged', JSON.stringify(false));
 		// sessionStorage cleaning
 		sessionStorage.removeItem('user');
@@ -145,13 +150,10 @@
 		sessionStorage.removeItem('user2FaActivate');
 		// reset currentUser
 		currentUser = null;
+		document.cookie = 'jwt=;';
+		// need to post gatabase to set connected variable to false;
 	}
 </script>
-
-<head>
-	<!-- Preload image to avoid flickering -->
-	<link rel="preload" as="image" href={logo} />
-</head>
 
 <header>
 	<ul>
@@ -235,9 +237,9 @@
 				{:else}
 					<a href="/profile">
 						<!-- if (currentUser.pseudo) -->
-							<!-- {currentUser.pseudo} -->
+						<!-- {currentUser.pseudo} -->
 						<!-- else -->
-							{currentUser.login}
+						{currentUser.login}
 						{#if currentUser.avatar}
 							<img
 								src={currentUser.avatar}
