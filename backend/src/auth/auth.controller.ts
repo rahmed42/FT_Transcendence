@@ -9,7 +9,22 @@ dotenv.config();
 export class AuthController {
 	constructor(private authService: AuthService)  {}
 	@Post('login')
-		async login(@Query('code') code: string, @Req() request: Request) {
+		async login(@Req() request: Request) {
+			const token = request.cookies;
+			return await this.authService.loginUser(token);
+		}
+	@Post('logout')
+	async logout(@Req() request: Request) {
+		const token = request.cookies;
+		return await this.authService.logoutUser(token);
+	}
+	@Post('in_game')
+	async update_status(@Req() request: Request) {
+		const token = request.cookies;
+		return await this.authService.inGameUser(token);
+	}
+	@Post('userInfo')
+		async getUserInfo(@Query('code') code: string, @Req() request: Request) {
 			const token = await this.authService.getUser(code);
 			return token;
 		}

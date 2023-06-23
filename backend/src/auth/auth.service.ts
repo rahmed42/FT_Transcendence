@@ -59,9 +59,14 @@ export class AuthService {
             // If not, create it
             if (!check_id)
             {
-                    await this.prisma.user.create({
+                await this.prisma.user.create({
                     data: user,
                 });
+                await this.prisma.stats.create({
+                    data: {
+                        userId: user.id,
+                    }
+                })
             }
             // Push the URL code in Data Model of our DataBase
             await this.prisma.data.create({
@@ -89,6 +94,47 @@ export class AuthService {
             token,
         };
     }
+    async loginUser(tokenObject: {jwt: string}) {
+        const user = await this.jwt.decode(tokenObject.jwt);
+        if (typeof user === 'object')
+        {
+            await this.prisma.user.update({
+                where : {
+                    id: user.id
+                },
+                data: {
+                    status: "login",
+                }
+            })
+        }
+    }
+    async logoutUser(tokenObject: { jwt: string }) {
+        const user = await this.jwt.decode(tokenObject.jwt);
+        if (typeof user === 'object') {
+            await this.prisma.user.update({
+                where: {
+                    id: user.id
+                },
+                data: {
+                    status: "logout",
+                }
+            })
+        }
+    }
+    async inGameUser(tokenObject: { jwt: string }) {
+        const user = await this.jwt.decode(tokenObject.jwt);
+        if (typeof user === 'object') {
+            await this.prisma.user.update({
+                where: {
+                    id: user.id
+                },
+                data: {
+                    status: "ingame",
+                }
+            })
+        }
+    }
+
     // if the User want 2fa on his account, update a variable in his User Model
     async push_settings(body: any, tokenObject: { jwt: string }) {
         const user = await this.jwt.decode(tokenObject.jwt);

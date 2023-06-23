@@ -30,7 +30,7 @@ export class UserService {
             const decode = await this.jwt.decode(tokenObject.jwt);
             if (typeof decode === 'object')
             {
-                const user = await this.prisma.user.update({
+                await this.prisma.user.update({
                     where: {
                         id: decode.id,
                     },
@@ -43,7 +43,7 @@ export class UserService {
     async upload_username(tokenObject: { jwt: string }, body: any) {
         const decode = await this.jwt.decode(tokenObject.jwt);
         if (typeof decode === 'object') {
-            const user = await this.prisma.user.update({
+            await this.prisma.user.update({
                 where: {
                     id: decode.id,
                 },
@@ -52,5 +52,83 @@ export class UserService {
                 }
             })
         }
+    }
+    async update_user_stats(body: any) {
+        if (body.score > 2)
+        {
+            await this.prisma.matchHistory.create({
+                data : {
+                    userId: body.currentUser.id,
+                    gameType: body.type,
+                    myScore: body.score,
+                    opponentName: body.name,
+                    opponentScore: body.opponentScore,
+                    result : "Victory",
+                }
+            })
+            await this.prisma.stats.update({
+                where: {
+                    userId: body.currentUser.id,
+                },
+                data: {
+                    wins: {
+                        increment: 1,
+                    }
+                }
+            })
+        }
+        else
+        {
+            await this.prisma.matchHistory.create({
+                data: {
+                    userId: body.currentUser.id,
+                    gameType: body.type,
+                    myScore: body.score,
+                    opponentName: body.name,
+                    opponentScore: body.opponentScore,
+                    result: "Defeat",
+                }
+            })
+            await this.prisma.stats.update({
+                where: {
+                    userId: body.currentUser.id,
+                },
+                data: {
+                    losses: {
+                        increment: 1,
+                    }
+                }
+            })
+        }
+    }
+    async update_choosed_skins(tokebObject: {jwt : string}, body: any) {
+        const user = await this.jwt.decode(tokebObject.jwt);
+        if (typeof user === 'object') {
+            await this.prisma.user.update({
+                where: {
+                    id: user.id,
+                },
+                data: {
+                    selectedBoard: body.board,
+                    selectedMyPaddle: body.myPaddle,
+                    selectedOpponentPaddle: body.opponentPaddle,
+                    selectedBall: body.ball,
+                }
+            })
+        }
+    }
+    async get_skins(body: any) {
+        const user = await this.prisma.user.findUnique({
+            where: {
+                id: body.currentUser.id,
+            }
+        })
+        const payload = {
+            boardSkin: user.selectedBoard,
+            myPaddleSkin: user.selectedMyPaddle,
+            otherPaddleSkin: user.selectedOpponentPaddle,
+            ballSkin: user.selectedBall,
+        }
+        return payload
     }
 }

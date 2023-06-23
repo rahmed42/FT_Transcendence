@@ -24,8 +24,22 @@ export class UserController {
         await this.userService.upload_username(token, body);
         return await this.userService.getInfo(token);
     }
+
     @Get('friends')
     async getFriendInfo(@Query('login') username: string) {
         return await this.userService.getFriendInfo(username);
+    }
+    @Post('match_stats')
+    async update_game_data(@Body() body: any) {
+        await this.userService.update_user_stats(body);
+    }
+    @Post('skins')
+    async update_game_skins(@Req() request: Request, @Body() body: any) {
+        const token = request.cookies;
+        await this.userService.update_choosed_skins(token, body);
+    }
+    @Post('get_skins')
+    async get_user_skins(@Body() body: any) {
+        return await this.userService.get_skins(body);
     }
 }
