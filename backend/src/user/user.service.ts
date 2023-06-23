@@ -8,6 +8,7 @@ export class UserService {
     constructor(private prisma: PrismaService, private jwt: JwtService) {}
         async getInfo(tokenObject: { jwt: string }) {
             const decode = await this.jwt.decode(tokenObject.jwt);
+            console.log(decode);
             if (typeof decode === 'object')
             {
                 const user = await this.prisma.user.findUnique({
