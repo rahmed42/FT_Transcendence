@@ -1,10 +1,57 @@
 import * as Phaser from "phaser"; // will import all the Phaser types
+import { get } from "svelte/store";
+import { user, type User } from '../../../stores/user';
 
-// To import images in assets folder
 // Menu
-import backgroundMenu from '$lib/images/backArcade.jpg';
 import logo from '$lib/images/42PongLogo.png';
 import button from '$lib/assets/buttons/blue.png';
+import backgroundMenu from '$lib/images/backArcade.jpg';
+
+// To import images from DB or get this defaults
+let selectedBoard: string = "Board"
+let selectedMyPaddle: string = "myPaddle"
+let selectedOpponentPaddle: string  = "opponentPaddle"
+let selectedBall: string = "ball"
+
+let currentUser = get(user);
+
+async function get_user_skins() {
+	const response = await fetch("http://localhost:3333/profil/get_skins", {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+		},
+		body: JSON.stringify({
+			currentUser,
+		})
+	})
+	if (response.ok) {
+		const data = await response.json();
+		// console.log("get_user_skins data : ", data);
+		selectedBoard = data.boardSkin;
+		selectedMyPaddle = data.myPaddleSkin;
+		selectedOpponentPaddle = data.otherPaddleSkin;
+		selectedBall = data.ballSkin;
+	}
+}
+
+export async function getUpdatedSkins() {
+	// console.log("SS getUpdatedSkins -->>>> ");
+	await get_user_skins();
+	// console.log("SS getUpdatedSkins after Await get_user_skins");
+
+	// console.log("SS selectedBoard : ", selectedBoard);
+	// console.log("SS selectedMyPaddle : ", selectedMyPaddle);
+	// console.log("SS selectedOpponentPaddle : ", selectedOpponentPaddle);
+	// console.log("SS selectedBall : ", selectedBall);
+
+	return [
+		{ name: 'boardSkin', src: selectedBoard },
+		{ name: 'myPaddleSkin', src: selectedMyPaddle },
+		{ name: 'otherPaddleSkin', src: selectedOpponentPaddle },
+		{ name: 'ballSkin', src: selectedBall },
+	];
+}
 
 export class GameSelector extends Phaser.Scene {
 	// Adding game parts list
@@ -18,10 +65,9 @@ export class GameSelector extends Phaser.Scene {
 
 	// GameSelector constructor
 	constructor() {
-		// console.log("SceneSelector constructor");
 		super({ key: "menu", active: true });
+		// console.log("SceneSelector constructor");
 		this.activeScene = 'selectorScene';
-
 	}
 
 	/* Methods */
@@ -113,13 +159,11 @@ export class GameSelector extends Phaser.Scene {
 
 				// setting the text as clickable
 				button.on("pointerdown", () => { // set the event when the text is clicked
-					this.setActiveScene(`part${gameType}`); // set the active scene
+					this.setActiveScene(`Part${gameType}`); // set the active scene
 					// console.log(`Running game ${this.activeScene} : ${selector} Pong`);
 					this.runScene(this.activeScene); // run the scene
 				});
 			}
 		}
 	}
-
-
-}
+};

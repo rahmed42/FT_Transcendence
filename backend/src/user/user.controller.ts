@@ -29,9 +29,17 @@ export class UserController {
     async getFriendInfo(@Query('login') username: string) {
         return await this.userService.getFriendInfo(username);
     }
-    @Post('game_data')
+    @Post('match_stats')
     async update_game_data(@Body() body: any) {
-        // await this.userService.update_user_stats(body);
-        // console.log(body);
+        await this.userService.update_user_stats(body);
+    }
+    @Post('skins')
+    async update_game_skins(@Req() request: Request, @Body() body: any) {
+        const token = request.cookies;
+        await this.userService.update_choosed_skins(token, body);
+    }
+    @Post('get_skins')
+    async get_user_skins(@Body() body: any) {
+        return await this.userService.get_skins(body);
     }
 }

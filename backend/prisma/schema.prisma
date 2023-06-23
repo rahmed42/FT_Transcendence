@@ -36,27 +36,35 @@ model User {
   blockedUsers       User[]        @relation("BlockedUser")
   two_fa             Boolean       @default(false)
   two_fa_secret String?
-  connected Boolean @default(false)
+  status String @default("logout")
   avatar String?
   friendRequestSent     Friend[]      @relation("FriendRequestSent")
   friendRequestReceived Friend[]      @relation("FriendRequestReceived")
+  matchHistory MatchHistory[]
+  selectedBoard String @default("src/lib/assets/boards/boardDefault.png")
+  selectedMyPaddle String @default("src/lib/assets/paddles/defaultPaddle/defaultPaddleWhite.png")
+  selectedOpponentPaddle String @default("src/lib/assets/paddles/defaultPaddle/defaultPaddleWhite.png")
+  selectedBall String @default("src/lib/assets/balls/ballWhite.png")
 }
 
 model Stats {
-  id           Int      @id @default(autoincrement())
-  userId       Int      @unique
-  wins         Int      @default(0)
-  losses       Int      @default(0)
-  ladderLevel  Int      @default(0)
-  achievements String[]
+  id          Int @id @default(autoincrement())
+  userId      Int @unique
+  wins        Int @default(0)
+  losses      Int @default(0)
+  ladderLevel Int @default(0)
 }
 
 model MatchHistory {
-  id        Int      @id @default(autoincrement())
-  userId    Int
-  gameType  String
-  result    String
-  timestamp DateTime @default(now())
+  id            Int      @id @default(autoincrement())
+  user          User     @relation(fields: [userId], references: [id])
+  myScore       Int      @default(0)
+  opponentName  String   @default("")
+  opponentScore Int      @default(0)
+  userId        Int
+  gameType      String
+  result        String
+  timestamp     DateTime @default(now())
 }
 
 model Authenticator {

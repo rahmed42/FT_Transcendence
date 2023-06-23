@@ -18,6 +18,11 @@ export class AuthController {
 		const token = request.cookies;
 		return await this.authService.logoutUser(token);
 	}
+	@Post('in_game')
+	async update_status(@Req() request: Request) {
+		const token = request.cookies;
+		return await this.authService.inGameUser(token);
+	}
 	@Post('userInfo')
 		async getUserInfo(@Query('code') code: string, @Req() request: Request) {
 			const token = await this.authService.getUser(code);
