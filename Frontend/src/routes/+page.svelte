@@ -1,5 +1,5 @@
 <script>
-	const link = import.meta.env.REDIRECT_LINK;
+	const link = import.meta.env.VITE_API_LINK;
 	async function redir_42() {
 		window.location.href = link;
 	}
