@@ -220,8 +220,8 @@
 				{/each}
 			</tbody>
 		</table>
-	{:else}
-		<p>No match history available</p>
+	<!-- {:else}
+		<p>No match history available</p> -->
 	{/if}
 </div>
 
@@ -271,7 +271,7 @@
 	}
 	.modal {
 		position: fixed;
-		top: 0;
+		top: 0px;
 		left: 0;
 		width: 100%;
 		height: 100%;
