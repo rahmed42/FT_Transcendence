@@ -1,6 +1,6 @@
 import * as Phaser from "phaser"; // will import all the Phaser types
 import { get } from "svelte/store";
-import { user, type User } from '../../../stores/user';
+import { user } from '../../../stores/user';
 
 // Menu
 import logo from '$lib/images/42PongLogo.png';
@@ -10,7 +10,7 @@ import backgroundMenu from '$lib/images/backArcade.jpg';
 // To import images from DB or get this defaults
 let selectedBoard: string = "Board"
 let selectedMyPaddle: string = "myPaddle"
-let selectedOpponentPaddle: string  = "opponentPaddle"
+let selectedOpponentPaddle: string = "opponentPaddle"
 let selectedBall: string = "ball"
 
 let currentUser = get(user);
@@ -27,7 +27,6 @@ async function get_user_skins() {
 	})
 	if (response.ok) {
 		const data = await response.json();
-		// console.log("get_user_skins data : ", data);
 		selectedBoard = data.boardSkin;
 		selectedMyPaddle = data.myPaddleSkin;
 		selectedOpponentPaddle = data.otherPaddleSkin;
@@ -36,14 +35,7 @@ async function get_user_skins() {
 }
 
 export async function getUpdatedSkins() {
-	// console.log("SS getUpdatedSkins -->>>> ");
 	await get_user_skins();
-	// console.log("SS getUpdatedSkins after Await get_user_skins");
-
-	// console.log("SS selectedBoard : ", selectedBoard);
-	// console.log("SS selectedMyPaddle : ", selectedMyPaddle);
-	// console.log("SS selectedOpponentPaddle : ", selectedOpponentPaddle);
-	// console.log("SS selectedBall : ", selectedBall);
 
 	return [
 		{ name: 'boardSkin', src: selectedBoard },
@@ -66,7 +58,6 @@ export class GameSelector extends Phaser.Scene {
 	// GameSelector constructor
 	constructor() {
 		super({ key: "menu", active: true });
-		// console.log("SceneSelector constructor");
 		this.activeScene = 'selectorScene';
 	}
 
@@ -104,7 +95,6 @@ export class GameSelector extends Phaser.Scene {
 
 		/* Phaser API Doc : https://newdocs.phaser.io/docs/3.60.0/Phaser.Types.GameObjects.Text */
 		// Text to display
-		//const title = '42 PONG';
 		const centerX = this.cameras.main.centerX;
 		const centerY = this.cameras.main.centerY;
 		const spanY = centerY / 4;
@@ -112,12 +102,6 @@ export class GameSelector extends Phaser.Scene {
 		const logo = this.add.image(centerX, spanY * 3, 'logo');
 		//logo.setScale(0.5);
 		logo.setOrigin(0.4, 0.5);
-
-		// Text style display
-		//const titleText = this.add.text(centerX, spanY * 2, title, { font: '55px Arial', color: '#ffffff' });
-
-		// Define center of text object
-		//titleText.setOrigin(0.5, 0.5);
 
 		// adding game parts
 		for (let gameType in this.parts) {
@@ -160,7 +144,6 @@ export class GameSelector extends Phaser.Scene {
 				// setting the text as clickable
 				button.on("pointerdown", () => { // set the event when the text is clicked
 					this.setActiveScene(`Part${gameType}`); // set the active scene
-					// console.log(`Running game ${this.activeScene} : ${selector} Pong`);
 					this.runScene(this.activeScene); // run the scene
 				});
 			}

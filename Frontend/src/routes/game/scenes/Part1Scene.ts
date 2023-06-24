@@ -1,7 +1,7 @@
-import Phaser, { Textures } from "phaser";
+import Phaser from "phaser";
 import { Room, Client } from "colyseus.js";
 import { BACKEND_URL } from "../backend";
-import { user, type User } from '../../../stores/user';
+import { user } from '../../../stores/user';
 import { get } from "svelte/store";
 
 //Style Default
