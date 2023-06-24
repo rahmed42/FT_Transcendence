@@ -6,23 +6,14 @@
 	import { setUser, user, resetUser } from '../stores/user';
 	import type { User } from '../stores/user';
 
-	let currentUser: User | null = null;
+	let currentUser: User 
+	let status = "logout";
 
 	// onMount is called when the component is mounted in the DOM
 	onMount(async () => {
 		// Subscribe to the user store
 		const unsubscribe = user.subscribe((value) => {
-			// update currentUser with last user value at store changes if exist
-			if (value.login) {
 				currentUser = value;
-				sessionStorage.setItem('user', JSON.stringify(value));
-				// console.log('GetValue ', currentUser);
-			}
-			// Fist time user is null, so we check if sessionStorage has a user or it will return null
-			else if (sessionStorage.getItem('user')) {
-				currentUser = JSON.parse(sessionStorage.getItem('user')!);
-				// console.log('SessionRestored ', currentUser);
-			}
 		});
 		if (typeof window !== 'undefined') {
 			const code = new URLSearchParams(window.location.search).get('code');
@@ -31,7 +22,7 @@
 			}
 		}
 
-		async function check_2fa_user() {
+		async function check_2fa_user(): Promise<Boolean> {
 			const response = await fetch('http://localhost:3333/auth/2fa_info', {
 				method: 'GET',
 				credentials: 'include'
@@ -40,24 +31,45 @@
 			if (contentType && contentType.includes('application/json')) {
 				const data = await response.json();
 				if (data.info) {
-					sessionStorage.setItem('user2FaActivate', JSON.stringify(true));
+					return true;
 				}
 			}
+			return false;
 		}
-		if (checkJwtCookie()) await check_2fa_user();
-
-		const checkIsUser2FaActivate = sessionStorage.getItem('user2FaActivate');
-		const faAuthValid = sessionStorage.getItem('isLogged');
-
-		if (checkIsUser2FaActivate && !faAuthValid) {
-			if (window.location.pathname !== '/2_fa') window.location.href = '/2_fa';
+		if (checkJwtCookie())
+		{
+			currentUser.check_2fa = await check_2fa_user();
+			if (currentUser.check_2fa)
+			{
+				const response = await fetch('http://localhost:3333/profil/me', {
+					method: 'GET',
+					credentials: 'include'
+				});
+				const contentType = response.headers.get('Content-Type');
+				if (contentType && contentType.includes('application/json'))
+				{
+					const data = await response.json();
+					if (data.status === "logout")
+						if(window.location.pathname !== '/2_fa') window.location.href = '/2_fa';
+				}
+				const res = await fetch('http://localhost:3333/profil/me', {
+					method: 'GET',
+					credentials: 'include'
+				});
+				const content = response.headers.get('Content-Type');
+				if (content && content.includes('application/json'))
+				{
+					const dataa = await res.json();
+					if (dataa.status === "login")
+						await getUserInfo();
+				}				
+			}
 		}
-
-		if (checkJwtCookie() && checkIsUser2FaActivate && faAuthValid) await getUserInfo();
-		else if (checkJwtCookie() && !checkIsUser2FaActivate) await getUserInfo();
+		if (checkJwtCookie() && !currentUser.check_2fa)
+			await getUserInfo();
 
 		// redirect to home Page if logged in and reload on game page
-		if (sessionStorage.getItem('user') && window.location.pathname === '/game')
+		if (currentUser!.login && window.location.pathname === '/game')
 			window.location.href = '/home';
 
 		// Clean up the subscription on unmount
@@ -68,7 +80,6 @@
 
 	async function getToken(code: string) {
 		// Fetch token from the server
-		// fetch endpoint to 2fa authenticate
 		const response = await fetch('http://localhost:3333/auth/userInfo?code=' + code, {
 			method: 'POST',
 			credentials: 'include'
@@ -78,7 +89,6 @@
 			const data = await response.json();
 			if (data !== 'undefined') {
 				document.cookie = 'jwt=' + data.token;
-				sessionStorage.setItem('jwt', data.token);
 			}
 		}
 	}
@@ -125,33 +135,19 @@
 			const data = await response.json();
 			// update the user store
 			setUser(data);
+			// status to login in DB
 			await loginUser();
-			// need to post gatabase to set connected variable to true;
 		}
-		// redirect to login Page if not logged in
-		if (
-			(!currentUser || !currentUser.login || !sessionStorage.getItem('user')) &&
-			window.location.pathname !== '/'
-		)
-			window.location.href = '/';
 	}
 
 	// Logout process - if LOGOUT button is clicked
 	async function handleLogOut() {
 		// Clear the user store
 		resetUser();
+		// status to logout in DB
 		await logoutUser();
-		// Clear the cookie
-		// sessionStorage.setItem('isLogged', JSON.stringify(false));
-		// sessionStorage cleaning
-		sessionStorage.removeItem('user');
-		sessionStorage.removeItem('isLogged');
-		sessionStorage.removeItem('jwt');
-		sessionStorage.removeItem('user2FaActivate');
-		// reset currentUser
-		currentUser = null;
+		// delete jwt in cookie
 		document.cookie = 'jwt=;';
-		// need to post gatabase to set connected variable to false;
 	}
 </script>
 

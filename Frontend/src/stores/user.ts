@@ -19,6 +19,7 @@ export interface User {
 	isLogged: boolean;
 	avatar: string,
 	status: String,
+	check_2fa: Boolean,
 }
 
 // Retrieve the user from the session storage if exist else return an empty object
@@ -40,6 +41,7 @@ const defaultUser: User = {
 	isLogged: false,
 	avatar: '',
 	status: '',
+	check_2fa: false,
 };
 
 // Create a store with a default value
