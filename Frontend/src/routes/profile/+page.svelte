@@ -100,6 +100,10 @@
 		username = '';
 	}
 	async function update_username(username: string) {
+		if (username.length > 10) {
+			alert('Username should not exceed 10 characters');
+			return; // Exit the function if the limit is exceeded
+		}
 		const response = await fetch('http://localhost:3333/profil/username', {
 			method: 'POST',
 			credentials: 'include',
@@ -199,6 +203,7 @@
 			<thead>
 				<tr>
 					<th>Game Type</th>
+					<th>Result</th>
 					<th>Score</th>
 					<th>Date</th>
 				</tr>
@@ -213,6 +218,8 @@
 							{:else}
 								<p class="result_defeat">Defeat</p>
 							{/if}
+						</td>
+						<td>
 							{myUser.login} | {match.myScore} - {match.opponentScore} | {match.opponentName}
 						</td>
 						<td>{formatDate(match.timestamp)}</td>
@@ -357,16 +364,16 @@
 		font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
 		font-weight: bold;
 		font-size: 25px;
-		margin-top: -5px;
-		margin-bottom: 10px;
+		margin-top: 0px;
+		margin-bottom: 0px;
 	}
 	.result_defeat {
 		color: rgb(147, 46, 21);
 		font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
 		font-weight: bold;
 		font-size: 25px;
-		margin-top: -5px;
-		margin-bottom: 10px;
+		margin-top: 0px;
+		margin-bottom: 0px;
 	}
 	.user_stats {
 		font-size: 40px;

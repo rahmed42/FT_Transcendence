@@ -44,10 +44,10 @@
 	<title>Profile</title>
 	<meta name="description" content="User profile" />
 </svelte:head>
- 
+
 <div class="profile">
     <h1 class="title"><span class="username"><strong>{$friend.login}</strong></span>'s Profile Page</h1>
-    
+
     {#if $friend.avatar}
         <img class="pp" id="avatar" src={$friend.avatar} alt="avatar"/>
     {:else}
@@ -83,8 +83,8 @@
             <thead>
                 <tr>
                     <th>Game Type</th>
-                    <th>Score</th>
                     <th>Result</th>
+                    <th>Score</th>
                     <th>Date</th>
                 </tr>
             </thead>
@@ -92,8 +92,8 @@
                 {#each matchHistory as match (match.id)}
                     <tr>
                         <td>{match.gameType}</td>
-                        <td>{match.myScore} - {match.opponentScore} (vs. {match.opponentName})</td>
                         <td>{match.result}</td>
+                        <td>{match.myScore} - {match.opponentScore} (vs. {match.opponentName})</td>
                         <td>{formatDate(match.timestamp)}</td>
                     </tr>
                 {/each}
