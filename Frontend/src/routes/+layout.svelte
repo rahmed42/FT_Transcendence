@@ -43,7 +43,7 @@
 
 <Particles
 	id="tsparticles"
-	options={particlesAmong}
+	options={particlesConfig}
 	on:particlesLoaded={onParticlesLoaded}
 	{particlesInit}
 />
