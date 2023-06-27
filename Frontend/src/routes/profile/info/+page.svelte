@@ -9,6 +9,7 @@
     const friend = writable({});  // Local state for friend
     let stats = null;
     let matchHistory = [];
+	const serverIP = import.meta.env.VITE_SERVER_IP;
 
     function formatDate(isoDateString) {
         const date = new Date(isoDateString);
@@ -18,7 +19,7 @@
 	onMount(async () => {
         const friend_username = new URLSearchParams(window.location.search).get('login');
 		async function getUserInfo() {
-			const response = await fetch('http://localhost:3333/profil/friends?login=' + friend_username, {
+			const response = await fetch('http://' + serverIP + ':3333/profil/friends?login=' + friend_username, {
 				method: 'GET',
 				credentials: 'include',
 			});
@@ -27,11 +28,11 @@
 				const data = await response.json();
 				friend.set(data);
 			}
-            const statsResponse = await fetch('http://localhost:3333/social/stats/' + friend_username);
+            const statsResponse = await fetch('http://' + serverIP + ':3333/social/stats/' + friend_username);
             if (statsResponse.ok) {
                 stats = await statsResponse.json();
             }
-            const matchHistoryResponse = await fetch('http://localhost:3333/social/match-history/' + friend_username);
+            const matchHistoryResponse = await fetch('http://' + serverIP + ':3333/social/match-history/' + friend_username);
             if (matchHistoryResponse.ok) {
                 matchHistory = await matchHistoryResponse.json();
             }

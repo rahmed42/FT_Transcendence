@@ -6,8 +6,9 @@
 	import { setUser, user, resetUser } from '../stores/user';
 	import type { User } from '../stores/user';
 
-	let currentUser: User 
+	let currentUser: User
 	let status = "logout";
+	const serverIP = import.meta.env.VITE_SERVER_IP;
 
 	// onMount is called when the component is mounted in the DOM
 	onMount(async () => {
@@ -23,7 +24,7 @@
 		}
 
 		async function check_2fa_user(): Promise<Boolean> {
-			const response = await fetch('http://localhost:3333/auth/2fa_info', {
+			const response = await fetch('http://' + serverIP + ':3333/auth/2fa_info', {
 				method: 'GET',
 				credentials: 'include'
 			});
@@ -41,7 +42,7 @@
 			currentUser.check_2fa = await check_2fa_user();
 			if (currentUser.check_2fa)
 			{
-				const response = await fetch('http://localhost:3333/profil/me', {
+				const response = await fetch('http://' + serverIP + ':3333/profil/me', {
 					method: 'GET',
 					credentials: 'include'
 				});
@@ -52,7 +53,7 @@
 					if (data.status === "logout")
 						if(window.location.pathname !== '/2_fa') window.location.href = '/2_fa';
 				}
-				const res = await fetch('http://localhost:3333/profil/me', {
+				const res = await fetch('http://' + serverIP + ':3333/profil/me', {
 					method: 'GET',
 					credentials: 'include'
 				});
@@ -62,7 +63,7 @@
 					const dataa = await res.json();
 					if (dataa.status === "login")
 						await getUserInfo();
-				}				
+				}
 			}
 		}
 		if (checkJwtCookie() && !currentUser.check_2fa)
@@ -80,7 +81,7 @@
 
 	async function getToken(code: string) {
 		// Fetch token from the server
-		const response = await fetch('http://localhost:3333/auth/userInfo?code=' + code, {
+		const response = await fetch('http://' + serverIP + ':3333/auth/userInfo?code=' + code, {
 			method: 'POST',
 			credentials: 'include'
 		});
@@ -110,13 +111,13 @@
 		return false;
 	}
 	async function loginUser() {
-		await fetch('http://localhost:3333/auth/login', {
+		await fetch('http://' + serverIP + ':3333/auth/login', {
 			method: 'POST',
 			credentials: 'include'
 		});
 	}
 	async function logoutUser() {
-		await fetch('http://localhost:3333/auth/logout', {
+		await fetch('http://' + serverIP + ':3333/auth/logout', {
 			method: 'POST',
 			credentials: 'include'
 		});
@@ -124,7 +125,7 @@
 
 	async function getUserInfo() {
 		// Fetch user informations from the server
-		const response = await fetch('http://localhost:3333/profil/me', {
+		const response = await fetch('http://' + serverIP + ':3333/profil/me', {
 			method: 'GET',
 			credentials: 'include'
 		});

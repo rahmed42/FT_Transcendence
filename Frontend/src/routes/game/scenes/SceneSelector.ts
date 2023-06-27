@@ -14,9 +14,10 @@ let selectedOpponentPaddle: string = "opponentPaddle"
 let selectedBall: string = "ball"
 
 let currentUser = get(user);
+const serverIP = import.meta.env.VITE_SERVER_IP;
 
 async function get_user_skins() {
-	const response = await fetch("http://localhost:3333/profil/get_skins", {
+	const response = await fetch('http://' + serverIP + ':3333/profil/get_skins', {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',

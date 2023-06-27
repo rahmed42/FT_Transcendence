@@ -5,9 +5,11 @@
     let userCode = "";
     let checkError = "";
     let errorMessage = "";
+	const serverIP = import.meta.env.VITE_SERVER_IP;
+
     onMount(async () => {
         async function generate_qrCode() {
-            const response = await fetch('http://localhost:3333/auth/qrcode_generate', {
+            const response = await fetch('http://' + serverIP + ':3333/auth/qrcode_generate', {
                 method: 'POST',
                 credentials: 'include',
             });
@@ -22,14 +24,14 @@
     })
 
     async function loginUser() {
-        await fetch('http://localhost:3333/auth/login', {
+        await fetch('http://' + serverIP + ':3333/auth/login', {
             method: 'POST',
             credentials: 'include'
         });
 	}
     // Autres instructions à exécuter après la déconnexion de l'utilisateur
     async function send_code() {
-        const response = await fetch('http://localhost:3333/auth/2fa_code', {
+        const response = await fetch('http://' + serverIP + ':3333/auth/2fa_code', {
             method: 'POST',
             credentials: 'include',
             headers: {

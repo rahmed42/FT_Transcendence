@@ -1,25 +1,26 @@
 <script lang="ts">
-
 	// Fetch DB / or get theses default values if not found
-	let selectedBoard : string = "src/lib/assets/boards/boardDefault.png";
-	let selectedMyPaddle : string = "src/lib/assets/paddles/defaultPaddle/defaultPaddleWhite.png";
-	let selectedOpponentPaddle : string = "src/lib/assets/paddles/defaultPaddle/defaultPaddleWhite.png";
-	let selectedBall : string = "src/lib/assets/balls/ballWhite.png";
+	let selectedBoard: string = 'src/lib/assets/boards/boardDefault.png';
+	let selectedMyPaddle: string = 'src/lib/assets/paddles/defaultPaddle/defaultPaddleWhite.png';
+	let selectedOpponentPaddle: string =
+		'src/lib/assets/paddles/defaultPaddle/defaultPaddleWhite.png';
+	let selectedBall: string = 'src/lib/assets/balls/ballWhite.png';
+	const serverIP = import.meta.env.VITE_SERVER_IP;
 
 	async function applySettings() {
-		await fetch("http://localhost:3333/profil/skins", {
+		await fetch('http://' + serverIP + ':3333/profil/skins', {
 			method: 'POST',
 			credentials: 'include',
 			headers: {
-				'Content-Type': 'application/json',
+				'Content-Type': 'application/json'
 			},
 			body: JSON.stringify({
 				board: selectedBoard,
 				myPaddle: selectedMyPaddle,
 				opponentPaddle: selectedOpponentPaddle,
-				ball: selectedBall,
+				ball: selectedBall
 			})
-		})
+		});
 	}
 </script>
 
@@ -40,60 +41,146 @@
 		<tr>
 			<th>
 				<select bind:value={selectedBoard}>
-					<option value=src/lib/assets/boards/boardDefault.png>Default</option>
-					<option value=src/lib/assets/boards/boardModern.png>Modern</option>
+					<option value="src/lib/assets/boards/boardDefault.png">Default</option>
+					<option value="src/lib/assets/boards/boardModern.png">Modern</option>
 				</select>
 			</th>
 			<th>
 				<select bind:value={selectedMyPaddle}>
-					<option value="src/lib/assets/paddles/defaultPaddle/defaultPaddleWhite.png">Original Paddle White</option>
-					<option value="src/lib/assets/paddles/defaultPaddle/defaultPaddleBlack.png">Original Paddle Black</option>
-					<option value="src/lib/assets/paddles/defaultPaddle/defaultPaddleBlue.png">Original Paddle Blue</option>
-					<option value="src/lib/assets/paddles/defaultPaddle/defaultPaddleCyan.png">Original Paddle Cyan</option>
-					<option value="src/lib/assets/paddles/defaultPaddle/defaultPaddleGreen.png">Original Paddle Green</option>
-					<option value="src/lib/assets/paddles/defaultPaddle/defaultPaddleGrey.png">Original Paddle Grey</option>
-					<option value="src/lib/assets/paddles/defaultPaddle/defaultPaddleLightBlue.png">Original Paddle LightBlue</option>
-					<option value="src/lib/assets/paddles/defaultPaddle/defaultPaddleOrange.png">Original Paddle Orange</option>
-					<option value="src/lib/assets/paddles/defaultPaddle/defaultPaddlePink.png">Original Paddle Pink</option>
-					<option value="src/lib/assets/paddles/defaultPaddle/defaultPaddleRed.png">Original Paddle Red</option>
-					<option value="src/lib/assets/paddles/defaultPaddle/defaultPaddleYellow.png">Original Paddle Yellow</option>
-					<option value="src/lib/assets/paddles/myPaddle/mypaddleWhite.png">Modern Paddle White</option>
-					<option value="src/lib/assets/paddles/myPaddle/mypaddleBlack.png">Modern Paddle Black</option>
-					<option value="src/lib/assets/paddles/myPaddle/mypaddleBlue.png">Modern Paddle Blue</option>
-					<option value="src/lib/assets/paddles/myPaddle/mypaddleCyan.png">Modern Paddle Cyan</option>
-					<option value="src/lib/assets/paddles/myPaddle/mypaddleGreen.png">Modern Paddle Green</option>
-					<option value="src/lib/assets/paddles/myPaddle/mypaddleGrey.png">Modern Paddle Grey</option>
-					<option value="src/lib/assets/paddles/myPaddle/mypaddleLightBlue.png">Modern Paddle LightBlue</option>
-					<option value="src/lib/assets/paddles/myPaddle/mypaddleOrange.png">Modern Paddle Orange</option>
-					<option value="src/lib/assets/paddles/myPaddle/mypaddlePink.png">Modern Paddle Pink</option>
+					<option value="src/lib/assets/paddles/defaultPaddle/defaultPaddleWhite.png"
+						>Original Paddle White</option
+					>
+					<option value="src/lib/assets/paddles/defaultPaddle/defaultPaddleBlack.png"
+						>Original Paddle Black</option
+					>
+					<option value="src/lib/assets/paddles/defaultPaddle/defaultPaddleBlue.png"
+						>Original Paddle Blue</option
+					>
+					<option value="src/lib/assets/paddles/defaultPaddle/defaultPaddleCyan.png"
+						>Original Paddle Cyan</option
+					>
+					<option value="src/lib/assets/paddles/defaultPaddle/defaultPaddleGreen.png"
+						>Original Paddle Green</option
+					>
+					<option value="src/lib/assets/paddles/defaultPaddle/defaultPaddleGrey.png"
+						>Original Paddle Grey</option
+					>
+					<option value="src/lib/assets/paddles/defaultPaddle/defaultPaddleLightBlue.png"
+						>Original Paddle LightBlue</option
+					>
+					<option value="src/lib/assets/paddles/defaultPaddle/defaultPaddleOrange.png"
+						>Original Paddle Orange</option
+					>
+					<option value="src/lib/assets/paddles/defaultPaddle/defaultPaddlePink.png"
+						>Original Paddle Pink</option
+					>
+					<option value="src/lib/assets/paddles/defaultPaddle/defaultPaddleRed.png"
+						>Original Paddle Red</option
+					>
+					<option value="src/lib/assets/paddles/defaultPaddle/defaultPaddleYellow.png"
+						>Original Paddle Yellow</option
+					>
+					<option value="src/lib/assets/paddles/myPaddle/mypaddleWhite.png"
+						>Modern Paddle White</option
+					>
+					<option value="src/lib/assets/paddles/myPaddle/mypaddleBlack.png"
+						>Modern Paddle Black</option
+					>
+					<option value="src/lib/assets/paddles/myPaddle/mypaddleBlue.png"
+						>Modern Paddle Blue</option
+					>
+					<option value="src/lib/assets/paddles/myPaddle/mypaddleCyan.png"
+						>Modern Paddle Cyan</option
+					>
+					<option value="src/lib/assets/paddles/myPaddle/mypaddleGreen.png"
+						>Modern Paddle Green</option
+					>
+					<option value="src/lib/assets/paddles/myPaddle/mypaddleGrey.png"
+						>Modern Paddle Grey</option
+					>
+					<option value="src/lib/assets/paddles/myPaddle/mypaddleLightBlue.png"
+						>Modern Paddle LightBlue</option
+					>
+					<option value="src/lib/assets/paddles/myPaddle/mypaddleOrange.png"
+						>Modern Paddle Orange</option
+					>
+					<option value="src/lib/assets/paddles/myPaddle/mypaddlePink.png"
+						>Modern Paddle Pink</option
+					>
 					<option value="src/lib/assets/paddles/myPaddle/mypaddleRed.png">Modern Paddle Red</option>
-					<option value="src/lib/assets/paddles/myPaddle/mypaddleYellow.png">Modern Paddle Yellow</option>
+					<option value="src/lib/assets/paddles/myPaddle/mypaddleYellow.png"
+						>Modern Paddle Yellow</option
+					>
 				</select>
 			</th>
 			<th>
 				<select bind:value={selectedOpponentPaddle}>
-					<option value="src/lib/assets/paddles/defaultPaddle/defaultPaddleWhite.png">Original Paddle White</option>
-					<option value="src/lib/assets/paddles/defaultPaddle/defaultPaddleBlack.png">Original Paddle Black</option>
-					<option value="src/lib/assets/paddles/defaultPaddle/defaultPaddleBlue.png">Original Paddle Blue</option>
-					<option value="src/lib/assets/paddles/defaultPaddle/defaultPaddleCyan.png">Original Paddle Cyan</option>
-					<option value="src/lib/assets/paddles/defaultPaddle/defaultPaddleGreen.png">Original Paddle Green</option>
-					<option value="src/lib/assets/paddles/defaultPaddle/defaultPaddleGrey.png">Original Paddle Grey</option>
-					<option value="src/lib/assets/paddles/defaultPaddle/defaultPaddleLightBlue.png">Original Paddle LightBlue</option>
-					<option value="src/lib/assets/paddles/defaultPaddle/defaultPaddleOrange.png">Original Paddle Orange</option>
-					<option value="src/lib/assets/paddles/defaultPaddle/defaultPaddlePink.png">Original Paddle Pink</option>
-					<option value="src/lib/assets/paddles/defaultPaddle/defaultPaddleRed.png">Original Paddle Red</option>
-					<option value="src/lib/assets/paddles/defaultPaddle/defaultPaddleYellow.png">Original Paddle Yellow</option>
-					<option value="src/lib/assets/paddles/otherPaddle/otherpaddleWhite.png">Modern Paddle White</option>
-					<option value="src/lib/assets/paddles/otherPaddle/otherpaddleBlack.png">Modern Paddle Black</option>
-					<option value="src/lib/assets/paddles/otherPaddle/otherpaddleBlue.png">Modern Paddle Blue</option>
-					<option value="src/lib/assets/paddles/otherPaddle/otherpaddleCyan.png">Modern Paddle Cyan</option>
-					<option value="src/lib/assets/paddles/otherPaddle/otherpaddleGreen.png">Modern Paddle Green</option>
-					<option value="src/lib/assets/paddles/otherPaddle/otherpaddleGrey.png">Modern Paddle Grey</option>
-					<option value="src/lib/assets/paddles/otherPaddle/otherpaddleLightBlue.png">Modern Paddle LightBlue</option>
-					<option value="src/lib/assets/paddles/otherPaddle/otherpaddleOrange.png">Modern Paddle Orange</option>
-					<option value="src/lib/assets/paddles/otherPaddle/otherpaddlePink.png">Modern Paddle Pink</option>
-					<option value="src/lib/assets/paddles/otherPaddle/otherpaddleRed.png">Modern Paddle Red</option>
-					<option value="src/lib/assets/paddles/otherPaddle/otherpaddleYellow.png">Modern Paddle Yellow</option>
+					<option value="src/lib/assets/paddles/defaultPaddle/defaultPaddleWhite.png"
+						>Original Paddle White</option
+					>
+					<option value="src/lib/assets/paddles/defaultPaddle/defaultPaddleBlack.png"
+						>Original Paddle Black</option
+					>
+					<option value="src/lib/assets/paddles/defaultPaddle/defaultPaddleBlue.png"
+						>Original Paddle Blue</option
+					>
+					<option value="src/lib/assets/paddles/defaultPaddle/defaultPaddleCyan.png"
+						>Original Paddle Cyan</option
+					>
+					<option value="src/lib/assets/paddles/defaultPaddle/defaultPaddleGreen.png"
+						>Original Paddle Green</option
+					>
+					<option value="src/lib/assets/paddles/defaultPaddle/defaultPaddleGrey.png"
+						>Original Paddle Grey</option
+					>
+					<option value="src/lib/assets/paddles/defaultPaddle/defaultPaddleLightBlue.png"
+						>Original Paddle LightBlue</option
+					>
+					<option value="src/lib/assets/paddles/defaultPaddle/defaultPaddleOrange.png"
+						>Original Paddle Orange</option
+					>
+					<option value="src/lib/assets/paddles/defaultPaddle/defaultPaddlePink.png"
+						>Original Paddle Pink</option
+					>
+					<option value="src/lib/assets/paddles/defaultPaddle/defaultPaddleRed.png"
+						>Original Paddle Red</option
+					>
+					<option value="src/lib/assets/paddles/defaultPaddle/defaultPaddleYellow.png"
+						>Original Paddle Yellow</option
+					>
+					<option value="src/lib/assets/paddles/otherPaddle/otherpaddleWhite.png"
+						>Modern Paddle White</option
+					>
+					<option value="src/lib/assets/paddles/otherPaddle/otherpaddleBlack.png"
+						>Modern Paddle Black</option
+					>
+					<option value="src/lib/assets/paddles/otherPaddle/otherpaddleBlue.png"
+						>Modern Paddle Blue</option
+					>
+					<option value="src/lib/assets/paddles/otherPaddle/otherpaddleCyan.png"
+						>Modern Paddle Cyan</option
+					>
+					<option value="src/lib/assets/paddles/otherPaddle/otherpaddleGreen.png"
+						>Modern Paddle Green</option
+					>
+					<option value="src/lib/assets/paddles/otherPaddle/otherpaddleGrey.png"
+						>Modern Paddle Grey</option
+					>
+					<option value="src/lib/assets/paddles/otherPaddle/otherpaddleLightBlue.png"
+						>Modern Paddle LightBlue</option
+					>
+					<option value="src/lib/assets/paddles/otherPaddle/otherpaddleOrange.png"
+						>Modern Paddle Orange</option
+					>
+					<option value="src/lib/assets/paddles/otherPaddle/otherpaddlePink.png"
+						>Modern Paddle Pink</option
+					>
+					<option value="src/lib/assets/paddles/otherPaddle/otherpaddleRed.png"
+						>Modern Paddle Red</option
+					>
+					<option value="src/lib/assets/paddles/otherPaddle/otherpaddleYellow.png"
+						>Modern Paddle Yellow</option
+					>
 				</select>
 			</th>
 			<th>

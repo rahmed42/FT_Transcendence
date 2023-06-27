@@ -12,6 +12,7 @@ import { getUpdatedSkins } from "./SceneSelector";
 // User getter
 let currentUser = get(user);
 let skins: any[];
+const serverIP = import.meta.env.VITE_SERVER_IP;
 
 const INACTIVITY_TIMEOUT = 60000; // in milliseconds
 
@@ -590,7 +591,7 @@ export class Part2Scene extends Phaser.Scene {
 		this.myScoreText!.setText(this.myScore.toString());
 		this.opponentScoreText!.setText(this.opponentScore.toString());
 
-		await fetch('http://localhost:3333/auth/in_game', {
+		await fetch('http://' + serverIP + ':3333/auth/in_game', {
 			method: 'POST',
 			credentials: 'include',
 		})
@@ -816,12 +817,12 @@ export class Part2Scene extends Phaser.Scene {
 	}
 
 	async push_match_stats() {
-		await fetch('http://localhost:3333/auth/login', {
+		await fetch('http://' + serverIP + ':3333/auth/login', {
 			method: 'POST',
 			credentials: 'include',
 		})
 
-		await fetch('http://localhost:3333/profil/match_stats', {
+		await fetch('http://' + serverIP + ':3333/profil/match_stats', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',

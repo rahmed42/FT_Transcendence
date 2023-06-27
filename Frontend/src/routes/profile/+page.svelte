@@ -18,6 +18,8 @@
 	let stats = null;
 	let matchHistory = [];
 
+	const serverIP = import.meta.env.VITE_SERVER_IP;
+
 	function formatDate(isoDateString) {
 		const date = new Date(isoDateString);
 		return `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
@@ -25,7 +27,7 @@
 
 	onMount(async () => {
 		async function getUserInfo() {
-			const response = await fetch('http://localhost:3333/profil/me', {
+			const response = await fetch('http://' + serverIP + ':3333/profil/me', {
 				method: 'GET',
 				credentials: 'include'
 			});
@@ -36,12 +38,12 @@
 				myUser = get(user);
 			}
 			const userLogin = myUser.login;
-			const statsResponse = await fetch('http://localhost:3333/social/stats/' + userLogin);
+			const statsResponse = await fetch('http://' + serverIP + ':3333/social/stats/' + userLogin);
 			if (statsResponse.ok) {
 				stats = await statsResponse.json();
 			}
 			const matchHistoryResponse = await fetch(
-				'http://localhost:3333/social/match-history/' + userLogin
+				'http://' + serverIP + ':3333/social/match-history/' + userLogin
 			);
 			if (matchHistoryResponse.ok) {
 				matchHistory = await matchHistoryResponse.json();
@@ -52,7 +54,7 @@
 	async function active_2_fa_auth() {
 		if (checked) checked = false;
 		else checked = true;
-		const response = await fetch('http://localhost:3333/auth/settings', {
+		const response = await fetch('http://' + serverIP + ':3333/auth/settings', {
 			method: 'POST',
 			credentials: 'include',
 			headers: {
@@ -75,7 +77,7 @@
 		const imgData = avatar.split(',');
 		const picture = imgData[1];
 		if (picture) {
-			const response = await fetch('http://localhost:3333/profil/picture', {
+			const response = await fetch('http://' + serverIP + ':3333/profil/picture', {
 				method: 'POST',
 				credentials: 'include',
 				headers: {
@@ -104,7 +106,7 @@
 			alert('Username should not exceed 10 characters');
 			return; // Exit the function if the limit is exceeded
 		}
-		const response = await fetch('http://localhost:3333/profil/username', {
+		const response = await fetch('http://' + serverIP + ':3333/profil/username', {
 			method: 'POST',
 			credentials: 'include',
 			headers: {
