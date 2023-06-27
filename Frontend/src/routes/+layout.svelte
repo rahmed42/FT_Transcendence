@@ -3,50 +3,50 @@
 	import Header from './Header.svelte';
 	import './styles.css';
 
-	// import Particles from 'svelte-particles';
-	// import { loadFull } from 'tsparticles';
+	import Particles from 'svelte-particles';
+	import { loadFull } from 'tsparticles';
 
-	// import { particlesConfig } from './particles';
-	// import { beforeUpdate } from 'svelte';
+	import { particlesConfig } from './particles';
+	import { beforeUpdate } from 'svelte';
 
-	// let particlesContainer: any;
+	let particlesContainer: any;
 
-	// let onParticlesLoaded = (event: CustomEvent) => {
-	// 	particlesContainer = event.detail.particles;
+	let onParticlesLoaded = (event: CustomEvent) => {
+		particlesContainer = event.detail.particles;
 
-	// 	// you can use particlesContainer to call all the Container class
-	// 	// (from the core library) methods like play, pause, refresh, start, stop
-	// 	// the tsParticles instance is stored in the particlesContainer object
-	// 	if (window.location.pathname === '/game')
-	// 		particlesContainer.stop();
-	// 	else
-	// 		particlesContainer.start();
-	// };
+		// you can use particlesContainer to call all the Container class
+		// (from the core library) methods like play, pause, refresh, start, stop
+		// the tsParticles instance is stored in the particlesContainer object
+		if (window.location.pathname === '/game')
+			particlesContainer.stop();
+		else
+			particlesContainer.start();
+	};
 
-	// let particlesInit = async (main: any) => {
-	// 	// you can use main to customize the tsParticles instance adding presets or custom shapes
-	// 	// this loads the tsparticles package bundle, it's the easiest method for getting everything ready
-	// 	// starting from v2 you can add only the features you need reducing the bundle size
-	// 	await loadFull(main);
-	// };
+	let particlesInit = async (main: any) => {
+		// you can use main to customize the tsParticles instance adding presets or custom shapes
+		// this loads the tsparticles package bundle, it's the easiest method for getting everything ready
+		// starting from v2 you can add only the features you need reducing the bundle size
+		await loadFull(main);
+	};
 
-	// // Top stop particles on game page for ressources
-	// beforeUpdate(() => {
-	// 	if (!particlesContainer)
-	// 		return;
-	// 	if (window.location.pathname === '/game')
-	// 		particlesContainer.stop();
-	// 	else
-	// 		particlesContainer.start();
-	// });
+	// Top stop particles on game page for ressources
+	beforeUpdate(() => {
+		if (!particlesContainer)
+			return;
+		if (window.location.pathname === '/game')
+			particlesContainer.stop();
+		else
+			particlesContainer.start();
+	});
 </script>
 
-<!-- <Particles
+<Particles
 	id="tsparticles"
 	options={particlesConfig}
 	on:particlesLoaded={onParticlesLoaded}
 	{particlesInit}
-/> -->
+/>
 
 <div class="app">
 	<Header />
