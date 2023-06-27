@@ -14,6 +14,7 @@ import { getUpdatedSkins } from "./SceneSelector";
 let currentUser = get(user);
 let skins: any[];
 
+const INACTIVITY_TIMEOUT = 60000; // in milliseconds
 
 async function load_skins() {
 	skins = await getUpdatedSkins();
@@ -21,10 +22,14 @@ async function load_skins() {
 
 export class Part2Scene extends Phaser.Scene {
 	//room reference
-	room: Room | undefined;
+	room: Room;
 
 	// Players we will assign each player visual representation here by their `sessionId`
 	playerEntities: { [sessionId: string]: Phaser.Types.Physics.Arcade.ImageWithDynamicBody } = {};
+
+	// get movement timer
+	lastMovementTimer: number;
+	inactivityTimeout: NodeJS.Timeout;
 
 	// mouse pointer
 	pointer: Phaser.Input.Pointer | undefined;
@@ -33,6 +38,7 @@ export class Part2Scene extends Phaser.Scene {
 	startState: boolean;
 	gameHost: boolean;
 	runningGame: boolean;
+	gameReady: boolean;
 
 	//PowerUp state
 	runningPowerUp: boolean;
@@ -75,6 +81,9 @@ export class Part2Scene extends Phaser.Scene {
 	//Starting button
 	startButton: Phaser.GameObjects.Text | undefined;
 
+	//Timer text
+	connectionTimerText: Phaser.GameObjects.Text | undefined;
+
 	// Score values
 	myScore: number;
 	opponentScore: number;
@@ -83,8 +92,8 @@ export class Part2Scene extends Phaser.Scene {
 	activeScene: string;
 
 	// Player Name
-	myName: string | undefined;
-	opponentName: string | undefined;
+	myName: string;
+	opponentName: string;
 
 	// Constructor of the scene
 	constructor() {
@@ -99,17 +108,62 @@ export class Part2Scene extends Phaser.Scene {
 		// Initialize the game state
 		this.myScore = 0;
 		this.opponentScore = 0;
+		this.gameReady = false;
+
+		// init defaults names
+		this.myName = "Player 1";
+		this.opponentName = "Player 2";
 
 		// Init start state
 		this.startState = false;
 		this.gameHost = false;
 		this.runningGame = false;
+
+		// Init powerup state
 		this.runningPowerUp = false;
 		this.visiblePowerUp = false;
 		this.scalePowerUp = 1;
 		this.localPowerupTaken = false;
 		this.remotePowerupTaken = false;
 		this.powerType = 0;
+
+		// Init last movement timer
+		this.lastMovementTimer = 0;
+		this.inactivityTimeout = setTimeout(() => { }, 0);
+	}
+
+	startInactivityTimeout() {
+		this.inactivityTimeout = setTimeout(() => {
+			//check if the page isn't /game destroyGame
+			if (window.location.pathname !== "/game") {
+				this.stopInactivityTimeout();
+				this.destroyGame();
+				return;
+			}
+
+			const inactivityTimer = Date.now() - this.lastMovementTimer;
+			if (inactivityTimer >= INACTIVITY_TIMEOUT && this.lastMovementTimer) {
+				this.destroyGame();
+			} else if (inactivityTimer >= (INACTIVITY_TIMEOUT / 4) && this.lastMovementTimer) {
+				let colorText = "#ffff00";
+				if (inactivityTimer >= (INACTIVITY_TIMEOUT * 3 / 4))
+					colorText = "#ff0000";
+
+				this.connectionTimerText?.destroy();
+				this.connectionTimerText = this.add
+					.text(60, 10, "Inactivity timeout " + (inactivityTimer / 1000).toFixed(0) + "s")
+					.setStyle({ color: colorText })
+					.setPadding(4);
+				this.startInactivityTimeout();
+			} else {
+				this.connectionTimerText?.destroy();
+				this.startInactivityTimeout();
+			}
+		}, 1000);
+	}
+
+	stopInactivityTimeout() {
+		clearTimeout(this.inactivityTimeout);
 	}
 
 	// set the active scene
@@ -148,7 +202,7 @@ export class Part2Scene extends Phaser.Scene {
 		const connectionStatusText = this.add
 			.text(50, 0, "Trying to connect \nwith the server...")
 			.setStyle({ color: "#ff0000" })
-			.setPadding(4)
+			.setPadding(4);
 
 		const client = new Client(BACKEND_URL);
 
@@ -246,6 +300,12 @@ export class Part2Scene extends Phaser.Scene {
 
 		// Add a pointerdown event to go back to the menu
 		homeButton.on("pointerdown", () => {
+			this.destroyGame();
+		});
+	}
+
+	destroyGame(): void {
+		if (window.location.pathname === "/game") {
 			this.resetGame(true);
 			this.myScore = 0;
 			this.opponentScore = 0;
@@ -263,18 +323,24 @@ export class Part2Scene extends Phaser.Scene {
 				this.remotePaddle.destroy();
 				this.remotePaddle = undefined;
 			}
+
+			this.lastMovementTimer = 0;
+			if (this.connectionTimerText !== undefined)
+				this.connectionTimerText.destroy();
+
 			this.setActiveScene("menu");
 			this.scene.stop('Part2');
 			// Start the menu scene
 			this.scene.start('menu')
-			if (this.room)
-				this.leave(this.room);
-		});
+		}
+
+		if (this.room)
+			this.leave(this.room);
 	}
 
 	createLocalPaddle(): void {
 		let posY;
-		if (this.pointer)
+		if (this.pointer !== undefined && this.pointer.y !== null)
 			posY = this.pointer.y;
 		else
 			posY = this.cameras.main.centerY;
@@ -297,20 +363,23 @@ export class Part2Scene extends Phaser.Scene {
 		this.input.on('pointermove', () => {
 			if (this.localPaddle && this.pointer)
 				this.localPaddle.y = this.pointer.y;
+
+			// refresh timout timer
+			this.lastMovementTimer = Date.now();
 		});
 	}
 
 	createRemotePaddle(): void {
-		let posY;
-		if (this.pointer)
-			posY = this.pointer.y;
-		else
-			posY = this.cameras.main.centerY;
+		// let posY;
+		// if (this.pointer !== undefined && this.pointer.y !== null)
+		// 	posY = this.pointer.y;
+		// else
+		// 	posY = this.cameras.main.centerY;
 
 		// Display Paddle and set bounds
 		const paddle = {
 			'x': 20,
-			'pos': posY,
+			// 'pos': posY,
 		};
 		this.remotePaddle = this.physics.add.image(this.cameras.main.width - paddle.x, this.cameras.main.centerY, 'otherPaddleSkin');
 		this.remotePaddle.setOrigin(0.5, 0.5);
@@ -334,6 +403,9 @@ export class Part2Scene extends Phaser.Scene {
 				//Setup my Paddle
 				if (this.localPaddle === undefined) {
 					this.createLocalPaddle();
+
+					// listen for timers
+					this.startInactivityTimeout();
 
 					//Keep reference to this remote Paddle
 					const entity = this.localPaddle!;
@@ -472,6 +544,8 @@ export class Part2Scene extends Phaser.Scene {
 					// Set start clickable button
 					this.startButtonText("🏓 Start Game 🏓", true);
 					this.startAnim();
+
+					this.gameReady = true;
 				}
 			}
 		});
@@ -495,6 +569,10 @@ export class Part2Scene extends Phaser.Scene {
 					entity.destroy();
 					delete this.playerEntities[sessionId];
 				}
+
+				// stop timeout
+				this.stopInactivityTimeout();
+
 				// Kick the last player
 				if (this.room.state.players.size === 1) {
 					this.leave(this.room);
@@ -583,7 +661,7 @@ export class Part2Scene extends Phaser.Scene {
 		if (this.opponentScoreText)
 			this.opponentScoreText.setText(this.opponentScore.toString());
 
-		if (this.ball) {
+		if (this.ball && this.cameras.main) {
 			// set the ball to center
 			this.ball.x = this.cameras.main.centerX;
 			this.ball.y = this.cameras.main.centerY;
@@ -591,7 +669,7 @@ export class Part2Scene extends Phaser.Scene {
 			if (this.gameHost) {
 				// Launch the ball to random direction
 				let velocityX = Phaser.Math.Between(350, 550);
-				let velocityY = Phaser.Math.Between(200,400);
+				let velocityY = Phaser.Math.Between(200, 400);
 
 				// random negative or positive
 				velocityX *= Math.random() < 0.5 ? 1 : -1;
@@ -727,13 +805,14 @@ export class Part2Scene extends Phaser.Scene {
 	}
 
 	resetPowerUpState(): void {
-		this.powerUp?.setVisible(false);
-		// this.powerUp?.disableBody(true, true);
 		this.visiblePowerUp = false;
-		this.powerUp?.setVelocity(0);
+		if (this.powerUp !== undefined) {
+			this.powerUp.setVisible(false);
+			this.powerUp.setVelocity(0);
 
-		//set back to center
-		this.powerUp?.setPosition(this.cameras.main.centerX, this.cameras.main.centerY);
+			//set back to center
+			this.powerUp.setPosition(this.cameras.main.centerX, this.cameras.main.centerY);
+		}
 		this.runningPowerUp = false;
 	}
 
@@ -805,10 +884,12 @@ export class Part2Scene extends Phaser.Scene {
 	}
 
 	leave(room: Room) {
-		if (room) {
-			// Call the leave method on the room instance
+		// Call the leave method on the room instance
+		if (room)
 			room.leave();
-		}
+
+		// stop timeout
+		this.stopInactivityTimeout();
 	}
 
 	/**
@@ -817,97 +898,99 @@ export class Part2Scene extends Phaser.Scene {
 	 */
 	update(time: number, delta: number): void {
 		// skip loop if not connected with room yet.
-		if (!this.room) { return; }
+		if (this.room === undefined) { return; }
 
-		// Update scores
-		if (this.ball && this.gameHost) {
-			if (this.ball.x > this.cameras.main.width) {
-				this.myScore++;
+		if (this.gameReady) {
+			// Update scores
+			if (this.ball && this.gameHost) {
+				if (this.ball.x > this.cameras.main.width) {
+					this.myScore++;
 
-				// Send score to server
-				this.room.send("hostScore", this.myScore);
-			} else if (this.ball.x < 0) {
-				this.opponentScore++;
+					// Send score to server
+					this.room.send("hostScore", this.myScore);
+				} else if (this.ball.x < 0) {
+					this.opponentScore++;
 
-				// Send score to server
-				this.room.send("clientScore", this.opponentScore);
-			}
-		}
-
-		// Handle scores from server if host
-		if (this.ball && (this.ball.x < 0 || this.ball.x > this.cameras.main.width)) {
-			if (this.myScore >= 3 || this.opponentScore >= 3)
-				this.resetGame(false);
-			else
-				this.launchBall();
-		}
-
-		// Launch powerup
-		if (this.gameHost) {
-			if (this.runningGame && this.gameHost && !this.visiblePowerUp && !this.runningPowerUp) {
-				this.runningPowerUp = true;
-				this.time.delayedCall(6000, () => {
-					this.launchPowerup();
-				});
+					// Send score to server
+					this.room.send("clientScore", this.opponentScore);
+				}
 			}
 
-			if (this.powerUp && (this.powerUp.x < 0 || this.powerUp.x > this.cameras.main.width))
-				this.resetPowerUpState();
-		}
-		// Update input player
-		if (this.inputPayload !== undefined) {
-			// send input to the server if changes to avoid server spamming
-			if ((this.input.y !== undefined) && (this.inputPayload.y !== this.input.y)) {
-				this.inputPayload.y = this.input.y;
-				this.inputPayload.name = this.myName;
-				this.room.send(0, this.inputPayload);
+			// Handle scores from server if host
+			if (this.ball && (this.ball.x < 0 || this.ball.x > this.cameras.main.width)) {
+				if (this.myScore >= 3 || this.opponentScore >= 3)
+					this.resetGame(false);
+				else
+					this.launchBall();
 			}
 
-			// Add linear interpolation if lag effect is visible
-			//https://learn.colyseus.io/phaser/2-linear-interpolation.html
+			// Launch powerup
+			if (this.gameHost) {
+				if (this.runningGame && this.gameHost && !this.visiblePowerUp && !this.runningPowerUp) {
+					this.runningPowerUp = true;
+					this.time.delayedCall(6000, () => {
+						this.launchPowerup();
+					});
+				}
 
-			// Check change state of start button send to server
-			if ((this.startState !== undefined) && (this.inputPayload.start !== this.startState)) {
-				this.inputPayload.start = this.startState;
-				this.room.send("start", this.inputPayload);
-
-				// reset state
-				this.startState = false;
+				if (this.powerUp && (this.powerUp.x < 0 || this.powerUp.x > this.cameras.main.width))
+					this.resetPowerUpState();
 			}
+			// Update input player
+			if (this.inputPayload !== undefined) {
+				// send input to the server if changes to avoid server spamming
+				if ((this.input.y !== undefined) && (this.inputPayload.y !== this.input.y)) {
+					this.inputPayload.y = this.input.y;
+					this.inputPayload.name = this.myName;
+					this.room.send(0, this.inputPayload);
+				}
 
-			// send ball position to server
-			if (this.ball && this.gameHost && (this.inputPayload.ballX !== this.ball.x || this.inputPayload.ballY !== this.ball.y)) {
-				this.inputPayload.ballX = this.ball.x;
-				this.inputPayload.ballY = this.ball.y;
-				this.room.send("ball", this.inputPayload);
-			}
+				// Add linear interpolation if lag effect is visible
+				//https://learn.colyseus.io/phaser/2-linear-interpolation.html
 
-			// send powerup position to server
-			if (this.powerUp && this.gameHost && (this.inputPayload.powerUpX !== this.powerUp.x || this.inputPayload.powerUpY !== this.powerUp.y)) {
-				this.inputPayload.powerUpX = this.powerUp.x;
-				this.inputPayload.powerUpY = this.powerUp.y;
-				this.room.send("powerUp", this.inputPayload);
-			}
+				// Check change state of start button send to server
+				if ((this.startState !== undefined) && (this.inputPayload.start !== this.startState)) {
+					this.inputPayload.start = this.startState;
+					this.room.send("start", this.inputPayload);
 
-			// send powerup position to server
-			if (this.powerUp && this.gameHost && (this.inputPayload.powerupScale !== this.scalePowerUp || this.inputPayload.powerupVisible !== this.visiblePowerUp)) {
-				this.inputPayload.powerupScale = this.scalePowerUp;
-				this.inputPayload.powerupVisible = this.visiblePowerUp;
-				this.room.send("powerUpInfo", this.inputPayload);
-			}
+					// reset state
+					this.startState = false;
+				}
 
-			// send Local powerup taken state
-			if (this.powerUp && this.gameHost && (this.inputPayload.localPowerupTaken !== this.localPowerupTaken)) {
-				this.inputPayload.localPowerupTaken = this.localPowerupTaken;
-				this.inputPayload.powerType = this.powerType;
-				this.room.send("localPowerupTaken", this.inputPayload);
-			}
+				// send ball position to server
+				if (this.ball && this.gameHost && (this.inputPayload.ballX !== this.ball.x || this.inputPayload.ballY !== this.ball.y)) {
+					this.inputPayload.ballX = this.ball.x;
+					this.inputPayload.ballY = this.ball.y;
+					this.room.send("ball", this.inputPayload);
+				}
 
-			// send Remote powerup taken state
-			if (this.powerUp && this.gameHost && (this.inputPayload.remotePowerupTaken !== this.remotePowerupTaken)) {
-				this.inputPayload.remotePowerupTaken = this.remotePowerupTaken;
-				this.inputPayload.powerType = this.powerType;
-				this.room.send("remotePowerupTaken", this.inputPayload);
+				// send powerup position to server
+				if (this.powerUp && this.gameHost && (this.inputPayload.powerUpX !== this.powerUp.x || this.inputPayload.powerUpY !== this.powerUp.y)) {
+					this.inputPayload.powerUpX = this.powerUp.x;
+					this.inputPayload.powerUpY = this.powerUp.y;
+					this.room.send("powerUp", this.inputPayload);
+				}
+
+				// send powerup position to server
+				if (this.powerUp && this.gameHost && (this.inputPayload.powerupScale !== this.scalePowerUp || this.inputPayload.powerupVisible !== this.visiblePowerUp)) {
+					this.inputPayload.powerupScale = this.scalePowerUp;
+					this.inputPayload.powerupVisible = this.visiblePowerUp;
+					this.room.send("powerUpInfo", this.inputPayload);
+				}
+
+				// send Local powerup taken state
+				if (this.powerUp && this.gameHost && (this.inputPayload.localPowerupTaken !== this.localPowerupTaken)) {
+					this.inputPayload.localPowerupTaken = this.localPowerupTaken;
+					this.inputPayload.powerType = this.powerType;
+					this.room.send("localPowerupTaken", this.inputPayload);
+				}
+
+				// send Remote powerup taken state
+				if (this.powerUp && this.gameHost && (this.inputPayload.remotePowerupTaken !== this.remotePowerupTaken)) {
+					this.inputPayload.remotePowerupTaken = this.remotePowerupTaken;
+					this.inputPayload.powerType = this.powerType;
+					this.room.send("remotePowerupTaken", this.inputPayload);
+				}
 			}
 		}
 	}
