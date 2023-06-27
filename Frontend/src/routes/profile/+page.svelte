@@ -213,7 +213,7 @@
 					<tr>
 						<td>{match.gameType}</td>
 						<td>
-							{#if match.result === 'win'}
+							{#if match.result === 'Victory'}
 								<p class="result_victory">Victory</p>
 							{:else}
 								<p class="result_defeat">Defeat</p>
@@ -227,8 +227,6 @@
 				{/each}
 			</tbody>
 		</table>
-	<!-- {:else}
-		<p>No match history available</p> -->
 	{/if}
 </div>
 
@@ -245,10 +243,11 @@
 		display: block;
 		margin-left: auto;
 		margin-right: auto;
-		width: 600px;
-		border-radius: 60px;
-		border: 10px, yellow;
-		/* max-width: 100%; */
+		border-radius: 0 100px 0 100px;
+		width: 500px;
+		border: 4px solid rgb(88, 44, 231);
+		padding: 5px;
+		flex-grow: 1;
 	}
 	.buttons {
 		display: flex;
