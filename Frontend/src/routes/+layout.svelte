@@ -6,7 +6,7 @@
 	import Particles from 'svelte-particles';
 	import { loadFull } from 'tsparticles';
 
-	import { particlesConfig } from './particles';
+	import { particlesAmong, particlesConfig } from './particles';
 	import { beforeUpdate } from 'svelte';
 
 	let particlesContainer: any;
@@ -43,7 +43,7 @@
 
 <Particles
 	id="tsparticles"
-	options={particlesConfig}
+	options={particlesAmong}
 	on:particlesLoaded={onParticlesLoaded}
 	{particlesInit}
 />
