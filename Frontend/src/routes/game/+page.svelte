@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
-	// import Phaser from 'phaser';
 	import { GameSelector } from './scenes/SceneSelector';
 	import { Part1Scene } from './scenes/Part1Scene';
 	import { Part2Scene } from './scenes/Part2Scene';
@@ -9,16 +8,11 @@
 	let game: any;
 
 	// Fonction afterUpdate - appelée après la mise à jour du composant
-	// onMount(async () => {
 	onMount(() => {
 		// SSR server side rendering
 		// https://vitejs.dev/guide/ssr.html
 		if (typeof window === 'undefined') return;
 
-		// Execute on client side only if not server side rendering
-		// if (!import.meta.env.SSR) {
-		//Init Phaser and start the game
-		// const Phaser = await import('phaser');
 		game = new Phaser.Game({
 			// CANVAS Rendering to be faster
 			type: Phaser.CANVAS,

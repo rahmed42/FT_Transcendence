@@ -5,7 +5,6 @@ import { user } from '../../../stores/user';
 import { get } from "svelte/store";
 
 //Style Default
-// import { skins } from "./SceneSelector";
 import { getUpdatedSkins } from "./SceneSelector";
 
 // User getter

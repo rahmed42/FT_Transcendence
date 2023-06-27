@@ -7,7 +7,6 @@ import { get } from "svelte/store";
 import powerUp from "$lib/assets/others/powerUp.png";
 
 //Style Default
-// import { skins } from "./SceneSelector";
 import { getUpdatedSkins } from "./SceneSelector";
 
 // User getter
