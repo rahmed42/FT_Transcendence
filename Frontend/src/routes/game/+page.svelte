@@ -10,7 +10,7 @@
 		setTimeout(() => {
 			if (typeof window === 'undefined') return;
 			if (!game) createPhaserGame();
-		}, 100);
+		}, 500);
 	});
 
 	async function createPhaserGame() {
@@ -53,16 +53,17 @@
 		}
 	});
 
-	// async function inviteFriend() {
-	// 	// add from DB to get the part of the game
-	// 	// redirect to game page
-	// 	console.log('Original Seeker Launched');
-	// 	game.scene.switch('menu', 'Part1');
+	async function inviteFriend() {
+		// add from DB to get the part of the game
 
-	// 	console.log('Modern Seeker Launched');
-	// 	game.scene.switch('menu', 'Part2');
-	// 	// ADD send request to friend logic
-	// }
+		console.log('Original Seeker Launched');
+		game.scene.switch('menu', 'Part1');
+
+		console.log('Modern Seeker Launched');
+		game.scene.switch('menu', 'Part2');
+
+		// ADD send request to friend logic
+	}
 </script>
 
 <svelte:head>
@@ -87,6 +88,8 @@
 		height: 600px;
 		border: 2px solid rgb(88, 44, 231);
 		border-radius: 25px;
+		background-image: url('$lib/images/backArcade.jpg');
+		background-size: 100% 100%;
 	}
 
 	p {

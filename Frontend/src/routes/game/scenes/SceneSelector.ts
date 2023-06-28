@@ -104,6 +104,13 @@ export class GameSelector extends Phaser.Scene {
 		//logo.setScale(0.5);
 		logo.setOrigin(0.4, 0.5);
 
+		this.tweens.add({
+			targets: logo, background,
+			alpha: { from: 0, to: 1 },
+			ease: 'linear',
+			duration: 1000,
+		});
+
 		// adding game parts
 		for (let gameType in this.parts) {
 			if (this.parts.hasOwnProperty(gameType)) {
@@ -146,6 +153,13 @@ export class GameSelector extends Phaser.Scene {
 				button.on("pointerdown", () => { // set the event when the text is clicked
 					this.setActiveScene(`Part${gameType}`); // set the active scene
 					this.runScene(this.activeScene); // run the scene
+				});
+
+				this.tweens.add({
+					targets: button,
+					alpha: { from: 0, to: 1 },
+					ease: 'linear',
+					duration: 1000,
 				});
 			}
 		}
