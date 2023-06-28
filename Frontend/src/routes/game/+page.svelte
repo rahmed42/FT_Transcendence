@@ -91,9 +91,4 @@
 		background-image: url('$lib/images/backArcade.jpg');
 		background-size: 100% 100%;
 	}
-
-	p {
-		font-size: 1.2rem;
-		text-align: center;
-	}
 </style>

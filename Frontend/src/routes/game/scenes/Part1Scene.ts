@@ -231,7 +231,6 @@ export class Part1Scene extends Phaser.Scene {
 		const homeButton = this.add.image(this.cameras.main.centerX, 25, 'button');
 		homeButton.setScale(0.4);
 		homeButton.setOrigin(0.5, 0.5);
-		//set menu button semi transparent
 
 		// setting the text as interactive
 		homeButton.setInteractive();
