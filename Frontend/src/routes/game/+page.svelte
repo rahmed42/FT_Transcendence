@@ -1,17 +1,23 @@
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
-	import { GameSelector } from './scenes/SceneSelector';
-	import { Part1Scene } from './scenes/Part1Scene';
-	import { Part2Scene } from './scenes/Part2Scene';
-	import Phaser from 'phaser';
 
-	let game: any;
+	let game: any | undefined = undefined;
 
 	// Fonction afterUpdate - appelée après la mise à jour du composant
 	onMount(() => {
 		// SSR server side rendering
 		// https://vitejs.dev/guide/ssr.html
-		if (typeof window === 'undefined') return;
+		setTimeout(() => {
+			if (typeof window === 'undefined') return;
+			if (!game) createPhaserGame();
+		}, 100);
+	});
+
+	async function createPhaserGame() {
+		const Phaser = await import('phaser');
+		const { GameSelector } = await import('./scenes/SceneSelector');
+		const { Part1Scene } = await import('./scenes/Part1Scene');
+		const { Part2Scene } = await import('./scenes/Part2Scene');
 
 		game = new Phaser.Game({
 			// CANVAS Rendering to be faster
@@ -38,8 +44,7 @@
 
 		//Begin the game
 		game.scene.start('menu');
-		// }
-	});
+	}
 
 	// Fonction onDestroy - appelée lorsque le composant est détruit
 	onDestroy(() => {
@@ -47,6 +52,17 @@
 			game.destroy(true);
 		}
 	});
+
+	// async function inviteFriend() {
+	// 	// add from DB to get the part of the game
+	// 	// redirect to game page
+	// 	console.log('Original Seeker Launched');
+	// 	game.scene.switch('menu', 'Part1');
+
+	// 	console.log('Modern Seeker Launched');
+	// 	game.scene.switch('menu', 'Part2');
+	// 	// ADD send request to friend logic
+	// }
 </script>
 
 <svelte:head>
@@ -71,5 +87,10 @@
 		height: 600px;
 		border: 2px solid rgb(88, 44, 231);
 		border-radius: 25px;
+	}
+
+	p {
+		font-size: 1.2rem;
+		text-align: center;
 	}
 </style>

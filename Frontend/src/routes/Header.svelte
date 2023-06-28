@@ -2,19 +2,18 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import logo from '$lib/images/42PongLogo.png';
-	import { afterUpdate, onMount } from 'svelte';
+	import { onMount } from 'svelte';
 	import { setUser, user, resetUser } from '../stores/user';
 	import type { User } from '../stores/user';
 
-	let currentUser: User
-	let status = "logout";
+	let currentUser: User;
 	const serverIP = import.meta.env.VITE_SERVER_IP;
 
 	// onMount is called when the component is mounted in the DOM
 	onMount(async () => {
 		// Subscribe to the user store
 		const unsubscribe = user.subscribe((value) => {
-				currentUser = value;
+			currentUser = value;
 		});
 		if (typeof window !== 'undefined') {
 			const code = new URLSearchParams(window.location.search).get('code');
@@ -37,41 +36,32 @@
 			}
 			return false;
 		}
-		if (checkJwtCookie())
-		{
+		if (checkJwtCookie()) {
 			currentUser.check_2fa = await check_2fa_user();
-			if (currentUser.check_2fa)
-			{
+			if (currentUser.check_2fa) {
 				const response = await fetch('http://' + serverIP + ':3333/profil/me', {
 					method: 'GET',
 					credentials: 'include'
 				});
 				const contentType = response.headers.get('Content-Type');
-				if (contentType && contentType.includes('application/json'))
-				{
+				if (contentType && contentType.includes('application/json')) {
 					const data = await response.json();
-					if (data.status === "logout")
-						if(window.location.pathname !== '/2_fa') window.location.href = '/2_fa';
+					if (data.status === 'logout')
+						if (window.location.pathname !== '/2_fa') window.location.href = '/2_fa';
 				}
 				const res = await fetch('http://' + serverIP + ':3333/profil/me', {
 					method: 'GET',
 					credentials: 'include'
 				});
 				const content = response.headers.get('Content-Type');
-				if (content && content.includes('application/json'))
-				{
+				if (content && content.includes('application/json')) {
 					const dataa = await res.json();
-					if (dataa.status === "login")
-						await getUserInfo();
+					if (dataa.status === 'login') await getUserInfo();
 				}
 			}
 		}
 		if (checkJwtCookie() && !currentUser.check_2fa)
 			await getUserInfo();
-
-		// redirect to home Page if logged in and reload on game page
-		if (currentUser!.login && window.location.pathname === '/game')
-			window.location.href = '/home';
 
 		// Clean up the subscription on unmount
 		return () => {
