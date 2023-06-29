@@ -42,7 +42,9 @@
 			<th>
 				<select bind:value={selectedBoard}>
 					<option value="src/lib/assets/boards/boardDefault.png">Default</option>
+					<option value="src/lib/assets/boards/boardDefaultGrey.png">Default Grey</option>
 					<option value="src/lib/assets/boards/boardModern.png">Modern</option>
+					<option value="src/lib/assets/boards/boardModernGrey.png">Modern Grey</option>
 				</select>
 			</th>
 			<th>

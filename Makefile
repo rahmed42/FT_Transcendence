@@ -6,7 +6,7 @@
 #    By: rahmed <rahmed@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/05/09 12:57:06 by rahmed            #+#    #+#              #
-#    Updated: 2023/06/18 22:47:52 by rahmed           ###   ########.fr        #
+#    Updated: 2023/06/29 17:33:58 by rahmed           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -24,7 +24,7 @@ name = FT_Transcendance
 # 	mkdir -p $@
 
 # | $(data) $(db)
-all	: back front bgame fgame db
+all	: back db bgame front
 	@open http://localhost:2567/colyseus/
 
 clean	:	down
@@ -32,7 +32,6 @@ clean	:	down
 	@docker system prune -a
 	@sudo rm -rf ./backend/dist
 	@sudo rm -rf ./Frontend/dist ./Frontend/.parcel-cache
-#	@sudo rm -rf $(db)
 
 fclean	:
 	@printf "Deep clean of docker\n"
@@ -40,8 +39,8 @@ fclean	:
 	@docker system prune --all --force --volumes
 	@docker network prune --force
 	@docker volume prune --force
-	@sudo rm -rf ./backend/dist ./backend/node_modules ./backend/package-lock.json
-	@sudo rm -rf ./Frontend/dist ./Frontend/node_modules ./Frontend/package-lock.json ./Frontend/.parcel-cache
+	@sudo rm -rf ./backend/dist ./backend/node_modules
+	@sudo rm -rf ./Frontend/dist ./Frontend/node_modules ./Frontend/.parcel-cache
 #	@sudo rm -rf $(db)
 
 # re	: | $(data) $(db)
@@ -93,13 +92,13 @@ bgame :
 	@echo "${FANCY_RESET}"
 	cd backend && npm run startgame
 
-fgame :
-	@echo "${TXT_YELLOW}"
-	@echo "~~~~~~~~~~ GAME FRONTEND ~~~~~~~~~~"
-	@echo "${TXT_GREEN}"
-	@printf "Launching ${name} Game front...\n"
-	@echo "${FANCY_RESET}"
-	cd Frontend && npm run startgame
+# fgame :
+# 	@echo "${TXT_YELLOW}"
+# 	@echo "~~~~~~~~~~ GAME FRONTEND ~~~~~~~~~~"
+# 	@echo "${TXT_GREEN}"
+# 	@printf "Launching ${name} Game front...\n"
+# 	@echo "${FANCY_RESET}"
+# 	cd Frontend && npm run startgame
 
 db	:
 	cd backend && npx prisma migrate dev && npx prisma studio
