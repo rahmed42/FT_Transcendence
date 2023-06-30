@@ -1,7 +1,5 @@
-<!-- Home page content -->
-
 <script lang="ts">
-	import pongAnim from '$lib/images/pongAnim.png';
+	import backgroundHome from '$lib/images/backgroundHome.png';
 </script>
 
 <svelte:head>
@@ -9,35 +7,29 @@
 	<meta name="description" content="Svelte pong app" />
 </svelte:head>
 
-<section>
-	<h1>
-		Welcome to<br /><strong>Ft_Trancendance</strong><br /><br />
-		<span class="pongAnim">
-			<picture>
-				<img src={pongAnim} alt="pongAnim" style="height: 300px; width: auto;" />
-			</picture>
-		</span>
-	</h1>
-</section>
+<span class="backgroundHome">
+	<picture>
+		<img src={backgroundHome} alt="backgroundHome" />
+	</picture>
+</span>
 
 <style>
-	section {
+	span.backgroundHome {
+		position: fixed;
+		top: 1em;
+		left: 0;
+		width: 100%;
+		height: 100%;
 		display: flex;
-		flex-direction: column;
 		justify-content: center;
 		align-items: center;
-		flex: 0.6;
+		overflow: hidden;
+		z-index: -1;
 	}
 
-	h1 {
-		width: 100%;
-	}
-
-	.pongAnim img {
-		position: static;
-		/* width: 100%;
-		height: 100%; */
-		top: 1;
-		display: inside;
+	img {
+		min-width: 100%;
+		min-height: 100%;
+		object-fit: cover;
 	}
 </style>
