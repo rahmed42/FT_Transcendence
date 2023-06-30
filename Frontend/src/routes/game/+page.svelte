@@ -9,7 +9,8 @@
 		// https://vitejs.dev/guide/ssr.html
 		setTimeout(() => {
 			if (typeof window === 'undefined') return;
-			if (!game) createPhaserGame();
+			if (!game && window.location.pathname === "/game")
+				createPhaserGame();
 		}, 500);
 	});
 
