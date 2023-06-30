@@ -3,7 +3,7 @@
   import { onDestroy, onMount } from 'svelte';
   import { get } from 'svelte/store';
   import { writable } from 'svelte/store';
-  import io from 'socket.io-client';
+//   import io from 'socket.io-client';
 
   let messageInput = '';
   interface Message {
