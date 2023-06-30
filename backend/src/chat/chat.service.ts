@@ -1436,12 +1436,15 @@ export class ChatService {
                 },
             },
             select: {
-                id : true,
                 users: {
-                    select: {
-                        id: true,
-                        login: true,
-                    },
+                    where : {
+						id: {
+							not: body.idUser,
+						},
+					},
+					select: {
+						login: true,
+					},
                 },
             }
         });
@@ -1451,55 +1454,46 @@ export class ChatService {
     {
         if (!body.roomName)
             throw new BadRequestException('Room name is required');
-        const privateRoom = await this.prisma.privateRoom.findFirst({
-            where: {
-                id: body.roomName,
-            },
-            select: {
-                id: true,
-                users : {
-                    select : {
-                        id: true,
-                        login: true,
-                    }
-                },
-                messages: {
-                    select : {
-                        content: true,
-                        sender: {
-                            select : {
-                                login: true,
-                            }
-                        },
-                    }
-                },
-            }
-        });
+
+		const user = await this.prisma.user.findFirst({
+			where: {
+				id: body.idUser,
+			},
+		});
+		const user2 = await this.prisma.user.findFirst({
+			where: {
+				login: body.roomName,
+			},
+		});
+		if (!user || !user2)
+		{
+			throw new BadRequestException('User does not exist');
+		}
+		const privateRoom = await this.prisma.privateRoom.findFirst({
+			where : {
+				users: {
+					every : {
+						login : {
+							in : [user.login, user2.login],
+						}
+					}
+				},
+			},
+			select : {
+					users: {
+						where : {
+							login : {
+								notIn : [user.login],
+							},
+						},
+						select : {
+							login : true,
+						}
+					}
+			},
+		});
         if (!privateRoom)
             throw new BadRequestException('Room does not exist');
-        const user = await this.prisma.user.findFirst({
-            where: {
-                id: body.idUser,
-            },
-        });
-        if (!user)
-        {
-            throw new BadRequestException('User does not exist');
-        }
-        const userInRoom = await this.prisma.privateRoom.findFirst({
-            where: {
-                id: body.roomName,
-                users: {
-                    some: {
-                        id: body.idUser,
-                    },
-                },
-            },
-        });
-        if (!userInRoom)
-        {
-            throw new BadRequestException('User is not in room');
-        }
         return privateRoom;
     }
 	async blockUser(body: ChatDtoBlockUser)
@@ -1641,6 +1635,8 @@ export class ChatService {
 			throw new BadRequestException('You are not admin of this room');
 		if (room.ownerId == userToMute.id)
 			throw new BadRequestException('You cannot mute owner of the room');
+		if (!body.muteDuration || body.muteDuration <= 0)
+			throw new BadRequestException('Mute duration must be positive');
 		const minutesToAdd = body.muteDuration; // Get the number of minutes to add from the request body
 		const date = new Date(); // Create a new Date object representing the current date and time
 		date.setMinutes(date.getMinutes() + minutesToAdd); // Add the specified number of minutes to the date object
@@ -1661,8 +1657,12 @@ export class ChatService {
 			where: {
 				name: body.roomName,
 			},
-			include: {
-				mutedUsers: true,
+			select: {
+				mutedUsers: {
+					select: {
+						login: true,
+					},
+				},
 			},
 		});
 		return { mutedUsers : mutedUsers, message: "User successfully muted" }
@@ -1719,6 +1719,7 @@ export class ChatService {
 						name: body.roomName,
 					},
 				},
+				timestampMuted : null,
 			},
 		});
 		return { message: "User successfully unmuted" }
