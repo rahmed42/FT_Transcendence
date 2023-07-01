@@ -34,7 +34,7 @@
 		left: 0;
 		opacity: 0.7;
 		width: 100%;
-		height: auto;
+		/* height: auto; */
 		display: flex;
 		justify-content: center;
 		align-items: center;
