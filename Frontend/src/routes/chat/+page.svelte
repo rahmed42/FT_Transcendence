@@ -116,15 +116,26 @@
   });
   
   socket.on('newPrivateMessage', (data: {content: string, nameSender: string}) => {
-    if (!blockList.subscribe((value) => value.includes({login : data.nameSender})) && !(data.nameSender === login) && data.nameSender === selectedPrivateChannel) {
-      messages = [...messages, { username: data.nameSender, content: data.content, user: true }];
+    console.log("Mutelist : ", muteList);
+    console.log("Blocklist : ", blockList);
+    console.log("Message");
+    if ((blockList) && !(data.nameSender === login) && data.nameSender === selectedPrivateChannel) {
+      if (muteList)
+      {
+        messages = [...messages, { username: data.nameSender, content: data.content, user: true }];
+      }
     }
   });
 
   socket.on('newRoomMessage', (data: { content: string, nameSender: string, roomName: string }) => {
-  if (!(data.nameSender === login) && data.roomName === selectedChannel) {
-    messages = [...messages, { username: data.nameSender, content: data.content, user: true }];
-    console.log("Message after in socket.on : ", messages);
+    console.log("Mutelist : ", muteList);
+    console.log("Blocklist : ", blockList);
+    console.log("Message");
+    if ((blockList) && !(data.nameSender === login) && data.nameSender === selectedPrivateChannel) {
+      if (muteList)
+      {
+        messages = [...messages, { username: data.nameSender, content: data.content, user: true }];
+      }
     }
   });
 
@@ -383,9 +394,12 @@ async function unmuteUser() {
     else
     {
       const newMuteList = await response.json();
-      throw new Error(newMuteList.message);
-      muteList.set(newMuteList.mutedUsers.mutedUsers.login);
-    }
+      alert(newMuteList.message);
+      console.log("old mute list : ", muteList);
+      muteList.update(currentMuteList => {
+        return currentMuteList.filter(user => user.login !== selectedUserparam);
+      });}
+      console.log("new mute list : ", muteList);
   }
   catch (err) {
     if (err instanceof Error)
@@ -735,6 +749,7 @@ function closeSetupModal() {
 	  privateList.update(privateList => [...privateList, { login: newChannel.users[0].login }]);
     recipientName = '';
     messageContent = '';
+    alert(newChannel.message);
   }
 }
 
@@ -835,7 +850,6 @@ async function getChannel(channel: string) {
                     user : !(message.senderLogin === login),
                     username: message.senderLogin
                   }
-                  console.log("Messages : ", messagesWithUsername);
                 });
                 messages = messagesWithUsername;
                 banList.set(newChannel.bannedUsers);
@@ -902,8 +916,12 @@ async function getChannel(channel: string) {
         throw new Error(data.message);
       } else if (response.ok) {
         const newProfile = await response.json();
+        console.log('Contenu de newProfile:', newProfile);
         //need socket to send invitation
-
+        invitationList.update(currentInvitations => [
+        ...currentInvitations,
+        { login: inviteUser }
+        ]);
         throw new Error(newProfile.message);
       }
     }
@@ -1245,9 +1263,13 @@ async function leaveRoom()
         <div class="selected-option">
           <p>Unmute User:</p>
           <select name="selectedUser" bind:value={selectedUserparam}>
+          {#if $muteList.length > 0}
             {#each $muteList as mutedUsers}
               <option value={mutedUsers.login}>{mutedUsers.login}</option>
             {/each}
+          {:else}
+            <option disabled selected>No muted users</option>
+          {/if}
           </select>
         </div>
       {/if}
