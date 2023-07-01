@@ -5,6 +5,7 @@
 	import { onMount } from 'svelte';
 	import { setUser, user, resetUser } from '../stores/user';
 	import type { User } from '../stores/user';
+	import { goto } from '$app/navigation';
 
 	let currentUser: User;
 	const serverIP = import.meta.env.VITE_SERVER_IP;
@@ -15,6 +16,7 @@
 		const unsubscribe = user.subscribe((value) => {
 			currentUser = value;
 		});
+
 		if (typeof window !== 'undefined') {
 			const code = new URLSearchParams(window.location.search).get('code');
 			if (code) {
@@ -55,13 +57,17 @@
 				});
 				const content = response.headers.get('Content-Type');
 				if (content && content.includes('application/json')) {
-					const dataa = await res.json();
-					if (dataa.status === 'login') await getUserInfo();
+					const data = await res.json();
+					if (data.status === 'login') await getUserInfo();
 				}
 			}
 		}
-		if (checkJwtCookie() && !currentUser.check_2fa)
-			await getUserInfo();
+		if (checkJwtCookie() && !currentUser.check_2fa) await getUserInfo();
+
+		// if current user is not logged in, goto login page
+		if (currentUser !== undefined && currentUser.login === '') {
+			if (window.location.pathname !== '/') goto('/');
+		} else if (window.location.pathname === '/') goto('/home');
 
 		// Clean up the subscription on unmount
 		return () => {
@@ -259,8 +265,9 @@
 		margin: 0;
 		padding: 0;
 		overflow: hidden;
-		background-color: #100050;
+		background: linear-gradient(to bottom, #080027, #2b0bbc);
 		height: 2em;
+		opacity: 0.8;
 	}
 
 	li {
@@ -296,10 +303,11 @@
 	}
 
 	li a:hover:not(.active) {
-		background-color: #386ade;
+		background: linear-gradient(to top, #4bc3ff, #2b0bbc);
 	}
 
 	.active {
-		background-color: #2b0bbc;
+		background: linear-gradient(to bottom, #4bc3ff, #2b0bbc);
+		font-weight: bold;
 	}
 </style>

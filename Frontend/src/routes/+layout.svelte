@@ -48,38 +48,14 @@
 	{particlesInit}
 />
 
-<div class="app">
+<div>
 	<Header />
 	<main>
 		<slot />
 	</main>
-
-	<footer>
-		<center>
-			Made By <strong> ☁️ anggonza 🌟 ddupont 🌟 mmatthie 🌟 rahmed 🌟 tbrandt ☁️ </strong>
-		</center>
-		<pre>
-    :::      ::::::::   :::::::::   ::::::::  ::::    :::  ::::::::
-   :+:      :+:    :+:  :+:    :+: :+:    :+: :+:+:   :+: :+:    :+:
-  +:+ +:+         +:+   +:+    +:+ +:+    +:+ :+:+:+  +:+ +:+
- +#+  +:+       +#+     +#++:++#+  +#+    +:+ +#+ +:+ +#+ :#:
-+#+#+#+#+#+   +#+       +#+        +#+    +#+ +#+  +#+#+# +#+   +#+#
-      #+#    #+#        #+#        #+#    #+# #+#   #+#+# #+#    #+#
-      ###   ##########  ###         ########  ###    ####  ########
-</pre>
-	</footer>
 </div>
 
 <style>
-	.app {
-		display: flex;
-		flex-direction: column;
-		position: relative;
-		background: transparent;
-		color: white;
-		overflow: auto;
-	}
-
 	main {
 		flex: 1;
 		display: flex;
@@ -89,15 +65,6 @@
 		max-width: 64rem;
 		margin: 0 auto;
 		box-sizing: border-box;
-	}
-
-	footer {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		/* padding: 12px; */
-		bottom: 0;
-		/* z-index: -1; */
+		color: white;
 	}
 </style>
