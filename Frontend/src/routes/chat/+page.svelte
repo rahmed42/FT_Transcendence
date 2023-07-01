@@ -128,14 +128,12 @@
   });
 
   socket.on('newRoomMessage', (data: { content: string, nameSender: string, roomName: string }) => {
-    console.log("Mutelist : ", muteList);
-    console.log("Blocklist : ", blockList);
-    console.log("Message");
-    if ((blockList) && !(data.nameSender === login) && data.nameSender === selectedPrivateChannel) {
+    if ((blockList) && !(data.nameSender === login) && data.nameSender === selectedChannel) {
       if (muteList)
-      {
         messages = [...messages, { username: data.nameSender, content: data.content, user: true }];
-      }
+    }
+    else if (muteList && !(data.nameSender === login) && data.nameSender === selectedChannel) {
+        messages = [...messages, { username: data.nameSender, content: data.content, user: true }];
     }
   });
 
