@@ -259,8 +259,9 @@
 		margin: 0;
 		padding: 0;
 		overflow: hidden;
-		background-color: #100050;
+		background: linear-gradient(to bottom, #080027, #2b0bbc);
 		height: 2em;
+		opacity: 0.8;
 	}
 
 	li {
@@ -296,10 +297,11 @@
 	}
 
 	li a:hover:not(.active) {
-		background-color: #386ade;
+		background: linear-gradient(to top, #4bc3ff, #2b0bbc);
 	}
 
 	.active {
-		background-color: #2b0bbc;
+		background: linear-gradient(to bottom, #4bc3ff, #2b0bbc);
+		font-weight: bold;
 	}
 </style>
