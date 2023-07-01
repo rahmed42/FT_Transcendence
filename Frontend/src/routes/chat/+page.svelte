@@ -89,7 +89,7 @@
         token: myCookie,
       },
     });
-    const resp = await fetch('http://localhost:3333/chat/blockedUsers', {
+    /*const resp = await fetch('http://localhost:3333/chat/blockedUsers', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -106,7 +106,7 @@
       }
       else
         blockList.set([])
-    }
+    }*/
   socket.on('connect', () => {
     console.log('connected');
   });
@@ -123,7 +123,8 @@
 
   socket.on('newRoomMessage', (data: { content: string, nameSender: string, roomName: string }) => {
   if (!(data.nameSender === login) && data.roomName === selectedChannel) {
-      messages = [...messages, { username: data.nameSender, content: data.content, user: true }];
+    messages = [...messages, { username: data.nameSender, content: data.content, user: true }];
+    console.log("Message after in socket.on : ", messages);
     }
   });
 
@@ -748,9 +749,10 @@ function closeSetupModal() {
     if (selectedChannel !== '') {
       let roomName = selectedChannel;
       socket.emit('newMessage', { roomName: roomName, content: messageInput, idSender: userID, type: "room" });
+      console.log("Message before : ", messages);
       messages = [...messages, { username: login, content: messageInput, user: false }];
+      console.log("Message after : ", messages);
       messageInput = '';
-      return;
     }
     else if (selectedPrivateChannel !== '') {
       let loginToSend = selectedPrivateChannel;
@@ -758,7 +760,6 @@ function closeSetupModal() {
       socket.emit('newMessage', { idSender: userID, roomName: privateId, loginReceiver: loginToSend, content: messageInput, type: "private" });
       messages = [...messages, { username: login, content: messageInput, user: false }];
       messageInput = '';
-      return;
     }
   }
 
@@ -824,16 +825,17 @@ async function getChannel(channel: string) {
             throw new Error(data.message);
         } else if (response.ok) {
             const newChannel = await response.json();
+            console.log("New channel : ", newChannel);
             if (newChannel) {
                 socket.emit('joinRoom', { roomName: selectedChannel })
                 userList.set(newChannel.users);
                 const messagesWithUsername = newChannel.messages.map((message : any) => {
-                return {
-                  content : message.content,
-                  user : !(message.senderLogin === login),
-                  username: message.senderLogin
-                }
-                messages = messagesWithUsername;
+                  return {
+                    content : message.content,
+                    user : !(message.senderLogin === login),
+                    username: message.senderLogin
+                  }
+                  console.log("Messages : ", messagesWithUsername);
                 });
                 messages = messagesWithUsername;
                 banList.set(newChannel.bannedUsers);
@@ -1287,10 +1289,10 @@ async function leaveRoom()
       <div class="channel-type">
         <span>Channel Type:</span>
         <label>
-          <input type="radio" value="public" bind:group={joinChannelType} /> Public/Private
+          <input type="radio" value="public" bind:group={joinChannelType} name="radio_public" id="radio_pub" /> Public/Private
         </label>
         <label>
-          <input type="radio" value="protected" bind:group={joinChannelType} /> Protected
+          <input type="radio" value="protected" bind:group={joinChannelType} name="radio_protected" id="radio_protect"/> Protected
         </label>
       </div>
       {#if joinChannelType === 'protected'}
