@@ -123,7 +123,11 @@
   });
 
   socket.on('newRoomMessage', (data: { content: string, nameSender: string, roomName: string }) => {
-
+    if (data.nameSender === login) {
+    return;
+    }
+    if ((blockList) && !(data.nameSender === login) && data.nameSender === selectedChannel) {
+      console.log("Message IS BLOCKEEEEEEEEED");
     }
     messages = [...messages, { username: data.nameSender, content: data.content, user: true }];
   });
