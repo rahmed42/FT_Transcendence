@@ -116,27 +116,20 @@
   });
   
   socket.on('newPrivateMessage', (data: {content: string, nameSender: string}) => {
-    console.log("Mutelist : ", muteList);
-    console.log("Blocklist : ", blockList);
-    console.log("Message");
     if ((blockList) && !(data.nameSender === login) && data.nameSender === selectedPrivateChannel) {
-      if (muteList)
-      {
-        messages = [...messages, { username: data.nameSender, content: data.content, user: true }];
-      }
+      console.log("Message IS BLOCKEEEEEEEEED");
     }
+    messages = [...messages, { username: data.nameSender, content: data.content, user: true }];
   });
 
   socket.on('newRoomMessage', (data: { content: string, nameSender: string, roomName: string }) => {
-    console.log("Mutelist : ", muteList);
-    console.log("Blocklist : ", blockList);
-    console.log("Message");
-    if ((blockList) && !(data.nameSender === login) && data.nameSender === selectedPrivateChannel) {
-      if (muteList)
-      {
-        messages = [...messages, { username: data.nameSender, content: data.content, user: true }];
-      }
+    if (data.nameSender === login) {
+    return;
     }
+    if ((blockList) && !(data.nameSender === login) && data.nameSender === selectedChannel) {
+      console.log("Message IS BLOCKEEEEEEEEED");
+    }
+    messages = [...messages, { username: data.nameSender, content: data.content, user: true }];
   });
 
   async function getUserinfo() {
@@ -764,9 +757,7 @@ function closeSetupModal() {
     if (selectedChannel !== '') {
       let roomName = selectedChannel;
       socket.emit('newMessage', { roomName: roomName, content: messageInput, idSender: userID, type: "room" });
-      console.log("Message before : ", messages);
       messages = [...messages, { username: login, content: messageInput, user: false }];
-      console.log("Message after : ", messages);
       messageInput = '';
     }
     else if (selectedPrivateChannel !== '') {
