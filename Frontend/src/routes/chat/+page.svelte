@@ -118,6 +118,7 @@
   socket.on('newPrivateMessage', (data: {content: string, nameSender: string}) => {
     if ((blockList) && !(data.nameSender === login) && data.nameSender === selectedPrivateChannel) {
       console.log("Message IS BLOCKEEEEEEEEED");
+      return;
     }
     messages = [...messages, { username: data.nameSender, content: data.content, user: true }];
   });
@@ -128,6 +129,7 @@
     }
     if ((blockList) && !(data.nameSender === login) && data.nameSender === selectedChannel) {
       console.log("Message IS BLOCKEEEEEEEEED");
+      return;
     }
     messages = [...messages, { username: data.nameSender, content: data.content, user: true }];
   });
