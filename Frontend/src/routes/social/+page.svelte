@@ -1,7 +1,6 @@
 <script>
 	import { notification } from '../../stores/notificationStore.js';
 	import { user } from '../../stores/user';
-	import {goto} from '$app/navigation';
 
     const apiUrl = import.meta.env.VITE_API_URL;
 
@@ -84,23 +83,6 @@
 		await sendFriendRequest();
 		closeFriendRequestModal();
 	}
-
-	async function inviteFriendOriginal() {
-		console.log('Original Seeker Launched');
-		goto('/game');
-
-		// ADD send request to friend logic
-
-	}
-	async function inviteFriendModern() {
-		console.log('Modern Seeker Launched');
-		// window.location.href = '/game';
-		goto('/game');
-
-		// ADD send request to friend logic
-
-	}
-
 </script>
 
 <section>
@@ -150,11 +132,6 @@
 		</div>
 		{/each}
 	</div>
-	<p>
-		Invite a friend to play with you :
-		<button on:click={inviteFriendOriginal}>Original</button>
-		<button on:click={inviteFriendModern}>Modern</button>
-	</p>
 </section>
 
 <style>

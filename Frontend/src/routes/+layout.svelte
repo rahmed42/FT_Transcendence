@@ -34,7 +34,7 @@
 	beforeUpdate(() => {
 		if (!particlesContainer)
 			return;
-		if (window.location.pathname === '/game')
+		if (window.location.pathname === '/game' || window.location.pathname === '/chat')
 			particlesContainer.stop();
 		else
 			particlesContainer.start();
