@@ -7,13 +7,14 @@ import { get } from "svelte/store";
 import powerUp from "$lib/assets/others/powerUp.png";
 
 //Style Default
-// import { skins } from "./SceneSelector";
 import { getUpdatedSkins } from "./SceneSelector";
 
 // User getter
 let currentUser = get(user);
 let skins: any[];
+const serverIP = import.meta.env.VITE_SERVER_IP;
 
+const INACTIVITY_TIMEOUT = 60000; // in milliseconds
 
 async function load_skins() {
 	skins = await getUpdatedSkins();
@@ -21,10 +22,14 @@ async function load_skins() {
 
 export class Part2Scene extends Phaser.Scene {
 	//room reference
-	room: Room | undefined;
+	room: Room;
 
 	// Players we will assign each player visual representation here by their `sessionId`
 	playerEntities: { [sessionId: string]: Phaser.Types.Physics.Arcade.ImageWithDynamicBody } = {};
+
+	// get movement timer
+	lastMovementTimer: number;
+	inactivityTimeout: NodeJS.Timeout;
 
 	// mouse pointer
 	pointer: Phaser.Input.Pointer | undefined;
@@ -33,9 +38,15 @@ export class Part2Scene extends Phaser.Scene {
 	startState: boolean;
 	gameHost: boolean;
 	runningGame: boolean;
+	gameReady: boolean;
+
+	//PowerUp state
 	runningPowerUp: boolean;
 	visiblePowerUp: boolean;
 	scalePowerUp: number;
+	localPowerupTaken: boolean;
+	remotePowerupTaken: boolean;
+	powerType: number;
 
 	// local input cache
 	inputPayload: any = {
@@ -47,6 +58,9 @@ export class Part2Scene extends Phaser.Scene {
 		powerupY: 300,
 		powerupScale: 1,
 		powerupVisible: false,
+		localPowerupTaken: false,
+		remotePowerupTaken: false,
+		powerType: 0,
 		name: "",
 	};
 
@@ -67,6 +81,9 @@ export class Part2Scene extends Phaser.Scene {
 	//Starting button
 	startButton: Phaser.GameObjects.Text | undefined;
 
+	//Timer text
+	connectionTimerText: Phaser.GameObjects.Text | undefined;
+
 	// Score values
 	myScore: number;
 	opponentScore: number;
@@ -75,8 +92,8 @@ export class Part2Scene extends Phaser.Scene {
 	activeScene: string;
 
 	// Player Name
-	myName: string | undefined;
-	opponentName: string | undefined;
+	myName: string;
+	opponentName: string;
 
 	// Constructor of the scene
 	constructor() {
@@ -91,14 +108,62 @@ export class Part2Scene extends Phaser.Scene {
 		// Initialize the game state
 		this.myScore = 0;
 		this.opponentScore = 0;
+		this.gameReady = false;
+
+		// init defaults names
+		this.myName = "Player 1";
+		this.opponentName = "Player 2";
 
 		// Init start state
 		this.startState = false;
 		this.gameHost = false;
 		this.runningGame = false;
+
+		// Init powerup state
 		this.runningPowerUp = false;
 		this.visiblePowerUp = false;
 		this.scalePowerUp = 1;
+		this.localPowerupTaken = false;
+		this.remotePowerupTaken = false;
+		this.powerType = 0;
+
+		// Init last movement timer
+		this.lastMovementTimer = 0;
+		this.inactivityTimeout = setTimeout(() => { }, 0);
+	}
+
+	startInactivityTimeout() {
+		this.inactivityTimeout = setTimeout(() => {
+			//check if the page isn't /game destroyGame
+			if (window.location.pathname !== "/game") {
+				this.stopInactivityTimeout();
+				this.destroyGame();
+				return;
+			}
+
+			const inactivityTimer = Date.now() - this.lastMovementTimer;
+			if (inactivityTimer >= INACTIVITY_TIMEOUT && this.lastMovementTimer) {
+				this.destroyGame();
+			} else if (inactivityTimer >= (INACTIVITY_TIMEOUT / 4) && this.lastMovementTimer) {
+				let colorText = "#ffff00";
+				if (inactivityTimer >= (INACTIVITY_TIMEOUT * 3 / 4))
+					colorText = "#ff0000";
+
+				this.connectionTimerText?.destroy();
+				this.connectionTimerText = this.add
+					.text(60, 10, "Inactivity timeout " + (inactivityTimer / 1000).toFixed(0) + "s")
+					.setStyle({ color: colorText })
+					.setPadding(4);
+				this.startInactivityTimeout();
+			} else {
+				this.connectionTimerText?.destroy();
+				this.startInactivityTimeout();
+			}
+		}, 1000);
+	}
+
+	stopInactivityTimeout() {
+		clearTimeout(this.inactivityTimeout);
 	}
 
 	// set the active scene
@@ -137,7 +202,7 @@ export class Part2Scene extends Phaser.Scene {
 		const connectionStatusText = this.add
 			.text(50, 0, "Trying to connect \nwith the server...")
 			.setStyle({ color: "#ff0000" })
-			.setPadding(4)
+			.setPadding(4);
 
 		const client = new Client(BACKEND_URL);
 
@@ -188,6 +253,7 @@ export class Part2Scene extends Phaser.Scene {
 		this.powerUp = this.physics.add.image(this.cameras.main.centerX, this.cameras.main.centerY, 'powerUp');
 		this.powerUp.setOrigin(0.5, 0.5);
 		this.powerUp.setVisible(false);
+		// this.powerUp.disableBody(true, true);
 		this.visiblePowerUp = false;
 
 		// Add ball physics
@@ -206,7 +272,6 @@ export class Part2Scene extends Phaser.Scene {
 		const homeButton = this.add.image(this.cameras.main.centerX, 25, 'button');
 		homeButton.setScale(0.4);
 		homeButton.setOrigin(0.5, 0.5);
-		//set menu button semi transparent
 
 		// setting the text as interactive
 		homeButton.setInteractive();
@@ -234,6 +299,12 @@ export class Part2Scene extends Phaser.Scene {
 
 		// Add a pointerdown event to go back to the menu
 		homeButton.on("pointerdown", () => {
+			this.destroyGame();
+		});
+	}
+
+	destroyGame(): void {
+		if (window.location.pathname === "/game") {
 			this.resetGame(true);
 			this.myScore = 0;
 			this.opponentScore = 0;
@@ -251,18 +322,24 @@ export class Part2Scene extends Phaser.Scene {
 				this.remotePaddle.destroy();
 				this.remotePaddle = undefined;
 			}
+
+			this.lastMovementTimer = 0;
+			if (this.connectionTimerText !== undefined)
+				this.connectionTimerText.destroy();
+
 			this.setActiveScene("menu");
 			this.scene.stop('Part2');
 			// Start the menu scene
 			this.scene.start('menu')
-			if (this.room)
-				this.leave(this.room);
-		});
+		}
+
+		if (this.room)
+			this.leave(this.room);
 	}
 
 	createLocalPaddle(): void {
 		let posY;
-		if (this.pointer)
+		if (this.pointer !== undefined && this.pointer.y !== null)
 			posY = this.pointer.y;
 		else
 			posY = this.cameras.main.centerY;
@@ -285,20 +362,23 @@ export class Part2Scene extends Phaser.Scene {
 		this.input.on('pointermove', () => {
 			if (this.localPaddle && this.pointer)
 				this.localPaddle.y = this.pointer.y;
+
+			// refresh timout timer
+			this.lastMovementTimer = Date.now();
 		});
 	}
 
 	createRemotePaddle(): void {
-		let posY;
-		if (this.pointer)
-			posY = this.pointer.y;
-		else
-			posY = this.cameras.main.centerY;
+		// let posY;
+		// if (this.pointer !== undefined && this.pointer.y !== null)
+		// 	posY = this.pointer.y;
+		// else
+		// 	posY = this.cameras.main.centerY;
 
 		// Display Paddle and set bounds
 		const paddle = {
 			'x': 20,
-			'pos': posY,
+			// 'pos': posY,
 		};
 		this.remotePaddle = this.physics.add.image(this.cameras.main.width - paddle.x, this.cameras.main.centerY, 'otherPaddleSkin');
 		this.remotePaddle.setOrigin(0.5, 0.5);
@@ -308,28 +388,6 @@ export class Part2Scene extends Phaser.Scene {
 		if (this.ball && this.remotePaddle) {
 			// Add collisions between ball and paddles
 			this.physics.add.collider(this.ball, this.remotePaddle);
-		}
-	}
-
-	// create the powerup
-	createPowerUp(): void {
-		this.powerUp?.setPosition(this.cameras.main.centerX, this.cameras.main.centerY);
-
-		if (this.powerUp && this.localPaddle) {
-			// Add collisions between powerUp and paddles
-			this.physics.add.collider(this.powerUp, this.localPaddle, () => {
-				this.resetPowerUpState();
-				console.log("--------------Local PowerUp taken--------------");
-				// Set power to local player
-			});
-		}
-		if (this.powerUp && this.remotePaddle) {
-			// Add collisions between powerUp and paddles
-			this.physics.add.collider(this.powerUp, this.remotePaddle, () => {
-				this.resetPowerUpState();
-				console.log("--------------Remote PowerUp taken--------------");
-				// Set power to remote player
-			});
 		}
 	}
 
@@ -345,6 +403,9 @@ export class Part2Scene extends Phaser.Scene {
 				if (this.localPaddle === undefined) {
 					this.createLocalPaddle();
 
+					// listen for timers
+					this.startInactivityTimeout();
+
 					//Keep reference to this remote Paddle
 					const entity = this.localPaddle!;
 					this.playerEntities[sessionId] = entity;
@@ -358,94 +419,132 @@ export class Part2Scene extends Phaser.Scene {
 				}
 
 				// Second player added
-				if (this.room.state.players.size === 2) {
-					// Setup his paddle
-					if (this.remotePaddle === undefined) {
-						this.createRemotePaddle();
+				if (this.room.state.players.size === 2 && this.remotePaddle === undefined) {
+					this.createRemotePaddle();
 
-						// Add powerup
-						this.createPowerUp();
+					// Keep reference to this remote Paddle
+					const entity = this.remotePaddle!;
+					this.playerEntities[sessionId] = entity;
 
-						// Keep reference to this remote Paddle
-						const entity = this.remotePaddle!;
-						this.playerEntities[sessionId] = entity;
+					//Triggered when 'y' property changes
+					player.listen("y", (value: number) => {
+						if (this.remotePaddle)
+							this.remotePaddle.y = value;
+					});
 
-						//Triggered when 'y' property changes
-						player.listen("y", (value: number) => {
-							if (this.remotePaddle)
-								this.remotePaddle.y = value;
-						});
+					//Triggered when 'name' property changes
+					player.listen("name", (value: string) => {
+						// Update opponent name
+						this.opponentName = value;
+					});
 
-						//Triggered when 'name' property changes
-						player.listen("name", (value: string) => {
-							// Update opponent name
-							this.opponentName = value;
-						});
+					// Getting starting game from server
+					this.room.onMessage("startGame", (start: boolean) => {
+						if (start === true)
+							this.startMatch();
+					});
 
-						// Getting starting game from server
-						this.room.onMessage("startGame", (start: boolean) => {
-							if (start === true)
-								this.startMatch();
-						});
+					// Get ball position from server if not hosting
+					this.room.onMessage("ballX", (ballX: number) => {
+						if (!this.gameHost && this.ball)
+							this.ball.x = ballX;
+					});
+					this.room.onMessage("ballY", (ballY: number) => {
+						if (!this.gameHost && this.ball)
+							this.ball.y = ballY;
+					});
 
-						// Get ball position from server if not hosting
-						this.room.onMessage("ballX", (ballX: number) => {
-							if (!this.gameHost && this.ball)
-								this.ball.x = ballX;
-						});
-						this.room.onMessage("ballY", (ballY: number) => {
-							if (!this.gameHost && this.ball)
-								this.ball.y = ballY;
-						});
+					// Get PowerUp position from server if not hosting
+					this.room.onMessage("powerUpX", (powerUpX: number) => {
+						if (!this.gameHost && this.powerUp) {
+							this.powerUp.x = powerUpX;
+						}
+					});
 
-						// Get PowerUp position from server if not hosting
-						this.room.onMessage("powerUpX", (powerUpX: number) => {
-							if (!this.gameHost && this.powerUp) {
-								this.powerUp.x = powerUpX;
+					this.room.onMessage("powerUpY", (powerUpY: number) => {
+						if (!this.gameHost && this.powerUp) {
+							this.powerUp.y = powerUpY;
+						}
+					});
+
+					// powerUps infos from server if not hosting
+					this.room.onMessage("powerUpScale", (scale: number) => {
+						if (!this.gameHost && this.powerUp) {
+							this.powerUp.setScale(scale);
+						}
+					});
+
+					this.room.onMessage("powerUpVisible", (visible: boolean) => {
+						if (!this.gameHost && this.powerUp) {
+							this.powerUp.setVisible(visible);
+						}
+					});
+
+					// getting Remote taken powerups from server
+					this.room.onMessage("localPowerupFromServer", (taken: boolean) => {
+						if (!this.gameHost) {
+							if (taken === true) {
+								this.remotePowerupTaken = true;
+								this.resetPowerUpState();
+
+								// random powerup
+								this.randomPowerUp(false, this.powerType);
+							} else {
+								this.remotePaddle?.setScale(1);
+								this.ball?.setScale(1);
 							}
-						});
+						}
+					});
 
-						this.room.onMessage("powerUpY", (powerUpY: number) => {
-							if (!this.gameHost && this.powerUp) {
-								this.powerUp.y = powerUpY;
-							}
-						});
 
-						// powerUps infos from server if not hosting
-						this.room.onMessage("powerUpScale", (scale: number) => {
-							if (!this.gameHost && this.powerUp) {
-								this.powerUp.setScale(scale);
-							}
-						});
+					this.room.onMessage("remotePowerupFromServer", (taken: boolean) => {
+						if (!this.gameHost) {
+							if (taken === true) {
+								this.localPowerupTaken = true;
+								this.resetPowerUpState();
 
-						this.room.onMessage("powerUpVisible", (visible: boolean) => {
-							if (!this.gameHost && this.powerUp) {
-								this.powerUp.setVisible(visible);
+								// random powerup
+								this.randomPowerUp(true, this.powerType);
+							} else {
+								this.localPaddle?.setScale(1);
+								this.ball?.setScale(1);
 							}
-						});
+						}
+					});
 
-						// Update score from server host
-						this.room.onMessage("opponentScore", (score: number) => {
-							if (!this.gameHost && this.runningGame) {
-								this.opponentScore = score;
-								this.opponentScoreText!.setText(score.toString());
-								if (this.opponentScore >= 3)
-									this.resetGame(false);
-							}
-						});
+					this.room.onMessage("powerTypeFromServer", (power: number) => {
+						if (!this.gameHost && this.powerUp) {
+							this.powerType = power;
+						}
+					});
 
-						this.room.onMessage("myScore", (score: number) => {
-							if (!this.gameHost && this.runningGame) {
-								this.myScore = score;
-								this.myScoreText!.setText(score.toString());
-								if (this.myScore >= 3)
-									this.resetGame(false);
-							}
-						});
-					}
+					// Update score from server host
+					this.room.onMessage("opponentScore", (score: number) => {
+						if (!this.gameHost && this.runningGame) {
+							this.opponentScore = score;
+							this.opponentScoreText!.setText(score.toString());
+							if (this.opponentScore >= 3)
+								this.resetGame(false);
+						}
+					});
+
+					this.room.onMessage("myScore", (score: number) => {
+						if (!this.gameHost && this.runningGame) {
+							this.myScore = score;
+							this.myScoreText!.setText(score.toString());
+							if (this.myScore >= 3)
+								this.resetGame(false);
+						}
+					});
+
+					// Add powerup
+					this.createPowerUpPhysics();
+
 					// Set start clickable button
 					this.startButtonText("🏓 Start Game 🏓", true);
 					this.startAnim();
+
+					this.gameReady = true;
 				}
 			}
 		});
@@ -469,6 +568,10 @@ export class Part2Scene extends Phaser.Scene {
 					entity.destroy();
 					delete this.playerEntities[sessionId];
 				}
+
+				// stop timeout
+				this.stopInactivityTimeout();
+
 				// Kick the last player
 				if (this.room.state.players.size === 1) {
 					this.leave(this.room);
@@ -487,7 +590,7 @@ export class Part2Scene extends Phaser.Scene {
 		this.myScoreText!.setText(this.myScore.toString());
 		this.opponentScoreText!.setText(this.opponentScore.toString());
 
-		await fetch('http://localhost:3333/auth/in_game', {
+		await fetch('http://' + serverIP + ':3333/auth/in_game', {
 			method: 'POST',
 			credentials: 'include',
 		})
@@ -557,7 +660,7 @@ export class Part2Scene extends Phaser.Scene {
 		if (this.opponentScoreText)
 			this.opponentScoreText.setText(this.opponentScore.toString());
 
-		if (this.ball) {
+		if (this.ball && this.cameras.main) {
 			// set the ball to center
 			this.ball.x = this.cameras.main.centerX;
 			this.ball.y = this.cameras.main.centerY;
@@ -565,7 +668,7 @@ export class Part2Scene extends Phaser.Scene {
 			if (this.gameHost) {
 				// Launch the ball to random direction
 				let velocityX = Phaser.Math.Between(350, 550);
-				let velocityY = Phaser.Math.Between(200, 300);
+				let velocityY = Phaser.Math.Between(200, 400);
 
 				// random negative or positive
 				velocityX *= Math.random() < 0.5 ? 1 : -1;
@@ -575,53 +678,150 @@ export class Part2Scene extends Phaser.Scene {
 		}
 	}
 
-	// launch a powerup
-	launchPowerup(): void {
-		this.powerUp?.setVisible(true);
-		this.visiblePowerUp = true;
-
-		if (this.gameHost && this.powerUp) {
-			// random powerup
-			// let powerType = Phaser.Math.Between(0, 2);
-
-			// set powerup to center
-			this.powerUp.x = this.cameras.main.centerX;
-			this.powerUp.y = this.cameras.main.centerY;
-
-			// random velocity
-			let powerUpVelocityX = Phaser.Math.Between(80, 100)
-			let powerUpVelocityY = Phaser.Math.Between(0, 400);
-
-			// random scale
-			this.scalePowerUp = Phaser.Math.Between(1, 3) / 2; // 0.5 to 1.5
-
-			// random negative or positive
-			powerUpVelocityX *= Math.random() < 0.5 ? 1 : -1;
-			powerUpVelocityY *= Math.random() < 0.5 ? 1 : -1;
-
-			// create powerup
-			this.powerUp?.setScale(this.scalePowerUp);
-			this.powerUp?.setVelocity(powerUpVelocityX, powerUpVelocityY);
+	randomPowerUp(localPlayer: boolean, powerType: number): void {
+		switch (powerType) {
+			case 0:
+				// increase paddle size
+				if (localPlayer)
+					this.localPaddle?.setScale(1, 2);
+				else
+					this.remotePaddle?.setScale(1, 2);
+				break;
+			case 1:
+				// decrease paddle size
+				if (localPlayer)
+					this.localPaddle?.setScale(1, 0.5);
+				else
+					this.remotePaddle?.setScale(1, 0.5);
+				break;
+			case 2:
+				// increase ball size
+				this.ball?.setScale(2);
+				break;
+			case 3:
+				// decrease ball size
+				this.ball?.setScale(0.5);
+				break;
+			case 4:
+				// increase ball speed few seconds
+				if (this.gameHost) {
+					this.ball?.setVelocity(this.ball.body.velocity.x * 2, this.ball.body.velocity.y * 2);
+					this.time.delayedCall(3000, () => {
+						this.ball?.setVelocity(this.ball.body.velocity.x / 2, this.ball.body.velocity.y / 2);
+					});
+				}
+				break;
+			case 5:
+				// decrease ball speed
+				if (this.gameHost) {
+					this.ball?.setVelocity(this.ball.body.velocity.x / 2, this.ball.body.velocity.y / 2);
+					this.time.delayedCall(3000, () => {
+						this.ball?.setVelocity(this.ball.body.velocity.x * 2, this.ball.body.velocity.y * 2);
+					});
+				}
+				break;
+			case 6:
+				// set ball low visibility
+				this.ball?.setAlpha(0.25);
+				this.time.delayedCall(3000, () => {
+					this.ball?.setAlpha(1);
+				});
+				break;
+			default:
+				break;
 		}
 	}
 
-	resetPowerUpState(): void {
-		this.powerUp?.setVisible(false);
-		this.visiblePowerUp = false;
-		this.powerUp?.setVelocity(0);
+	// create the powerup collisions
+	createPowerUpPhysics(): void {
+		this.resetPowerUpState();
 
-		//set back to center
-		this.powerUp?.setPosition(this.cameras.main.centerX, this.cameras.main.centerY);
+		if (this.powerUp && this.localPaddle) {
+			// Add collisions between powerUp and paddles
+			this.physics.add.collider(this.powerUp, this.localPaddle, () => {
+				this.resetPowerUpState();
+				if (!this.localPowerupTaken && this.gameHost) {
+					// random powerup
+					this.powerType = Phaser.Math.Between(0, 6);
+					this.randomPowerUp(true, this.powerType);
+
+					this.localPowerupTaken = true;
+				}
+			});
+		}
+
+		if (this.powerUp && this.remotePaddle) {
+			this.physics.add.collider(this.powerUp, this.remotePaddle, () => {
+				this.resetPowerUpState();
+				if (!this.remotePowerupTaken && this.gameHost) {
+					// random powerup
+					this.powerType = Phaser.Math.Between(0, 6);
+					this.randomPowerUp(false, this.powerType);
+
+					this.remotePowerupTaken = true;
+				}
+			});
+		}
+	}
+
+	// launch a powerup
+	launchPowerup(): void {
+		if (this.runningGame) {
+			this.powerUp?.setVisible(true);
+			// this.powerUp?.disableBody(false, false);
+			this.visiblePowerUp = true;
+			this.localPowerupTaken = false;
+			this.remotePowerupTaken = false;
+
+			// reset paddle scales after powerupeffect
+			this.localPaddle?.setScale(1);
+			this.remotePaddle?.setScale(1);
+			this.ball?.setScale(1);
+
+			if (this.gameHost && this.powerUp) {
+				// set powerup to center
+				this.powerUp.x = this.cameras.main.centerX;
+				this.powerUp.y = this.cameras.main.centerY;
+
+				// random velocity
+				let powerUpVelocityX = Phaser.Math.Between(400, 550)
+				let powerUpVelocityY = Phaser.Math.Between(0, 400);
+
+				// random scale
+				this.scalePowerUp = Phaser.Math.Between(1, 3) / 2; // 0.5 to 1.5
+
+				// random negative or positive
+				powerUpVelocityX *= Math.random() < 0.5 ? 1 : -1;
+				powerUpVelocityY *= Math.random() < 0.5 ? 1 : -1;
+
+				// create powerup
+				this.powerUp?.setScale(this.scalePowerUp);
+				this.powerUp?.setVelocity(powerUpVelocityX, powerUpVelocityY);
+			}
+		}
+		else
+			this.resetPowerUpState();
+	}
+
+	resetPowerUpState(): void {
+		this.visiblePowerUp = false;
+		if (this.powerUp !== undefined) {
+			this.powerUp.setVisible(false);
+			this.powerUp.setVelocity(0);
+
+			//set back to center
+			this.powerUp.setPosition(this.cameras.main.centerX, this.cameras.main.centerY);
+		}
 		this.runningPowerUp = false;
 	}
 
 	async push_match_stats() {
-		await fetch('http://localhost:3333/auth/login', {
+		await fetch('http://' + serverIP + ':3333/auth/login', {
 			method: 'POST',
 			credentials: 'include',
 		})
 
-		await fetch('http://localhost:3333/profil/match_stats', {
+		await fetch('http://' + serverIP + ':3333/profil/match_stats', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
@@ -653,6 +853,11 @@ export class Part2Scene extends Phaser.Scene {
 		// Reset powerup and stop it
 		this.resetPowerUpState();
 
+		// reset scales
+		this.localPaddle?.setScale(1);
+		this.remotePaddle?.setScale(1);
+		this.ball?.setScale(1);
+
 		// Reset ball and stop it
 		if (this.ball) {
 			this.launchBall();
@@ -678,10 +883,12 @@ export class Part2Scene extends Phaser.Scene {
 	}
 
 	leave(room: Room) {
-		if (room) {
-			// Call the leave method on the room instance
+		// Call the leave method on the room instance
+		if (room)
 			room.leave();
-		}
+
+		// stop timeout
+		this.stopInactivityTimeout();
 	}
 
 	/**
@@ -690,83 +897,99 @@ export class Part2Scene extends Phaser.Scene {
 	 */
 	update(time: number, delta: number): void {
 		// skip loop if not connected with room yet.
-		if (!this.room) { return; }
+		if (this.room === undefined) { return; }
 
-		// Update scores
-		if (this.ball && this.gameHost) {
-			if (this.ball.x > this.cameras.main.width) {
-				this.myScore++;
+		if (this.gameReady) {
+			// Update scores
+			if (this.ball && this.gameHost) {
+				if (this.ball.x > this.cameras.main.width) {
+					this.myScore++;
 
-				// Send score to server
-				this.room.send("hostScore", this.myScore);
-			} else if (this.ball.x < 0) {
-				this.opponentScore++;
+					// Send score to server
+					this.room.send("hostScore", this.myScore);
+				} else if (this.ball.x < 0) {
+					this.opponentScore++;
 
-				// Send score to server
-				this.room.send("clientScore", this.opponentScore);
-			}
-		}
-
-		// Handle scores from server if host
-		if (this.ball && (this.ball.x < 0 || this.ball.x > this.cameras.main.width)) {
-			if (this.myScore >= 3 || this.opponentScore >= 3)
-				this.resetGame(false);
-			else
-				this.launchBall();
-		}
-
-		// Launch powerup
-		if (this.gameHost) {
-			if (this.runningGame && this.gameHost && !this.visiblePowerUp && !this.runningPowerUp) {
-				this.runningPowerUp = true;
-				this.time.delayedCall(3000, () => {
-					this.launchPowerup();
-				});
+					// Send score to server
+					this.room.send("clientScore", this.opponentScore);
+				}
 			}
 
-			if (this.powerUp && (this.powerUp.x < 0 || this.powerUp.x > this.cameras.main.width))
-				this.resetPowerUpState();
-		}
-		// Update input player
-		if (this.inputPayload !== undefined) {
-			// send input to the server if changes to avoid server spamming
-			if ((this.input.y !== undefined) && (this.inputPayload.y !== this.input.y)) {
-				this.inputPayload.y = this.input.y;
-				this.inputPayload.name = this.myName;
-				this.room.send(0, this.inputPayload);
+			// Handle scores from server if host
+			if (this.ball && (this.ball.x < 0 || this.ball.x > this.cameras.main.width)) {
+				if (this.myScore >= 3 || this.opponentScore >= 3)
+					this.resetGame(false);
+				else
+					this.launchBall();
 			}
 
-			// Add linear interpolation if lag effect is visible
-			//https://learn.colyseus.io/phaser/2-linear-interpolation.html
+			// Launch powerup
+			if (this.gameHost) {
+				if (this.runningGame && this.gameHost && !this.visiblePowerUp && !this.runningPowerUp) {
+					this.runningPowerUp = true;
+					this.time.delayedCall(6000, () => {
+						this.launchPowerup();
+					});
+				}
 
-			// Check change state of start button send to server
-			if ((this.startState !== undefined) && (this.inputPayload.start !== this.startState)) {
-				this.inputPayload.start = this.startState;
-				this.room.send("start", this.inputPayload);
-
-				// reset state
-				this.startState = false;
+				if (this.powerUp && (this.powerUp.x < 0 || this.powerUp.x > this.cameras.main.width))
+					this.resetPowerUpState();
 			}
+			// Update input player
+			if (this.inputPayload !== undefined) {
+				// send input to the server if changes to avoid server spamming
+				if ((this.input.y !== undefined) && (this.inputPayload.y !== this.input.y)) {
+					this.inputPayload.y = this.input.y;
+					this.inputPayload.name = this.myName;
+					this.room.send(0, this.inputPayload);
+				}
 
-			// send ball position to server
-			if (this.ball && this.gameHost && (this.inputPayload.ballX !== this.ball.x || this.inputPayload.ballY !== this.ball.y)) {
-				this.inputPayload.ballX = this.ball.x;
-				this.inputPayload.ballY = this.ball.y;
-				this.room.send("ball", this.inputPayload);
-			}
+				// Add linear interpolation if lag effect is visible
+				//https://learn.colyseus.io/phaser/2-linear-interpolation.html
 
-			// send powerup position to server
-			if (this.powerUp && this.gameHost && (this.inputPayload.powerUpX !== this.powerUp.x || this.inputPayload.powerUpY !== this.powerUp.y)) {
-				this.inputPayload.powerUpX = this.powerUp.x;
-				this.inputPayload.powerUpY = this.powerUp.y;
-				this.room.send("powerUp", this.inputPayload);
-			}
+				// Check change state of start button send to server
+				if ((this.startState !== undefined) && (this.inputPayload.start !== this.startState)) {
+					this.inputPayload.start = this.startState;
+					this.room.send("start", this.inputPayload);
 
-			// send powerup position to server
-			if (this.powerUp && this.gameHost && (this.inputPayload.powerupScale !== this.scalePowerUp || this.inputPayload.powerupVisible !== this.visiblePowerUp)) {
-				this.inputPayload.powerupScale = this.scalePowerUp;
-				this.inputPayload.powerupVisible = this.visiblePowerUp;
-				this.room.send("powerUpInfo", this.inputPayload);
+					// reset state
+					this.startState = false;
+				}
+
+				// send ball position to server
+				if (this.ball && this.gameHost && (this.inputPayload.ballX !== this.ball.x || this.inputPayload.ballY !== this.ball.y)) {
+					this.inputPayload.ballX = this.ball.x;
+					this.inputPayload.ballY = this.ball.y;
+					this.room.send("ball", this.inputPayload);
+				}
+
+				// send powerup position to server
+				if (this.powerUp && this.gameHost && (this.inputPayload.powerUpX !== this.powerUp.x || this.inputPayload.powerUpY !== this.powerUp.y)) {
+					this.inputPayload.powerUpX = this.powerUp.x;
+					this.inputPayload.powerUpY = this.powerUp.y;
+					this.room.send("powerUp", this.inputPayload);
+				}
+
+				// send powerup position to server
+				if (this.powerUp && this.gameHost && (this.inputPayload.powerupScale !== this.scalePowerUp || this.inputPayload.powerupVisible !== this.visiblePowerUp)) {
+					this.inputPayload.powerupScale = this.scalePowerUp;
+					this.inputPayload.powerupVisible = this.visiblePowerUp;
+					this.room.send("powerUpInfo", this.inputPayload);
+				}
+
+				// send Local powerup taken state
+				if (this.powerUp && this.gameHost && (this.inputPayload.localPowerupTaken !== this.localPowerupTaken)) {
+					this.inputPayload.localPowerupTaken = this.localPowerupTaken;
+					this.inputPayload.powerType = this.powerType;
+					this.room.send("localPowerupTaken", this.inputPayload);
+				}
+
+				// send Remote powerup taken state
+				if (this.powerUp && this.gameHost && (this.inputPayload.remotePowerupTaken !== this.remotePowerupTaken)) {
+					this.inputPayload.remotePowerupTaken = this.remotePowerupTaken;
+					this.inputPayload.powerType = this.powerType;
+					this.room.send("remotePowerupTaken", this.inputPayload);
+				}
 			}
 		}
 	}

@@ -25,6 +25,9 @@ export class Part2Room extends Room<Part2State> {
 
 			if (input.y)
 				player.y = input.y;
+
+			if (input.name)
+				player.name = input.name;
 		});
 
 		// Handle startButton from player
@@ -82,6 +85,32 @@ export class Part2Room extends Room<Part2State> {
 			this.broadcast("powerUpVisible", powerup.powerupVisible);
 		});
 
+		// remote powerup taken sending local to client (swap position)
+		this.onMessage("localPowerupTaken", (client, info) => {
+			const powerup = this.state.powerups.get(client.sessionId);
+
+			// console.log("localPowerupTaken", position.localPowerupTaken);
+			powerup.localPowerupTaken = info.localPowerupTaken;
+			powerup.powerType = info.powerType;
+
+			// send to all the room
+			this.broadcast("powerTypeFromServer", powerup.powerType);
+			this.broadcast("localPowerupFromServer", powerup.localPowerupTaken);
+		});
+
+		// local powerup taken sending remote to client (swap position)
+		this.onMessage("remotePowerupTaken", (client, info) => {
+			const powerup = this.state.powerups.get(client.sessionId);
+
+			// console.log("remotePowerupTaken", position.remotePowerupTaken);
+			powerup.remotePowerupTaken = info.remotePowerupTaken;
+			powerup.powerType = info.powerType;
+
+			// send to all the room
+			this.broadcast("powerTypeFromServer", powerup.powerType);
+			this.broadcast("remotePowerupFromServer", powerup.remotePowerupTaken);
+		});
+
 		// Handle score for opponent
 		this.onMessage("hostScore", (client, value) => {
 			const score = this.state.scores.get(client.sessionId);
@@ -105,6 +134,7 @@ export class Part2Room extends Room<Part2State> {
 			// send to all the room the score
 			this.broadcast("myScore", score.myScore);
 		});
+
 	}
 
 	onJoin(client: Client, options: any) {
@@ -145,6 +175,9 @@ export class Part2Room extends Room<Part2State> {
 		powerup.powerUpY = this.state.mapHeight / 2;
 		powerup.powerupScale = 1;
 		powerup.powerupVisible = false;
+		powerup.remotePowerupTaken = false;
+		powerup.localPowerupTaken = false;
+		powerup.powerType = 0;
 
 		this.state.powerups.set(client.sessionId, powerup);
 

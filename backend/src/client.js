@@ -1,7 +1,12 @@
+const dotenv = require('dotenv');
+dotenv.config();
+
+const serverIP = process.env.SERVER_IP;
+
 const io = require('socket.io-client');
 
 // URL du serveur Socket.IO
-const serverUrl = 'http://localhost:3333';
+const serverUrl = 'http://' + serverIP + ':3333';
 
 // Connexion au serveur Socket.IO
 const socket = io(serverUrl);

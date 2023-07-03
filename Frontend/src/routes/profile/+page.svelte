@@ -18,6 +18,8 @@
 	let stats = null;
 	let matchHistory = [];
 
+	const serverIP = import.meta.env.VITE_SERVER_IP;
+
 	function formatDate(isoDateString) {
 		const date = new Date(isoDateString);
 		return `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
@@ -25,7 +27,7 @@
 
 	onMount(async () => {
 		async function getUserInfo() {
-			const response = await fetch('http://localhost:3333/profil/me', {
+			const response = await fetch('http://' + serverIP + ':3333/profil/me', {
 				method: 'GET',
 				credentials: 'include'
 			});
@@ -36,12 +38,12 @@
 				myUser = get(user);
 			}
 			const userLogin = myUser.login;
-			const statsResponse = await fetch('http://localhost:3333/social/stats/' + userLogin);
+			const statsResponse = await fetch('http://' + serverIP + ':3333/social/stats/' + userLogin);
 			if (statsResponse.ok) {
 				stats = await statsResponse.json();
 			}
 			const matchHistoryResponse = await fetch(
-				'http://localhost:3333/social/match-history/' + userLogin
+				'http://' + serverIP + ':3333/social/match-history/' + userLogin
 			);
 			if (matchHistoryResponse.ok) {
 				matchHistory = await matchHistoryResponse.json();
@@ -52,7 +54,7 @@
 	async function active_2_fa_auth() {
 		if (checked) checked = false;
 		else checked = true;
-		const response = await fetch('http://localhost:3333/auth/settings', {
+		const response = await fetch('http://' + serverIP + ':3333/auth/settings', {
 			method: 'POST',
 			credentials: 'include',
 			headers: {
@@ -75,7 +77,7 @@
 		const imgData = avatar.split(',');
 		const picture = imgData[1];
 		if (picture) {
-			const response = await fetch('http://localhost:3333/profil/picture', {
+			const response = await fetch('http://' + serverIP + ':3333/profil/picture', {
 				method: 'POST',
 				credentials: 'include',
 				headers: {
@@ -100,7 +102,11 @@
 		username = '';
 	}
 	async function update_username(username: string) {
-		const response = await fetch('http://localhost:3333/profil/username', {
+		if (username.length > 10) {
+			alert('Username should not exceed 10 characters');
+			return; // Exit the function if the limit is exceeded
+		}
+		const response = await fetch('http://' + serverIP + ':3333/profil/username', {
 			method: 'POST',
 			credentials: 'include',
 			headers: {
@@ -199,6 +205,7 @@
 			<thead>
 				<tr>
 					<th>Game Type</th>
+					<th>Result</th>
 					<th>Score</th>
 					<th>Date</th>
 				</tr>
@@ -208,11 +215,13 @@
 					<tr>
 						<td>{match.gameType}</td>
 						<td>
-							{#if match.result === 'win'}
+							{#if match.result === 'Victory'}
 								<p class="result_victory">Victory</p>
 							{:else}
 								<p class="result_defeat">Defeat</p>
 							{/if}
+						</td>
+						<td>
 							{myUser.login} | {match.myScore} - {match.opponentScore} | {match.opponentName}
 						</td>
 						<td>{formatDate(match.timestamp)}</td>
@@ -220,8 +229,6 @@
 				{/each}
 			</tbody>
 		</table>
-	{:else}
-		<p>No match history available</p>
 	{/if}
 </div>
 
@@ -238,10 +245,11 @@
 		display: block;
 		margin-left: auto;
 		margin-right: auto;
-		width: 600px;
-		border-radius: 60px;
-		border: 10px, yellow;
-		/* max-width: 100%; */
+		border-radius: 0 100px 0 100px;
+		width: 500px;
+		border: 4px solid rgb(88, 44, 231);
+		padding: 5px;
+		flex-grow: 1;
 	}
 	.buttons {
 		display: flex;
@@ -271,7 +279,7 @@
 	}
 	.modal {
 		position: fixed;
-		top: 0;
+		top: 0px;
 		left: 0;
 		width: 100%;
 		height: 100%;
@@ -357,16 +365,16 @@
 		font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
 		font-weight: bold;
 		font-size: 25px;
-		margin-top: -5px;
-		margin-bottom: 10px;
+		margin-top: 0px;
+		margin-bottom: 0px;
 	}
 	.result_defeat {
 		color: rgb(147, 46, 21);
 		font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
 		font-weight: bold;
 		font-size: 25px;
-		margin-top: -5px;
-		margin-bottom: 10px;
+		margin-top: 0px;
+		margin-bottom: 0px;
 	}
 	.user_stats {
 		font-size: 40px;

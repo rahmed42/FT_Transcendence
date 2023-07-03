@@ -8,7 +8,9 @@
 .vscode/dryrun.log
 .env
 
-#Tests
-/game
-
+#Temporary files
 node_modules/
+dist/
+.parcel-cache/
+.svelte-kit/
+

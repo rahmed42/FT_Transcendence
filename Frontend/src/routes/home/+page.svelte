@@ -1,7 +1,5 @@
-<!-- Home page content -->
-
 <script lang="ts">
-	import pongAnim from '$lib/images/pongAnim.png';
+	import backgroundHome from '$lib/images/backgroundHome.png';
 </script>
 
 <svelte:head>
@@ -9,35 +7,55 @@
 	<meta name="description" content="Svelte pong app" />
 </svelte:head>
 
-<section>
-	<h1>
-		Welcome to<br /><strong>Ft_Trancendance</strong><br /><br />
-		<span class="pongAnim">
-			<picture>
-				<img src={pongAnim} alt="pongAnim" style="height: 300px; width: auto;" />
-			</picture>
-		</span>
-	</h1>
-</section>
+<ul class="background">
+	<picture>
+		<img src={backgroundHome} alt="backgroundHome" />
+	</picture>
+	<footer>
+		<pre>
+    :::      ::::::::   :::::::::   ::::::::  ::::    :::  ::::::::
+   :+:      :+:    :+:  :+:    :+: :+:    :+: :+:+:   :+: :+:    :+:
+  +:+ +:+         +:+   +:+    +:+ +:+    +:+ :+:+:+  +:+ +:+
+ +#+  +:+       +#+     +#++:++#+  +#+    +:+ +#+ +:+ +#+ :#:
++#+#+#+#+#+   +#+       +#+        +#+    +#+ +#+  +#+#+# +#+   +#+#
+      #+#    #+#        #+#        #+#    #+# #+#   #+#+# #+#    #+#
+      ###   ##########  ###         ########  ###    ####  ########
+		</pre>
+		<center>
+			Made By <strong> ☁️ anggonza 🌟 ddupont 🌟 mmatthie 🌟 rahmed 🌟 tbrandt ☁️ </strong>
+		</center>
+	</footer>
+</ul>
 
 <style>
-	section {
+	img {
+		position: fixed;
+		top: 2em;
+		left: 0;
+		opacity: 0.7;
+		width: 100%;
+		/* height: auto; */
 		display: flex;
-		flex-direction: column;
 		justify-content: center;
 		align-items: center;
-		flex: 0.6;
+		overflow: hidden;
+		z-index: -1;
 	}
-
-	h1 {
-		width: 100%;
+	pre {
+		font-family: 'Courier New', Courier, monospace;
+		font-size: 0.6em;
+		color: white;
 	}
-
-	.pongAnim img {
-		position: static;
-		/* width: 100%;
-		height: 100%; */
-		top: 1;
-		display: inside;
+	footer {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		padding: 12px;
+		position: fixed;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		color: white;
 	}
 </style>

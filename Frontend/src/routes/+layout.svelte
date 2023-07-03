@@ -6,7 +6,7 @@
 	import Particles from 'svelte-particles';
 	import { loadFull } from 'tsparticles';
 
-	import { particlesConfig } from './particles';
+	import { particlesConfig2 } from './particles';
 	import { beforeUpdate } from 'svelte';
 
 	let particlesContainer: any;
@@ -43,43 +43,19 @@
 
 <Particles
 	id="tsparticles"
-	options={particlesConfig}
+	options={particlesConfig2}
 	on:particlesLoaded={onParticlesLoaded}
 	{particlesInit}
 />
 
-<div class="app">
+<div>
 	<Header />
 	<main>
 		<slot />
 	</main>
-
-	<footer>
-		<center>
-			Made By <strong> ☁️ anggonza 🌟 ddupont 🌟 mmatthie 🌟 rahmed 🌟 tbrandt ☁️ </strong>
-		</center>
-		<pre>
-    :::      ::::::::   :::::::::   ::::::::  ::::    :::  ::::::::
-   :+:      :+:    :+:  :+:    :+: :+:    :+: :+:+:   :+: :+:    :+:
-  +:+ +:+         +:+   +:+    +:+ +:+    +:+ :+:+:+  +:+ +:+
- +#+  +:+       +#+     +#++:++#+  +#+    +:+ +#+ +:+ +#+ :#:
-+#+#+#+#+#+   +#+       +#+        +#+    +#+ +#+  +#+#+# +#+   +#+#
-      #+#    #+#        #+#        #+#    #+# #+#   #+#+# #+#    #+#
-      ###   ##########  ###         ########  ###    ####  ########
-</pre>
-	</footer>
 </div>
 
 <style>
-	.app {
-		display: flex;
-		flex-direction: column;
-		position: relative;
-		background: transparent;
-		color: white;
-		overflow: auto;
-	}
-
 	main {
 		flex: 1;
 		display: flex;
@@ -89,13 +65,6 @@
 		max-width: 64rem;
 		margin: 0 auto;
 		box-sizing: border-box;
-	}
-
-	footer {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		padding: 12px;
+		color: white;
 	}
 </style>

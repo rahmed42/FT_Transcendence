@@ -163,10 +163,6 @@ export class SocialService {
   
       const matchHistory = await this.prisma.matchHistory.findMany({ where: { userId: user.id } });
   
-      if (!matchHistory || matchHistory.length === 0) {
-        throw new NotFoundException('No match history available for this user');
-      }
-  
-      return matchHistory;
+      return matchHistory || [];
     }
   }

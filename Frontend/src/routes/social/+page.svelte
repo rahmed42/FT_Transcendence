@@ -1,6 +1,7 @@
 <script>
 	import { notification } from '../../stores/notificationStore.js';
 	import { user } from '../../stores/user';
+	import {goto} from '$app/navigation';
 
     const apiUrl = import.meta.env.VITE_API_URL;
 
@@ -9,7 +10,7 @@
 	let requesteeLogin;
 	let friendRequestModalOpen = false;
   	let requesteeLoginModal = '';
-  
+
 	// Reactive statement that triggers when $user.login changes
 	$: {
 		if ($user.login) {
@@ -21,35 +22,35 @@
 		pendingRequests = await getFriendRequests($user.login);
 		friends = await getFriendList($user.login);
 	}
-  
+
 	async function getFriendRequests(userLogin) {
 	  const res = await fetch(`${apiUrl}/social/friend-requests/${userLogin}`);
 	  return await res.json();
 	}
-  
+
 	async function acceptFriendRequest(id) {
 	  await fetch(`${apiUrl}/social/friend-request/${id}/accept`, { method: 'PATCH' });
 	  await refreshData();
 	}
-  
+
 	async function rejectFriendRequest(id) {
 	  await fetch(`${apiUrl}/social/friend/${id}`, { method: 'DELETE' });
 	  await refreshData();
 	}
-  
+
 	async function getFriendList(userLogin) {
 	  const res = await fetch(`${apiUrl}/social/friend-list/${userLogin}`);
 	  return await res.json();
 	}
-  
+
 	async function sendFriendRequest() {
 	  const res = await fetch(`${apiUrl}/social/friend-request`, {
-		method: 'POST', 
+		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify({ requesterLogin: $user.login, requesteeLogin }) 
+		body: JSON.stringify({ requesterLogin: $user.login, requesteeLogin })
 	  });
-	  
-	  if (res.ok) { 
+
+	  if (res.ok) {
 		notification.set('Friend request sent successfully!');
 		setTimeout(() => {
     		notification.set('');
@@ -83,6 +84,23 @@
 		await sendFriendRequest();
 		closeFriendRequestModal();
 	}
+
+	async function inviteFriendOriginal() {
+		console.log('Original Seeker Launched');
+		goto('/game');
+
+		// ADD send request to friend logic
+
+	}
+	async function inviteFriendModern() {
+		console.log('Modern Seeker Launched');
+		// window.location.href = '/game';
+		goto('/game');
+
+		// ADD send request to friend logic
+
+	}
+
 </script>
 
 <section>
@@ -115,7 +133,7 @@
 		{/each}
 	</div>
 </section>
-  
+
 <section>
 	<h2 class="section-heading">Your friends</h2>
 	<div class="friends-container">
@@ -127,11 +145,16 @@
 			<p class="status">
 				<span class={`status-circle ${friend.friend.status}`}></span>
 				{friend.friend.status === 'login' ? 'Connected' : friend.friend.status === 'logout' ? 'Disconnected' : 'In Game'}
-			</p>				
+			</p>
 			<a href={`/profile/info/?login=${friend.friend.login}`} class="friend-button">View Profile</a>
 		</div>
 		{/each}
 	</div>
+	<p>
+		Invite a friend to play with you :
+		<button on:click={inviteFriendOriginal}>Original</button>
+		<button on:click={inviteFriendModern}>Modern</button>
+	</p>
 </section>
 
 <style>
@@ -273,5 +296,14 @@
 	.status-circle.ingame {
 		background-color: yellow;
 		animation: blink 1s infinite;
+	}
+	button {
+		background-color: #007fff;
+		color: #fff;
+		font-size: 1.2rem;
+		padding: 1rem 2rem;
+		border: none;
+		border-radius: 15px;
+		cursor: pointer;
 	}
 </style>
