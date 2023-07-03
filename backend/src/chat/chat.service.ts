@@ -438,6 +438,11 @@ export class ChatService {
             select: {
                 name: true,
                 ownerId: true,
+				invitedUsers : {
+					select : {
+						login : true,
+					},
+				},
                 users: {
                     select: {
                         first_name: true,
