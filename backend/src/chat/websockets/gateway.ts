@@ -88,8 +88,8 @@ export class Gateway implements OnModuleInit {
             roomName: roomName,
         })
     }
-    async sendPrivateMessage(idSender: number, loginReceiver: string, content: string) {
-        if (!idSender || !loginReceiver || !content)
+    async sendPrivateMessage(roomName : string, idSender: number, loginReceiver: string, content: string) {
+        if (!roomName || !idSender || !loginReceiver || !content)
 			return ;
 		const user = await this.prisma.user.findFirst({
             where : {
@@ -106,23 +106,30 @@ export class Gateway implements OnModuleInit {
         if (!userReceiver)
             return ;
         // find private room where users are idSender and userReceiver.id
-        const privateRoom = await this.prisma.privateRoom.findFirst({
-            where : {
-                users: {
-                    every: {
-                        id: {
-                            in: [idSender, userReceiver.id],
-                        },
-                    },
-                },
-            },
-        });
-        if (!privateRoom)
-        {
-            await this.chatService.createPrivateRoom({idUser : idSender, loginReceiver: loginReceiver })
-        }
+		const isBlocked = await this.prisma.user.findFirst({
+			where : {
+				id: idSender,
+				blockedUsers: {
+					some: {
+						login: loginReceiver,
+					}
+				}
+			},
+		})
+		const hasBlocked = await this.prisma.user.findFirst({
+			where : {
+				id: userReceiver.id,
+				blockedUsers: {
+					some: {
+						login: user.login,
+					}
+				}
+			},
+		})
+		if (hasBlocked || isBlocked)
+			return ;
         this.chatService.addMessageToPrivateRoom({idSender: idSender, loginReceiver: loginReceiver, content: content})
-        this.server.to(userReceiver.id.toString()).emit('newPrivateMessage', {
+        this.server.to(roomName).emit('newPrivateMessage', {
             content: content,
             nameSender: user.login,
         })
@@ -138,7 +145,7 @@ export class Gateway implements OnModuleInit {
         else if (body.type == "private")
         {
             body = body as PrivateMessageDto;
-            this.sendPrivateMessage(body.idSender, body.loginReceiver, body.content)
+            this.sendPrivateMessage(body.roomName, body.idSender, body.loginReceiver, body.content)
         }
 		else
 			return ;
@@ -146,7 +153,8 @@ export class Gateway implements OnModuleInit {
     @SubscribeMessage("joinRoom")
     handleJoinRoom(@MessageBody() body: {roomName: string})
     {
-        this.server.socketsJoin(body.roomName);
+		console.log("joinRoom : ", body.roomName)
+		this.server.socketsJoin(body.roomName);
     }
     @SubscribeMessage("leaveRoom")
     handleLeaveRoom(@MessageBody() body: {roomName: string})

@@ -116,17 +116,13 @@
   });
 
   socket.on('newPrivateMessage', (data: {content: string, nameSender: string}) => {
-    if (selectedPrivateChannel) {
-      if (data.nameSender === selectedPrivateChannel) {
-        messages = [...messages, { username: data.nameSender, content: data.content, user: false }];
-        return ;
-      }
+
+	if (selectedPrivateChannel) {
+      	if (data.nameSender == selectedPrivateChannel) {
+			messages = [...messages, { username: data.nameSender, content: data.content, user: true }];
+			return ;
+    	}
     }
-    if ((blockList) && !(data.nameSender === login) && data.nameSender === selectedPrivateChannel) {
-      console.log("Message IS BLOCKEEEEEEEEED");
-      return;
-    }
-    messages = [...messages, { username: data.nameSender, content: data.content, user: false }];
   });
 
   socket.on('newRoomMessage', (data: { content: string, nameSender: string, roomName: string }) => {
@@ -138,7 +134,7 @@
           return;
         else
         {
-          messages = [...messages, { username: data.nameSender, content: data.content, user: false }];
+          messages = [...messages, { username: data.nameSender, content: data.content, user: true }];
           return ;
         }
       }
@@ -747,21 +743,19 @@ function closeSetupModal() {
   if (!response.ok)
   {
     const data = await response.json();
-	  console.log("Error : ", data)
-	  throw new Error(data.message);
+	console.log("Error : ", data)
+	alert(data.message);
   }
   else if (response.ok)
   {
     const newChannel = await response.json();
     console.log("New channel : ", newChannel);
-    socket.emit('joinRoom', { roomName: newChannel.id });
+    socket.emit('joinRoom', { roomName: newChannel.id.id });
     socket.emit('newMessage', { idSender: userID, roomName : newChannel.id, loginReceiver: loginToSend, content: contentMessage, type: "private" });
-    privateId = newChannel.id;
-    messages = [...messages, { username: login, content: contentMessage, user: false }];
-	  privateList.update(privateList => [...privateList, { login: newChannel.users[0].login }]);
+    privateId = newChannel.id.id;
+	privateList.update(privateList => [...privateList, { login: newChannel.login}]);
     recipientName = '';
     messageContent = '';
-    alert(newChannel.message);
   }
 }
 
@@ -783,7 +777,7 @@ function closeSetupModal() {
       let loginToSend = selectedPrivateChannel;
       socket.emit('joinRoom', { roomName: privateId });
       socket.emit('newMessage', { idSender: userID, roomName: privateId, loginReceiver: loginToSend, content: messageInput, type: "private" });
-      messages = [...messages, { username: login, content: messageInput, user: true}];
+      messages = [...messages, { username: login, content: messageInput, user: false}];
       messageInput = '';
     }
   }
@@ -1043,13 +1037,14 @@ async function getChannel(channel: string) {
     async function getPrivateChannel(Channel: string) {
     selectedChannel = '';
     selectedPrivateChannel = Channel;
-  const response = await fetch('http://localhost:3333/chat/privateRooms/' + Channel, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: 'Bearer ' + token,
-    },
-  });
+	console.log("selectedPrivateChannel : ", selectedPrivateChannel);
+  	const response = await fetch('http://localhost:3333/chat/privateRooms/' + selectedPrivateChannel, {
+		method: 'GET',
+		headers: {
+		'Content-Type': 'application/json',
+		Authorization: 'Bearer ' + token,
+		},
+	});
   if (response.ok) {
     const data = await response.json();
     if (data && data.messages) {
@@ -1416,7 +1411,7 @@ async function leaveRoom()
       </div>
     </div>
   <div class="user-list">
-    <h3 class="user-list-title">User List</h3>
+    <h3 class="user-list-title">Member</h3>
     <button class="user-button p-anim" on:click={() => openInvitationModal()}>
       Invitation
     </button>

@@ -1333,6 +1333,34 @@ export class ChatService {
         {
             throw new BadRequestException('User who try to send message does not exist');
         }
+		const hasBlocked = await this.prisma.user.findFirst({
+			where: {
+				id: user2.id,
+				blockedUsers: {
+					some: {
+						id: body.idUser,
+					},
+				},
+			},
+		});
+		const isBlocked = await this.prisma.user.findFirst({
+			where: {
+				id: body.idUser,
+				blockedUsers: {
+					some: {
+						id: user2.id,
+					},
+				},
+			},
+		});
+		if (hasBlocked)
+		{
+			throw new BadRequestException('User has blocked you');
+		}
+		if (isBlocked)
+		{
+			throw new BadRequestException('User is blocked');
+		}
         const privateRoom = await this.prisma.privateRoom.create({
             data : {
                 id: uniqueId,
@@ -1372,7 +1400,15 @@ export class ChatService {
                 },
             },
         });
-        return { message: "Private room successfully created" }
+		const id = await this.prisma.privateRoom.findFirst({
+			where: {
+				id: uniqueId,
+			},
+			select : {
+				id : true,
+			}
+		});
+        return ({login : body.loginReceiver, id : id});
     }
     async addMessageToPrivateRoom(body : PrivateChatDtoCreateMessage)
     {
@@ -1565,6 +1601,7 @@ export class ChatService {
 				},
 			},
 			select : {
+					id : true,
 					users: {
 						where : {
 							login : {
@@ -1574,7 +1611,17 @@ export class ChatService {
 						select : {
 							login : true,
 						}
-					}
+					},
+					messages: {
+						select: {
+							content: true,
+							sender: {
+								select: {
+									login: true,
+								},
+							},
+						},
+					},
 			},
 		});
         if (!privateRoom)
