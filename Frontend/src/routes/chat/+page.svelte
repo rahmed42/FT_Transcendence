@@ -17,8 +17,8 @@
   let isInvitationModalOpen = false;
   let selectedInvitation = '';
   let inviteUser = '';
-  
-  
+
+
   //admin modal
   let isUserModalOpen = false;
   let openAdminModal = false;
@@ -73,7 +73,7 @@
   let socket: any;
   let myCookie: any;
   let privateId : any;
-  
+
   onMount(async () => {
     function getCookie(name: string) {
       const value = `; ${document.cookie}`;
@@ -110,11 +110,11 @@
   socket.on('connect', () => {
     console.log('connected');
   });
-  
+
   socket.on('disconnect', () => {
     console.log('disconnected');
   });
-  
+
   socket.on('newPrivateMessage', (data: {content: string, nameSender: string}) => {
     if (selectedPrivateChannel) {
       if (data.nameSender === selectedPrivateChannel) {
@@ -194,7 +194,7 @@
     const data = await response.json();
     throw new Error(data.message);
   }
-  
+
   // Fetch all the private rooms
   const response2 = await fetch('http://localhost:3333/chat/privateRooms', {
     method: 'GET',
@@ -204,7 +204,7 @@
     },
     credentials: 'include',
   });
-  
+
   if (response2.ok) {
     const data = await response2.json();
     if (data && data[0]) {
@@ -253,7 +253,7 @@ function openInvitationModal() {
   privateMessageError = '';
 }
 
-  async function changeUserPassword(newPassword: string) 
+  async function changeUserPassword(newPassword: string)
   {
     try
     {
@@ -285,7 +285,7 @@ function openInvitationModal() {
     }
   }
 
-async function grantUserAdmin() 
+async function grantUserAdmin()
 {
   try
   {
@@ -309,14 +309,14 @@ async function grantUserAdmin()
     {
       const data = await response.json();
       adminList.set(data.administrators);
-      //need to change the state of the other user (websocket) 
+      //need to change the state of the other user (websocket)
       throw new Error(data.message);
     }
   }
   catch (err) {
     if (err instanceof Error)
       alert(err.message);
-  }     
+  }
 }
 
 async function expulSelectedUser() {
@@ -381,7 +381,7 @@ async function banSelectedUser() {
   catch (err) {
     if (err instanceof Error)
       alert(err.message);
-  } 
+  }
 }
 
 async function unmuteUser() {
@@ -512,7 +512,7 @@ async function changeChannelType() {
   catch (err) {
     if (err instanceof Error)
       alert(err.message);
-  } 
+  }
 }
 
 async function muteSelectedUser(muteDuration: number) {
@@ -546,7 +546,7 @@ async function muteSelectedUser(muteDuration: number) {
   catch (err) {
     if (err instanceof Error)
       alert(err.message);
-  } 
+  }
 }
 
 function closeSetupModal() {
@@ -665,7 +665,7 @@ function closeSetupModal() {
 
   async function joinChannel()
   {
-    try 
+    try
     {
       if (joinChannelName.trim() !== '' &&
         joinChannelName.length <= 10 &&
@@ -701,13 +701,13 @@ function closeSetupModal() {
               password: joinChannelPassword,
             }),
           });
-          if (!response.ok) 
+          if (!response.ok)
           {
             const data = await response.json();
             closeJoinModal();
             throw new Error(data.message);
           }
-          else if (response.ok) 
+          else if (response.ok)
           {
             const newChannel = await response.json();
             channelList.update(channelList => [...channelList, { name: newChannel.room.name }]);
@@ -727,7 +727,7 @@ function closeSetupModal() {
         alert(err.message);
     }
   }
-  
+
   async function sendPrivateMessage() {
 	let loginToSend = recipientName;
 	let contentMessage = messageContent;
@@ -776,7 +776,7 @@ function closeSetupModal() {
     if (selectedChannel !== '') {
       let roomName = selectedChannel;
       socket.emit('newMessage', { roomName: roomName, content: messageInput, idSender: userID, type: "room" });
-      messages = [...messages, { username: login, content: messageInput, user: true}];
+      messages = [...messages, { username: login, content: messageInput, user: false}];
       messageInput = '';
     }
     else if (selectedPrivateChannel !== '') {
@@ -884,7 +884,7 @@ async function getChannel(channel: string) {
         }
     }
 }
-  
+
     async function getProfile() {
     try {
       const response = await fetch('http://localhost:3333/chat/profile/' + selectedUserparam, {
@@ -1188,7 +1188,7 @@ async function leaveRoom()
         <label>
           <input type="radio" value="protected" id="protected" name="channelType" bind:group={newChannelType} /> Protected
         </label>
-    
+
         {#if newChannelType === 'protected'}
           <input bind:value={newPassword} type="password" id="channelPassword" placeholder="Password" name = NewPassword />
         {/if}
@@ -1406,11 +1406,11 @@ async function leaveRoom()
       {/each}
     </div>
     <div class="input-area">
-      <input bind:value={messageInput} 
-        on:keydown={checkForEnter} 
-        type="text" 
-        placeholder="Type here..." 
-        id="test" 
+      <input bind:value={messageInput}
+        on:keydown={checkForEnter}
+        type="text"
+        placeholder="Type here..."
+        id="test"
         name="messageInput"/>
         <button on:click={sendMessage}>Send</button>
       </div>
@@ -1482,7 +1482,7 @@ async function leaveRoom()
 <style>
   .container {
     display: flex;
-    margin-top: 10px; 
+    margin-top: 10px;
   }
 
   .sidebar {
@@ -1643,9 +1643,9 @@ async function leaveRoom()
     color: #EDA11A;
   }
 
-  
+
   @media screen and (max-width: 600px) {
-  .container 
+  .container
   {
     flex-direction: column;
     margin: 10px;
