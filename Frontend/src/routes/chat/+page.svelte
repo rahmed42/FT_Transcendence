@@ -944,7 +944,7 @@ async function inviteGame() {
 			body: JSON.stringify({
 				myLogin: login,
 				guestLogin: loginUserToExecute,
-				gameType: joinGameType;
+				gameType: joinGameType,
 			}),
 		});
 	}
