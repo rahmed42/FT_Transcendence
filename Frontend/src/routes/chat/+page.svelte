@@ -116,22 +116,33 @@
   });
   
   socket.on('newPrivateMessage', (data: {content: string, nameSender: string}) => {
+    if (selectedPrivateChannel) {
+      if (data.nameSender === selectedPrivateChannel) {
+        messages = [...messages, { username: data.nameSender, content: data.content, user: false }];
+        return ;
+      }
+    }
     if ((blockList) && !(data.nameSender === login) && data.nameSender === selectedPrivateChannel) {
       console.log("Message IS BLOCKEEEEEEEEED");
       return;
     }
-    messages = [...messages, { username: data.nameSender, content: data.content, user: true }];
+    messages = [...messages, { username: data.nameSender, content: data.content, user: false }];
   });
 
   socket.on('newRoomMessage', (data: { content: string, nameSender: string, roomName: string }) => {
-    if (data.nameSender === login) {
-    return;
-    }
-    if ((blockList) && !(data.nameSender === login) && data.nameSender === selectedChannel) {
-      console.log("Message IS BLOCKEEEEEEEEED");
+    if ((blockList) && !(data.nameSender === login) && data.nameSender === selectedChannel)
       return;
+    if (selectedChannel) {
+      if (data.roomName === selectedChannel) {
+        if (data.nameSender === login)
+          return;
+        else
+        {
+          messages = [...messages, { username: data.nameSender, content: data.content, user: false }];
+          return ;
+        }
+      }
     }
-    messages = [...messages, { username: data.nameSender, content: data.content, user: true }];
   });
 
   async function getUserinfo() {
@@ -205,6 +216,12 @@
   }
 });
 
+function checkForEnter(event: KeyboardEvent) {
+    // KeyCode 13 correspond à la touche "Entrée"
+    if (event.key === 'Enter') {
+      sendMessage();
+    }
+  }
 
 function refreshList() {
   userList.set([]);
@@ -759,14 +776,14 @@ function closeSetupModal() {
     if (selectedChannel !== '') {
       let roomName = selectedChannel;
       socket.emit('newMessage', { roomName: roomName, content: messageInput, idSender: userID, type: "room" });
-      messages = [...messages, { username: login, content: messageInput, user: false }];
+      messages = [...messages, { username: login, content: messageInput, user: true}];
       messageInput = '';
     }
     else if (selectedPrivateChannel !== '') {
       let loginToSend = selectedPrivateChannel;
       socket.emit('joinRoom', { roomName: privateId });
       socket.emit('newMessage', { idSender: userID, roomName: privateId, loginReceiver: loginToSend, content: messageInput, type: "private" });
-      messages = [...messages, { username: login, content: messageInput, user: false }];
+      messages = [...messages, { username: login, content: messageInput, user: true}];
       messageInput = '';
     }
   }
@@ -1389,10 +1406,15 @@ async function leaveRoom()
       {/each}
     </div>
     <div class="input-area">
-      <input bind:value={messageInput} type="text" placeholder="Type here..." id = test name = "messageInput"/>
-      <button on:click={sendMessage}>Send</button>
+      <input bind:value={messageInput} 
+        on:keydown={checkForEnter} 
+        type="text" 
+        placeholder="Type here..." 
+        id="test" 
+        name="messageInput"/>
+        <button on:click={sendMessage}>Send</button>
+      </div>
     </div>
-  </div>
   <div class="user-list">
     <h3 class="user-list-title">User List</h3>
     <button class="user-button p-anim" on:click={() => openInvitationModal()}>
