@@ -30,11 +30,11 @@
 		await loadFull(main);
 	};
 
-	// Top stop particles on game page for ressources
+	// To stop particles on game/chat page
 	beforeUpdate(() => {
 		if (!particlesContainer)
 			return;
-		if (window.location.pathname === '/game')
+		if (window.location.pathname === '/game' || window.location.pathname === '/chat')
 			particlesContainer.stop();
 		else
 			particlesContainer.start();

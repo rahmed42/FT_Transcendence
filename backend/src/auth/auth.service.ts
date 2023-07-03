@@ -35,7 +35,7 @@ export class AuthService {
             // Get the Token of the 42 API response
             const token = response.data.access_token;
             // Make a GET request to the API to trade Token VS User Informations
-            const data = await axios.get("https://api.intra.42.fr/v2/me", { 
+            const data = await axios.get("https://api.intra.42.fr/v2/me", {
                 headers: { 'Authorization': 'Bearer ' + token },
             });
             // Stock all the informations in a user object
@@ -96,7 +96,7 @@ export class AuthService {
     }
     async loginUser(tokenObject: {jwt: string}) {
         const user = await this.jwt.decode(tokenObject.jwt);
-        if (typeof user === 'object')
+        if (typeof user === 'object' && user.id !== null)
         {
             await this.prisma.user.update({
                 where : {
@@ -110,7 +110,7 @@ export class AuthService {
     }
     async logoutUser(tokenObject: { jwt: string }) {
         const user = await this.jwt.decode(tokenObject.jwt);
-        if (typeof user === 'object') {
+        if (typeof user === 'object' && user.id !== null) {
             await this.prisma.user.update({
                 where: {
                     id: user.id
@@ -123,7 +123,7 @@ export class AuthService {
     }
     async inGameUser(tokenObject: { jwt: string }) {
         const user = await this.jwt.decode(tokenObject.jwt);
-        if (typeof user === 'object') {
+        if (typeof user === 'object' && user.id !== null) {
             await this.prisma.user.update({
                 where: {
                     id: user.id
@@ -138,7 +138,7 @@ export class AuthService {
     // if the User want 2fa on his account, update a variable in his User Model
     async push_settings(body: any, tokenObject: { jwt: string }) {
         const user = await this.jwt.decode(tokenObject.jwt);
-        if (typeof user === 'object')
+        if (typeof user === 'object' && user.id !== null)
         await this.prisma.user.update({
             where: {
                 id: user.id,
@@ -150,7 +150,7 @@ export class AuthService {
     }
     async check_secret(tokenObject: {jwt: string}) {
         const user = await this.jwt.decode(tokenObject.jwt);
-        if (typeof user === 'object') {
+        if (typeof user === 'object' && user.id !== null) {
             const check = await this.prisma.user.findUnique({
                 where: {
                     id: user.id,
@@ -165,7 +165,7 @@ export class AuthService {
     async generate_secret(tokenObject: {jwt: string}) {
         const user = await this.jwt.decode(tokenObject.jwt);
         const secret = authenticator.generateSecret();
-        if (typeof user === 'object') {
+        if (typeof user === 'object' && user.id !== null) {
             await this.prisma.user.update({
                 where: {
                     id: user.id,
@@ -187,7 +187,7 @@ export class AuthService {
     async isCodeValid(code: string, tokenObject: {jwt: string}) {
         let newUser;
         const user = await this.jwt.decode(tokenObject.jwt);
-        if (typeof user === 'object') {
+        if (typeof user === 'object' && user.id !== null) {
             newUser = await this.prisma.user.findUnique({
                 where: {
                     id : user.id,
@@ -203,7 +203,7 @@ export class AuthService {
     }
     async get_2fa_info(tokenObject: {jwt : string}) {
         const decode = await this.jwt.decode(tokenObject.jwt);
-        if (typeof decode === 'object')
+        if (typeof decode === 'object' && decode.id !== null)
         {
             const user  = await this.prisma.user.findUnique({
                 where: {
