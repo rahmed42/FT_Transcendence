@@ -6,6 +6,8 @@
   import io from 'socket.io-client';
   import {goto} from '$app/navigation';
 
+const serverIP = import.meta.env.VITE_SERVER_IP;
+
   let messageInput = '';
   interface Message {
     content: string;
@@ -18,7 +20,6 @@
   let isInvitationModalOpen = false;
   let selectedInvitation = '';
   let inviteUser = '';
-
 
   //admin modal
   let isUserModalOpen = false;
@@ -54,6 +55,7 @@
   let newChannelPassword = '';
   let joinChannelName = '';
   let joinChannelType = '';
+  let joinGameType = 'Original';
   let joinChannelPassword = '';
   let userID = 0;
   let token = '';
@@ -84,13 +86,13 @@
       }
     }
     myCookie = getCookie('jwt');
-    socket = io('http://localhost:3333', {
+    socket = io('http://' + serverIP + ':3333', {
       transports: ['websocket'],
       auth: {
         token: myCookie,
       },
     });
-    /*const resp = await fetch('http://localhost:3333/chat/blockedUsers', {
+    /*const resp = await fetch('http://' + serverIP + ':3333/chat/blockedUsers', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -140,7 +142,7 @@
 
   async function getUserinfo() {
     try {
-      const response = await fetch('http://localhost:3333/profil/me', {
+      const response = await fetch('http://' + serverIP + ':3333/profil/me', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -168,7 +170,7 @@
   await getUserinfo();
 
   // Fetch all the rooms
-  const response = await fetch('http://localhost:3333/chat/rooms', {
+  const response = await fetch('http://' + serverIP + ':3333/chat/rooms', {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -189,7 +191,7 @@
   }
 
   // Fetch all the private rooms
-  const response2 = await fetch('http://localhost:3333/chat/privateRooms', {
+  const response2 = await fetch('http://' + serverIP + ':3333/chat/privateRooms', {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -244,7 +246,7 @@ function openInvitationModal() {
   {
     try
     {
-      const response = await fetch("http://localhost:3333/chat/changePassword", {
+      const response = await fetch("http://' + serverIP + ':3333/chat/changePassword", {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -276,7 +278,7 @@ async function grantUserAdmin()
 {
   try
   {
-    const response = await fetch("http://localhost:3333/chat/giveAdmin", {
+    const response = await fetch("http://' + serverIP + ':3333/chat/giveAdmin", {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -308,7 +310,7 @@ async function grantUserAdmin()
 
 async function expulSelectedUser() {
   try {
-    const response = await fetch("http://localhost:3333/chat/kickUser", {
+    const response = await fetch("http://' + serverIP + ':3333/chat/kickUser", {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -342,7 +344,7 @@ async function expulSelectedUser() {
 async function banSelectedUser() {
   try
   {
-    const response = await fetch("http://localhost:3333/chat/banUser", {
+    const response = await fetch("http://' + serverIP + ':3333/chat/banUser", {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -374,7 +376,7 @@ async function banSelectedUser() {
 async function unmuteUser() {
   try
   {
-    const response = await fetch("http://localhost:3333/chat/unmuteUser", {
+    const response = await fetch("http://' + serverIP + ':3333/chat/unmuteUser", {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -408,7 +410,7 @@ async function unmuteUser() {
 
 async function revokeAdmin() {
     try {
-        const response = await fetch("http://localhost:3333/chat/removeAdmin", {
+        const response = await fetch("http://' + serverIP + ':3333/chat/removeAdmin", {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -442,7 +444,7 @@ async function revokeAdmin() {
 
 async function unbanUser() {
     try {
-        const response = await fetch("http://localhost:3333/chat/unbanUser", {
+        const response = await fetch("http://' + serverIP + ':3333/chat/unbanUser", {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -473,7 +475,7 @@ async function unbanUser() {
 async function changeChannelType() {
   try
   {
-    const response = await fetch("http://localhost:3333/chat/changeRoomType", {
+    const response = await fetch("http://' + serverIP + ':3333/chat/changeRoomType", {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -505,7 +507,7 @@ async function changeChannelType() {
 async function muteSelectedUser(muteDuration: number) {
   try
   {
-    const response = await fetch("http://localhost:3333/chat/muteUser", {
+    const response = await fetch("http://' + serverIP + ':3333/chat/muteUser", {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -593,7 +595,7 @@ function closeSetupModal() {
               return;
             }
           }
-          const response = await fetch('http://localhost:3333/chat/createRoom', {
+          const response = await fetch('http://' + serverIP + ':3333/chat/createRoom', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -674,7 +676,7 @@ function closeSetupModal() {
               }
             }
           }
-          const response = await fetch('http://localhost:3333/chat/joinRoom',
+          const response = await fetch('http://' + serverIP + ':3333/chat/joinRoom',
           {
             method: 'POST',
             headers:
@@ -720,7 +722,7 @@ function closeSetupModal() {
 	let contentMessage = messageContent;
   closePrivateMessageModal();
 	// await new Promise(r => setTimeout(r, 1000));
-  const response = await fetch('http://localhost:3333/chat/createPrivateRoom', {
+  const response = await fetch('http://' + serverIP + ':3333/chat/createPrivateRoom', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -826,7 +828,7 @@ async function getChannel(channel: string) {
     try {
         selectedChannel = channel;
         selectedPrivateChannel = '';
-        const response = await fetch('http://localhost:3333/chat/rooms/' + selectedChannel, {
+        const response = await fetch('http://' + serverIP + ':3333/chat/rooms/' + selectedChannel, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -876,7 +878,7 @@ async function getChannel(channel: string) {
 
     async function getProfile() {
     try {
-      const response = await fetch('http://localhost:3333/chat/profile/' + selectedUserparam, {
+      const response = await fetch('http://' + serverIP + ':3333/chat/profile/' + selectedUserparam, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -898,7 +900,7 @@ async function getChannel(channel: string) {
   }
   async function inviteUsr(inviteUser: string){
     try {
-      const response = await fetch('http://localhost:3333/chat/inviteUser/', {
+      const response = await fetch('http://' + serverIP + ':3333/chat/inviteUser/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -932,7 +934,9 @@ async function getChannel(channel: string) {
 
   async function inviteGame() {
     try {
-      const response = await fetch('http://localhost:3333/chat/inviteGame/' + selectedUserparam, {
+		console.log("INVITE GAME : " + joinGameType);
+
+      const response = await fetch('http://' + serverIP + ':3333/chat/inviteGame/' + joinGameType, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -956,7 +960,7 @@ async function getChannel(channel: string) {
   async function unblockUser() {
   try
   {
-    const response = await fetch('http://localhost:3333/chat/unblockUser', {
+    const response = await fetch('http://' + serverIP + ':3333/chat/unblockUser', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -974,7 +978,7 @@ async function getChannel(channel: string) {
       const newProfile = await response.json();
       alert("User unblocked");
     }
-    const resp = await fetch('http://localhost:3333/chat/blockedUsers', {
+    const resp = await fetch('http://' + serverIP + ':3333/chat/blockedUsers', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -999,7 +1003,7 @@ async function getChannel(channel: string) {
 
   async function blockUser() {
     try {
-      const response = await fetch('http://localhost:3333/chat/blockUser', {
+      const response = await fetch('http://' + serverIP + ':3333/chat/blockUser', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1032,7 +1036,7 @@ async function getChannel(channel: string) {
     async function getPrivateChannel(Channel: string) {
     selectedChannel = '';
     selectedPrivateChannel = Channel;
-  const response = await fetch('http://localhost:3333/chat/privateRooms/' + Channel, {
+  const response = await fetch('http://' + serverIP + ':3333/chat/privateRooms/' + Channel, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -1081,7 +1085,7 @@ async function leaveRoom()
 {
   try
   {
-    const response = await fetch('http://localhost:3333/chat/leaveRoom', {
+    const response = await fetch('http://' + serverIP + ':3333/chat/leaveRoom', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -1148,17 +1152,26 @@ async function leaveRoom()
 {/if}
 
 {#if isUserModalOpen}
-  <div class="modal">
-    <div class="modal-content">
-      <h3>User Options</h3>
-      <button on:click={getProfile}>Profil</button>
-      <button on:click={inviteGame}>Invite Game</button>
-      <button on:click={blockUser}>Block</button>
-      <button on:click={unblockUser}>Unblock</button>
-      <button on:click={closeUserModal}>Close</button>
-    </div>
-  </div>
+<div class="modal">
+	<div class="modal-content">
+	  <h3>User Options</h3>
+	  <div>
+		<button on:click={getProfile}>Profile</button>
+		<button on:click={blockUser}>Block</button>
+		<button on:click={unblockUser}>Unblock</button>
+		<button on:click={closeUserModal}>Close</button>
+	  </div>
+	  <div>
+	  	<button on:click={inviteGame}>Invite Game</button>
+		<input type="radio" value="Original" id="Original" name="gameType" bind:group={joinGameType} checked />
+		<label for="Original">Original</label>
+		<input type="radio" value="Modern" id="Modern" name="gameType" bind:group={joinGameType} />
+		<label for="Modern">Modern</label>
+	  </div>
+	</div>
+</div>
 {/if}
+
 
 {#if openAdminModal}
   <div class="modal">
@@ -1555,9 +1568,17 @@ async function leaveRoom()
   }
 
   .modal-content {
-    background-color: #5446da;
-    padding: 20px;
-    border-radius: 4px;
+    /* background-color: #5446da; */
+	background: linear-gradient(to bottom, #4bc3ff, #2b0bbc);
+    padding: 10px;
+    border-radius: 5px;
+	text-align: center;
+}
+
+.modal-content h3 {
+	margin-top: 0;
+	margin-bottom: 10px;
+	font-size: 2em;
   }
 
   .channel-type {
