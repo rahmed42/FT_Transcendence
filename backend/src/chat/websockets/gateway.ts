@@ -15,7 +15,7 @@ export class Gateway implements OnModuleInit {
 
     onModuleInit() {
         this.server.on('connection', (socket) => {
-			console.log("New connection from socket io ", socket.id)
+			return ;
 		});
     }
 
@@ -130,7 +130,6 @@ export class Gateway implements OnModuleInit {
 
     @SubscribeMessage("newMessage")
     handleMessage(@MessageBody() body: any) {
-        console.log("new message received ", body)
 		if (body.type == "room")
         {
             body = body as RoomMessageDto;

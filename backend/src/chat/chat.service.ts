@@ -462,7 +462,7 @@ export class ChatService {
                 },
                 messages: {
                     select: {
-                        id: true,
+						senderLogin : true,
                         content: true,
                     },
                 },
