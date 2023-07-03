@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { ChatDtoAdminOperation, ChatDtoBlockUser, ChatDtoCreateRoom, ChatDtoGetRoom, ChatDtoJoinRoom, PrivateChatDtoCreateMessage, PrivateChatDtoCreateRoom } from './dto';
+import { ChatDtoAdminOperation, ChatDtoBlockUser, ChatDtoCreateMessage, ChatDtoCreateRoom, ChatDtoGetRoom, ChatDtoJoinRoom, PrivateChatDtoCreateMessage, PrivateChatDtoCreateRoom } from './dto';
 import * as argon from 'argon2';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -1416,6 +1416,86 @@ export class ChatService {
         });
         return { message: "Message successfully added" }
     }
+
+	async addMessageToRoom(body: ChatDtoCreateMessage)
+	{
+		const user = await this.prisma.user.findFirst({
+			where: {
+				id: body.idSender,
+			},
+		});
+		if (!user)
+		{
+			throw new BadRequestException('User does not exist');
+		}
+		const room = await this.prisma.room.findFirst({
+			where: {
+				name: body.roomName,
+			},
+		});
+		if (!room)
+		{
+			throw new BadRequestException('Room does not exist');
+		}
+		const isUserInRoom = await this.prisma.room.findFirst({
+			where: {
+				name: body.roomName,
+				users: {
+					some: {
+						login: user.login,
+					},
+				},
+			},
+		});
+		if (!isUserInRoom)
+		{
+			throw new BadRequestException('User is not in room');
+		}
+		const isUserBanned = await this.prisma.room.findFirst({
+			where: {
+				name: body.roomName,
+				bannedUsers: {
+					some: {
+						login: user.login,
+					},
+				},
+			},
+		});
+		if (isUserBanned)
+		{
+			throw new BadRequestException('User is banned in room');
+		}
+		const message = await this.prisma.message.create({
+			data: {
+				content: body.content,
+				sender: {
+					connect: {
+						id: body.idSender,
+					},
+				},
+				room: {
+					connect: {
+						name: body.roomName,
+					},
+				},
+			},
+		});
+		await this.prisma.room.update({
+			where: {
+				name: body.roomName,
+			},
+			data: {
+				messages: {
+					connect: {
+						id: message.id,
+					},
+				},
+			},
+		});
+		return { message: "Message successfully added" }
+
+	}
+
     async getPrivateRooms(body: ChatDtoGetRoom)
     {
         const user = await this.prisma.user.findFirst({

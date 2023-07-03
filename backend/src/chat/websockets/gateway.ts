@@ -81,6 +81,7 @@ export class Gateway implements OnModuleInit {
 			else
 				return ;
 		}
+		this.chatService.addMessageToRoom({idSender: idSender, roomName: roomName, content: content})
 		this.server.to(roomName).emit('newRoomMessage', {
             content: content,
             nameSender: user.login,
