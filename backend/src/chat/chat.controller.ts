@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Param, Post, Req, UseGuards} from '@nestjs/common';
 import { ChatService } from './chat.service';
-import { ChatDtoAdminOperation, ChatDtoBlockUser, ChatDtoCreateRoom, ChatDtoGetRoom, ChatDtoJoinRoom } from './dto';
+import { ChatDtoAdminOperation, ChatDtoBlockUser, ChatDtoCreateRoom, ChatDtoGetRoom, ChatDtoJoinRoom, PrivateChatDtoCreateRoom } from './dto';
 import { ExtractJwt } from 'passport-jwt';
 import { Request } from 'express';
 import { UserService } from 'src/user/user.service';
@@ -129,5 +129,10 @@ export class ChatController {
 	async changeRoomType(@Body() body: ChatDtoCreateRoom)
 	{
 		return await this.ChatService.changeRoomType(body);
+	}
+	@Post("createPrivateRoom")
+	async createPrivateRoom(@Body() body: PrivateChatDtoCreateRoom)
+	{
+		return await this.ChatService.createPrivateRoom(body);
 	}
 }

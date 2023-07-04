@@ -23,7 +23,7 @@ body {
 	margin: 0;
 	background-attachment: fixed;
 	background: linear-gradient(to top, #080027, #2b0bbc);
-  }
+}
 
 
 /* Font Layout */
@@ -86,4 +86,179 @@ button:focus:not(:focus-visible) {
 	}
 }
 
+.greenButton {
+	background-color: #4caf50;
+	color: #fff;
+	font-size: 1rem;
+	padding: 0.5rem 1rem;
+	border: none;
+	border-radius: 15px;
+	cursor: pointer;
+}
 
+.greenButton:hover {
+	background-color: #3e8e41;
+}
+
+.redButton {
+	background-color: #f44336;
+	color: #fff;
+	font-size: 1rem;
+	padding: 0.5rem 1rem;
+	border: none;
+	border-radius: 15px;
+	cursor: pointer;
+}
+
+.redButton:hover {
+	background-color: #da190b;
+}
+
+.button-styled {
+	align-items: center;
+	appearance: none;
+	background-image: radial-gradient(100% 100% at 100% 0, #5adaff 0, #5468ff 100%);
+	border: 0;
+	border-radius: 16px;
+	box-shadow: rgba(45, 35, 66, 0.4) 0 2px 4px, rgba(45, 35, 66, 0.3) 0 7px 13px -3px,
+		rgba(58, 65, 111, 0.5) 0 -3px 0 inset;
+	box-sizing: border-box;
+	color: #fff;
+	cursor: pointer;
+	display: inline-flex;
+	font-family: 'JetBrains Mono', monospace;
+	height: 48px;
+	justify-content: center;
+	line-height: 1;
+	list-style: none;
+	overflow: hidden;
+	padding-left: 16px;
+	padding-right: 16px;
+	position: relative;
+	text-align: left;
+	text-decoration: none;
+	transition: box-shadow 0.15s, transform 0.15s;
+	user-select: none;
+	-webkit-user-select: none;
+	touch-action: manipulation;
+	white-space: nowrap;
+	will-change: box-shadow, transform;
+	font-size: 23px;
+}
+
+.button-styled:focus {
+	box-shadow: #3c4fe0 0 0 0 1.5px inset, rgba(45, 35, 66, 0.4) 0 2px 4px,
+		rgba(45, 35, 66, 0.3) 0 7px 13px -3px, #3c4fe0 0 -3px 0 inset;
+}
+
+.button-styled:hover {
+	box-shadow: rgba(45, 35, 66, 0.4) 0 4px 8px, rgba(45, 35, 66, 0.3) 0 7px 13px -3px,
+		#3c4fe0 0 -3px 0 inset;
+	transform: translateY(-2px);
+}
+
+.button-styled:active {
+	box-shadow: #3c4fe0 0 3px 7px inset;
+	transform: translateY(2px);
+}
+
+
+.button-style-light {
+	background-image: linear-gradient(#42A1EC, #0070C9);
+	border: 1px solid #0077CC;
+	border-radius: 4px;
+	box-sizing: border-box;
+	color: #FFFFFF;
+	cursor: pointer;
+	direction: ltr;
+	display: block;
+	font-family: "SF Pro Text", "SF Pro Icons", "AOS Icons", "Helvetica Neue", Helvetica, Arial, sans-serif;
+	font-size: 17px;
+	font-weight: 400;
+	letter-spacing: -.022em;
+	line-height: 1.47059;
+	min-width: 30px;
+	overflow: visible;
+	padding: 4px 15px;
+	text-align: center;
+	vertical-align: baseline;
+	user-select: none;
+	-webkit-user-select: none;
+	touch-action: manipulation;
+	white-space: nowrap;
+}
+
+.button-style-light:disabled {
+	cursor: default;
+	opacity: .3;
+}
+
+.button-style-light:hover {
+	background-image: linear-gradient(#51A9EE, #147BCD);
+	border-color: #1482D0;
+	text-decoration: none;
+}
+
+.button-style-light:active {
+	background-image: linear-gradient(#3D94D9, #0067B9);
+	border-color: #006DBC;
+	outline: none;
+}
+
+.button-style-light:focus {
+	box-shadow: rgba(131, 192, 253, 0.5) 0 0 0 3px;
+	outline: none;
+}
+
+.button-accept {
+	background: #4caf50;
+	border: 1px solid #4caf50;
+}
+
+.button-cancel {
+	background: #FF4742;
+	border: 1px solid #FF4742;
+}
+
+.button-accept,
+.button-cancel {
+	border-radius: 6px;
+	box-shadow: rgba(0, 0, 0, 0.1) 1px 2px 4px;
+	box-sizing: border-box;
+	color: #FFFFFF;
+	cursor: pointer;
+	display: inline-block;
+	font-family: nunito, roboto, proxima-nova, "proxima nova", sans-serif;
+	font-size: 16px;
+	font-weight: 800;
+	line-height: 16px;
+	min-height: 40px;
+	outline: 0;
+	padding: 12px 14px;
+	text-align: center;
+	text-rendering: geometricprecision;
+	text-transform: none;
+	user-select: none;
+	-webkit-user-select: none;
+	touch-action: manipulation;
+	vertical-align: middle;
+}
+
+.button-accept:hover,
+.button-accept:active {
+	background-color: initial;
+	background-position: 0 0;
+	color: #4caf50;
+}
+
+.button-cancel:hover,
+.button-cancel:active {
+	background-color: initial;
+	background-position: 0 0;
+	color: #FF4742;
+}
+
+.button-accept:active,
+.button-cancel:active {
+	opacity: .5;
+}
