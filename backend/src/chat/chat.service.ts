@@ -698,52 +698,80 @@ export class ChatService {
             },
         });
         if (isUserOwner) {
-            // change owner by the next admin or if no admin by the next user
-            let nextUser;
-            const nextAdmin = await this.prisma.room.findFirst({
+           await this.prisma.room.update({
                 where: {
                     name: body.roomName,
+                },
+                data: {
+                    users: {
+                        disconnect: {
+                            id: body.idUser,
+                        },
+                    },
+                    invitedUsers: {
+                        disconnect: {
+                            id: body.idUser,
+                        },
+                    },
                     administrators: {
-                        some: {
-                            id: {
-                                not: body.idUser,
-                            },
+                        disconnect: {
+                            id: body.idUser,
                         },
                     },
                 },
             });
-            if (!nextAdmin)
-            {
-                nextUser = await this.prisma.room.findFirst({
+            //select first administrator and make him owner
+            const newOwner = await this.prisma.room.findFirst({
+                where: {
+                    name: body.roomName,
+                },
+                select : {
+                    administrators : {
+                        take : 1,
+                    }
+                }
+            });
+            if (newOwner) {
+                await this.prisma.room.update({
                     where: {
                         name: body.roomName,
-                        users: {
-                            some: {
-                                id: {
-                                    not: body.idUser,
-                                },
-                            },
+                    },
+                    data: {
+                        ownerId: newOwner.administrators[0].id,
+                    },
+                });
+            }
+            else
+            {
+                const newOwner = await this.prisma.room.findFirst({
+                    where: {
+                        name: body.roomName,
+                    },
+                    select : {
+                        users : {
+                            take : 1,
                         },
                     },
                 });
-                if (!nextUser)
-                {
-                    await this.prisma.room.delete({
+                if (newOwner) {
+                    await this.prisma.room.update({
                         where: {
                             name: body.roomName,
                         },
+                        data: {
+                            ownerId: newOwner.users[0].id,
+                        },
                     });
-                    return { message: "Room successfully deleted" }
+                }
+                else
+                {
+                    await this.prisma.room.delete({
+                        where : {
+                            name : body.roomName,
+                        }
+                    });
                 }
             }
-            const updatatedRoom = await this.prisma.room.update({
-                where: {
-                    name: body.roomName,
-                },
-                data : {
-                    ownerId : nextUser.id,
-                }
-            });
         }
         const isUserAdmin = await this.prisma.room.findFirst({
             where: {
