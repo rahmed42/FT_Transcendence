@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { onMount } from "svelte";
+
 	// Fetch DB / or get theses default values if not found
 	let selectedBoard: string = 'src/lib/assets/boards/boardDefault.png';
 	let selectedMyPaddle: string = 'src/lib/assets/paddles/defaultPaddle/defaultPaddleWhite.png';
@@ -6,16 +8,19 @@
 		'src/lib/assets/paddles/defaultPaddle/defaultPaddleWhite.png';
 	let selectedBall: string = 'src/lib/assets/balls/ballWhite.png';
 	const serverIP = import.meta.env.VITE_SERVER_IP;
+	let myCookie: String | undefined = '';
 
-	function getCookie(name: string) {
-		const value = `; ${document.cookie}`;
-		const parts = value.split(`; ${name}=`);
-		if (parts.length === 2) {
-			return parts.pop()?.split(';').shift();
+	onMount(async () => {
+		function getCookie(name: string) {
+			const value = `; ${document.cookie}`;
+			const parts = value.split(`; ${name}=`);
+			if (parts.length === 2) {
+				return parts.pop()?.split(';').shift();
+			}
 		}
-	}
 
-	let myCookie = getCookie('jwt');
+		myCookie = getCookie('jwt');
+	});
 
 	async function applySettings() {
 		await fetch('http://' + serverIP + ':3333/profil/skins', {

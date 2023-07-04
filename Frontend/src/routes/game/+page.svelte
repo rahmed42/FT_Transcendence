@@ -3,7 +3,10 @@
 
 	const serverIP = import.meta.env.VITE_SERVER_IP;
 	let game: any | undefined = undefined;
+	let myCookie: String | undefined = '';
 
+	// Fonction afterUpdate - appelée après la mise à jour du composant
+	onMount(() => {
 	function getCookie(name: string) {
 		const value = `; ${document.cookie}`;
 		const parts = value.split(`; ${name}=`);
@@ -12,10 +15,7 @@
 		}
 	}
 
-	let myCookie = getCookie('jwt');
-
-	// Fonction afterUpdate - appelée après la mise à jour du composant
-	onMount(() => {
+	myCookie = getCookie('jwt');
 		// SSR server side rendering
 		// https://vitejs.dev/guide/ssr.html
 		setTimeout(() => {

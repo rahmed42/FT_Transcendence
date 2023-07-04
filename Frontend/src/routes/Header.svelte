@@ -25,6 +25,9 @@
 				await getToken(code);
 			}
 		}
+		if (checkJwtCookie()) {
+			myCookie = getCookie('jwt');
+		}
 
 		async function check_2fa_user(): Promise<Boolean> {
 			const response = await fetch('http://' + serverIP + ':3333/auth/2fa_info', {
@@ -99,7 +102,6 @@
 			const data = await response.json();
 			if (data !== 'undefined') {
 				document.cookie = 'jwt=' + data.token;
-				myCookie = getCookie('jwt');
 			}
 		}
 	}

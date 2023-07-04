@@ -19,6 +19,7 @@
 	let matchHistory = [];
 
 	const serverIP = import.meta.env.VITE_SERVER_IP;
+	let myCookie: String | undefined = '';
 
 	function formatDate(isoDateString) {
 		const date = new Date(isoDateString);
@@ -33,9 +34,16 @@
 		}
 	}
 
-	let myCookie = getCookie('jwt');
 
 	onMount(async () => {
+		function getCookie(name: string) {
+			const value = `; ${document.cookie}`;
+			const parts = value.split(`; ${name}=`);
+			if (parts.length === 2) {
+				return parts.pop()?.split(';').shift();
+			}
+		}
+		myCookie = getCookie('jwt');
 		async function getUserInfo() {
 			const response = await fetch('http://' + serverIP + ':3333/profil/me', {
 				method: 'GET',
