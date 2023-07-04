@@ -1,4 +1,5 @@
 <script lang="ts">
+
 import { notification } from '../../stores/notificationStore.js';
 import { user } from '../../stores/user';
 import io from 'socket.io-client';
@@ -295,7 +296,42 @@ async function sendFriendRequestModal() {
     gap: 10px;
 }
 
+.friend-card {
+    position: relative;
+    flex: 0 0 auto;
+    width: 120px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    margin: 10px;
+    padding: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+/* View Profile Button */
+.friend-button {
+    width: 95px;
+    margin-top: 5px;
+    padding: 2px 2px;
+    border: none;
+    border-radius: 5px;
+    color: #fff;
+    cursor: pointer;
+    background-color: #007BFF;
+    font-size: 1rem;
+}
+
+.friend-button:hover {
+    background-color: #0056b3;
+    text-decoration: none;
+}
+
+/* Delete Friend Button */
 .delete-button {
+    width: 105px;
     font-size: 1rem;
     margin-top: 5px;
     padding: 2px 2px;
@@ -309,21 +345,6 @@ async function sendFriendRequestModal() {
 .delete-button:hover {
     background-color: #da190b;
     text-decoration: none;
-}
-
-.friend-card {
-    position: relative;
-    flex: 0 0 auto;
-    width: 105px;
-    border: 1px solid #ccc;
-    border-radius: 10px;
-    margin: 10px;
-    padding: 10px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
 }
 
 .delete-icon {
@@ -347,24 +368,10 @@ async function sendFriendRequestModal() {
     margin: 5px 0;
 }
 
-.friend-button {
-    margin-top: 5px;
-    padding: 2px 2px;
-    border: none;
-    border-radius: 5px;
-    color: #fff;
-    cursor: pointer;
-    background-color: #007BFF;
-}
-
-.friend-button:hover {
-    background-color: #0056b3;
-    text-decoration: none;
-}
-
 /* Accept and Reject Buttons */
 .accept-button,
 .reject-button {
+    font-size: 1rem;
     margin-top: 5px;
     padding: 5px 10px;
     border: none;
@@ -484,4 +491,5 @@ button {
 .notification-success {
     margin: 0;
 }
+
 </style>
