@@ -82,6 +82,7 @@
   let socket: any;
   let myCookie: any;
   let privateId : any;
+  let joinGameType = 'Original';
 
   onMount(async () => {
     function getCookie(name: string) {
@@ -265,6 +266,71 @@ function checkForEnter(event: KeyboardEvent) {
       sendMessage();
     }
   }
+
+  async function createGameRequest() {
+		try {
+			const response = await fetch('http://' + serverIP + ':3333/profil/createGameRequest', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					Authorization: 'Bearer ' + token
+				},
+				body: JSON.stringify({
+					myLogin: login,
+					guestLogin: loginUserToExecute,
+					gameType: joinGameType
+				})
+			});
+			socket.emit('gameRequest', {
+				sender: login,
+				login : loginUserToExecute,
+				type: joinGameType
+			});
+			closeUserModal();
+		} catch (err) {
+			if (err instanceof Error) alert(err.message);
+		}
+	}
+
+
+
+  async function deleteGameRequest() {
+		try {
+			const response = await fetch('http://' + serverIP + ':3333/profil/deleteGameRequest', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					Authorization: 'Bearer ' + token
+				},
+				body: JSON.stringify({
+					myLogin: login
+				})
+			});
+			if (!response.ok) {
+				const data = await response.json();
+				throw new Error(data.message);
+			} else {
+				gameRequest.login = 'undefined';
+				gameRequest.type = 'undefined';
+			}
+		} catch (err) {
+			if (err instanceof Error) alert(err.message);
+		}
+	}
+
+	async function acceptGameRequest() {
+		try {
+			goto('/game');
+			socket.emit('acceptGameRequest', {
+				login : gameRequest.login,
+				type: gameRequest.type
+			});
+			gameRequest.login = 'undefined';
+			gameRequest.type = 'undefined';
+		} catch (err) {
+			if (err instanceof Error) alert(err.message);
+		}
+	}
 
 function refreshList() {
   userList.set([]);
