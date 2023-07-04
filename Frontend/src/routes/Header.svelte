@@ -139,7 +139,7 @@
 		// status to logout in DB
 		await logoutUser();
 		// delete jwt in cookie
-		document.cookie = 'jwt=;';
+		document.cookie = 'jwt=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
 	}
 </script>
 

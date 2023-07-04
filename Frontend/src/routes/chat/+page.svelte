@@ -98,7 +98,6 @@
 				token: myCookie
 			}
 		});
-		await getGameRequest();
 		/*const resp = await fetch('http://' + serverIP + ':3333/chat/blockedUsers', {
       method: 'GET',
       headers: {
@@ -160,7 +159,20 @@
 				}
 			}
 		);
-
+		socket.on('newGameRequest', (data:  {
+			sender: string,
+			login: string,
+			type: string,
+		 }) => {
+			if (data.login == login)
+				getGameRequest();
+		});
+		socket.on('redirectGame', (data: {login: string, type: string}) =>
+		{
+			console.log(data)
+			if (data.login == login)
+				goto("/game")
+		});
 		async function getUserinfo() {
 			try {
 				const response = await fetch('http://' + serverIP + ':3333/profil/me', {
@@ -789,7 +801,8 @@
 
 	async function declineInvitation(selectedInvitation: string) {}
 
-	async function acceptInvitation(selectedInvitation: string) {}
+	async function acceptInvitation(selectedInvitation: string) {
+	}
 
 	function closePrivateMessageModal() {
 		isPrivateMessageModalOpen = false;
@@ -901,6 +914,11 @@
 					gameType: joinGameType
 				})
 			});
+			socket.emit('gameRequest', {
+				sender: login,
+				login : loginUserToExecute,
+				type: joinGameType
+			});
 			closeUserModal();
 		} catch (err) {
 			if (err instanceof Error) alert(err.message);
@@ -936,11 +954,12 @@
 	async function acceptGameRequest() {
 		try {
 			goto('/game');
+			socket.emit('acceptGameRequest', {
+				login : gameRequest.login,
+				type: gameRequest.type
+			});
 			gameRequest.login = 'undefined';
-			console.log('gameRequest.login : ', gameRequest.login);
 			gameRequest.type = 'undefined';
-			console.log('gameRequest.type : ', gameRequest.type);
-			// await deleteGameRequest();
 		} catch (err) {
 			if (err instanceof Error) alert(err.message);
 		}

@@ -153,4 +153,22 @@ export class Gateway implements OnModuleInit {
     {
         this.server.socketsLeave(body.roomName);
     }
+	@SubscribeMessage("gameRequest")
+	handleGameRequest(@MessageBody() body: {sender : string, login: string; type: string})
+	{
+		console.log("game request received ", body)
+		this.server.emit('newGameRequest', {
+			sender: body.sender,
+			login: body.login,
+			type: body.type,
+		});
+	}
+	@SubscribeMessage("acceptGameRequest")
+	handleAcceptGameRequest(@MessageBody() body: {login: string, type: string})
+	{
+		this.server.emit("redirectGame", {
+			login: body.login,
+			type: body.type,
+		})
+	}
 }
