@@ -18,17 +18,7 @@ async function load_skins() {
 	skins = await getUpdatedSkins();
 }
 
-function getCookie(name: string) {
-	const value = `; ${document.cookie}`;
-	const parts = value.split(`; ${name}=`);
-	if (parts.length === 2) {
-		return parts.pop()?.split(';').shift();
-	}
-}
-
-let myCookie = getCookie('jwt');
-
-export class Part1Scene extends Phaser.Scene {
+export class Part3Scene extends Phaser.Scene {
 	//room reference
 	room: Room | undefined;
 
@@ -89,11 +79,11 @@ export class Part1Scene extends Phaser.Scene {
 	constructor() {
 		// active false to prevent the scene from starting automatically
 		load_skins();
-		super({ key: "Part1", active: false });
-		this.activeScene = 'Part1Scene';
+		super({ key: "Part3", active: false });
+		this.activeScene = 'Part3Scene';
 
 		// Initialize the room
-		this.room = new Room("Original");
+		this.room = new Room("OriginalInvited");
 
 		// Initialize the game state
 		this.myScore = 0;
@@ -163,7 +153,7 @@ export class Part1Scene extends Phaser.Scene {
 
 	async create() {
 		// Define camera size
-		this.cameras.main = this.cameras.add(0, 0, this.game.config.width as number, this.game.config.height as number, false, 'Original');
+		this.cameras.main = this.cameras.add(0, 0, this.game.config.width as number, this.game.config.height as number, false, 'OriginalInvited');
 
 		//Get player name
 		if (currentUser && currentUser.login)
@@ -189,7 +179,7 @@ export class Part1Scene extends Phaser.Scene {
 		const client = new Client(BACKEND_URL);
 
 		try {
-			this.room = await client.joinOrCreate("Original", {});
+			this.room = await client.joinOrCreate("OriginalInvited", {});
 			console.log("User : %s - Connected to game : %s", this.myName, this.room.name);
 
 			// connection successful!
@@ -297,7 +287,7 @@ export class Part1Scene extends Phaser.Scene {
 				this.connectionTimerText.destroy();
 
 			this.setActiveScene("menu");
-			this.scene.stop('Part1');
+			this.scene.stop('Part3');
 			// Start the menu scene
 			this.scene.start('menu')
 		}
@@ -472,7 +462,7 @@ export class Part1Scene extends Phaser.Scene {
 					this.leave(this.room);
 					alert("The other player left ! Back to the menu...");
 					this.setActiveScene("menu");
-					this.scene.stop('Part1');
+					this.scene.stop('Part3');
 					this.scene.start('menu')
 				}
 			}
@@ -586,7 +576,6 @@ export class Part1Scene extends Phaser.Scene {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
-				Authorization: 'Bearer ' + myCookie,
 			},
 			body: JSON.stringify({
 				currentUser,

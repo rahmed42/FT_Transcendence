@@ -5,6 +5,8 @@ import { monitor } from "@colyseus/monitor";
 /* Import your Room files */
 import { Part1Room } from "./rooms/Part1Room";
 import { Part2Room } from "./rooms/Part2Room";
+import { Part3Room } from "./rooms/Part3Room";
+import { Part4Room } from "./rooms/Part4Room";
 
 export default Arena({
 	getId: () => "42 Pong",
@@ -13,6 +15,8 @@ export default Arena({
 		/* Define your room handlers */
 		gameServer.define('Original', Part1Room);
 		gameServer.define('Modern', Part2Room);
+		gameServer.define('OriginalInvited', Part3Room);
+		gameServer.define('ModernInvited', Part4Room);
 	},
 
 	initializeExpress: (app) => {
