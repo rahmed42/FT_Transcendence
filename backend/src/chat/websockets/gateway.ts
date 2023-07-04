@@ -153,7 +153,6 @@ export class Gateway implements OnModuleInit {
     @SubscribeMessage("joinRoom")
     handleJoinRoom(@MessageBody() body: {roomName: string})
     {
-		console.log("joinRoom : ", body.roomName)
 		this.server.socketsJoin(body.roomName);
     }
     @SubscribeMessage("leaveRoom")

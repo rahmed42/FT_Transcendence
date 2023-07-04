@@ -703,52 +703,85 @@ export class ChatService {
             },
         });
         if (isUserOwner) {
-            // change owner by the next admin or if no admin by the next user
-            let nextUser;
-            const nextAdmin = await this.prisma.room.findFirst({
+           await this.prisma.room.update({
                 where: {
                     name: body.roomName,
+                },
+                data: {
+                    users: {
+                        disconnect: {
+                            id: body.idUser,
+                        },
+                    },
+                    invitedUsers: {
+                        disconnect: {
+                            id: body.idUser,
+                        },
+                    },
                     administrators: {
-                        some: {
-                            id: {
-                                not: body.idUser,
-                            },
+                        disconnect: {
+                            id: body.idUser,
                         },
                     },
                 },
             });
-            if (!nextAdmin)
-            {
-                nextUser = await this.prisma.room.findFirst({
+            const newOwner = await this.prisma.room.findFirst({
+                where: {
+                    name: body.roomName,
+                },
+                select : {
+                    administrators : {
+                        take : 1,
+                    }
+                }
+            });
+            if (newOwner.administrators.length > 0) {
+                await this.prisma.room.update({
                     where: {
                         name: body.roomName,
-                        users: {
-                            some: {
-                                id: {
-                                    not: body.idUser,
-                                },
-                            },
+                    },
+                    data: {
+                        ownerId: newOwner.administrators[0].id,
+                    },
+                });
+            }
+            else
+            {
+                const newOwner = await this.prisma.room.findFirst({
+                    where: {
+                        name: body.roomName,
+                    },
+                    select : {
+                        users : {
+                            take : 1,
                         },
                     },
                 });
-                if (!nextUser)
-                {
-                    await this.prisma.room.delete({
+                if (newOwner.users.length > 0) {
+                    await this.prisma.room.update({
                         where: {
                             name: body.roomName,
                         },
+                        data: {
+                            ownerId: newOwner.users[0].id,
+							administrators : {
+								connect : {
+									id : newOwner.users[0].id,
+								},
+							},
+                        },
                     });
-                    return { message: "Room successfully deleted" }
+                }
+                else
+                {
+                    await this.prisma.room.delete({
+                        where : {
+                            name : body.roomName,
+                        }
+                    });
+					return { message : "Room deleted" };
                 }
             }
-            const updatatedRoom = await this.prisma.room.update({
-                where: {
-                    name: body.roomName,
-                },
-                data : {
-                    ownerId : nextUser.id,
-                }
-            });
         }
         const isUserAdmin = await this.prisma.room.findFirst({
             where: {
@@ -826,6 +859,7 @@ export class ChatService {
         });
         return { message: "User successfully left room" }
     }
+
     async giveAdmin(body: ChatDtoAdminOperation)
     {
         const admin = await this.prisma.user.findFirst({
