@@ -5,6 +5,7 @@
 	import { onMount } from 'svelte';
 
 	const apiUrl = import.meta.env.VITE_API_URL;
+	const serverIP = import.meta.env.VITE_SERVER_IP;
 
 	let pendingRequests = [];
 	let friends = [];
@@ -23,7 +24,7 @@
 			}
 		}
 		myCookie = getCookie('jwt');
-		socket = io('http://' + 'localhost' + ':3333', {
+		socket = io('http://' + serverIP + ':3333', {
 			transports: ['websocket'],
 			auth: {
 				token: myCookie
@@ -190,7 +191,8 @@
 
 <section class="actions">
 	<button id="send_friend_request" class="button-styled" on:click={openFriendRequestModal}
-		>Send a friend request</button>
+		>Send a friend request</button
+	>
 	{#if friendRequestModalOpen}
 		<div class="modal">
 			<div class="modal-content">
@@ -213,27 +215,29 @@
 
 <section>
 	{#if pendingRequests.length > 0}
-	<div class="white-frame">
-		<h2 class="section-heading">Pending Friend Requests</h2>
-		<div class="friends-container">
-			{#each pendingRequests as request (request.id)}
-				<div class="friend-card">
-					<img
-						src={request.requester.avatar ? request.requester.avatar : request.requester.small_pic}
-						alt="{request.requester.login}'s picture"
-						class="friend-image"
-					/>
-					<h3 class="friend-name">{request.requester.login}</h3>
-					<button class="button-accept" on:click={() => acceptFriendRequest(request.id)}
-						>Accept</button
-					>
-					<button class="button-cancel" on:click={() => rejectFriendRequest(request.id)}
-						>Reject</button
-					>
-				</div>
-			{/each}
+		<div class="white-frame">
+			<h2 class="section-heading">Pending Friend Requests</h2>
+			<div class="friends-container">
+				{#each pendingRequests as request (request.id)}
+					<div class="friend-card">
+						<img
+							src={request.requester.avatar
+								? request.requester.avatar
+								: request.requester.small_pic}
+							alt="{request.requester.login}'s picture"
+							class="friend-image"
+						/>
+						<h3 class="friend-name">{request.requester.login}</h3>
+						<button class="button-accept" on:click={() => acceptFriendRequest(request.id)}
+							>Accept</button
+						>
+						<button class="button-cancel" on:click={() => rejectFriendRequest(request.id)}
+							>Reject</button
+						>
+					</div>
+				{/each}
+			</div>
 		</div>
-	</div>
 	{/if}
 </section>
 
@@ -257,8 +261,10 @@
 							? 'Disconnected'
 							: 'In Game'}
 					</p>
-					<a href={`/profile/info/?login=${friend.friend.login}`} id="view-friend-profile" class="button-style-light"
-						>View Profile</a
+					<a
+						href={`/profile/info/?login=${friend.friend.login}`}
+						id="view-friend-profile"
+						class="button-style-light">View Profile</a
 					>
 					<button id="delete-friend" class="button-cancel" on:click={() => deleteFriend(friend.id)}
 						>Delete Friend</button
