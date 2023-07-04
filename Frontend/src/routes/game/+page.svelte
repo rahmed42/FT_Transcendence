@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
 
+	const serverIP = import.meta.env.VITE_SERVER_IP;
 	let game: any | undefined = undefined;
 
 	// Fonction afterUpdate - appelée après la mise à jour du composant
@@ -9,8 +10,7 @@
 		// https://vitejs.dev/guide/ssr.html
 		setTimeout(() => {
 			if (typeof window === 'undefined') return;
-			if (!game && window.location.pathname === "/game")
-				createPhaserGame();
+			if (!game && window.location.pathname === '/game') createPhaserGame();
 		}, 500);
 	});
 
@@ -45,6 +45,8 @@
 
 		//Begin the game
 		game.scene.start('menu');
+
+		checkInvite();
 	}
 
 	// Fonction onDestroy - appelée lorsque le composant est détruit
@@ -54,16 +56,29 @@
 		}
 	});
 
-	async function inviteFriend() {
-		// add from DB to get the part of the game
+	async function checkInvite() {
+		// ADD check if the user has an invite
+		const response = await fetch('http://' + serverIP + ':3333/profil/me', {
+			method: 'GET',
+			credentials: 'include'
+		});
+		console.log('in check invite');
+		if (response.ok) {
+			const data = await response.json();
+			console.log('type', data.gameTypeInvitation);
+			if (data.gameTypeInvitation === 'Original') {
+				console.log('Original Invitation');
+				game.scene.switch('menu', 'Part1');
+			} else if (data.gameTypeInvitation === 'Modern') {
+				console.log('Modern Invitation');
+				game.scene.switch('menu', 'Part2');
+			}
+		}
+		const deleteGameRequest = await fetch('http://' + serverIP + ':3333/profil/resetGameStatus', {
+			method: 'POST',
+			credentials: 'include'
+		});
 
-		console.log('Original Seeker Launched');
-		game.scene.switch('menu', 'Part1');
-
-		console.log('Modern Seeker Launched');
-		game.scene.switch('menu', 'Part2');
-
-		// ADD send request to friend logic
 	}
 </script>
 

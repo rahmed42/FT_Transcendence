@@ -137,6 +137,16 @@ export class UserService {
 				loginGameInvitation: body.myLogin,
 			}
 		})
+
+		await this.prisma.user.update({
+			where: {
+				login: body.myLogin,
+			},
+			data: {
+				gameTypeInvitation: body.gameType,
+				loginGameInvitation: body.guestLogin,
+			}
+		})
 	}
 	async removeGameRequest(body: any) {
 		await this.prisma.user.update({
@@ -148,5 +158,20 @@ export class UserService {
 				loginGameInvitation: 'undefined',
 			}
 		})
+	}
+	async removeGameStatus(tokebObject: { jwt: string }, body: any) {
+		const user = await this.jwt.decode(tokebObject.jwt);
+
+		if (typeof user === 'object' && user !== null) {
+			await this.prisma.user.update({
+				where: {
+					id: user.id,
+				},
+				data: {
+					gameTypeInvitation: 'undefined',
+					loginGameInvitation: 'undefined',
+				}
+			})
+		}
 	}
 }
