@@ -1,9 +1,10 @@
 import { Body, OnModuleInit } from "@nestjs/common";
-import { MessageBody, SubscribeMessage, WebSocketGateway, WebSocketServer } from "@nestjs/websockets";
+import { ConnectedSocket, MessageBody, SubscribeMessage, WebSocketGateway, WebSocketServer } from "@nestjs/websockets";
 import { Server } from "socket.io";
 import { PrivateMessageDto, RoomMessageDto } from "../dto";
 import { PrismaService } from "src/prisma/prisma.service";
 import { ChatService } from "src/chat/chat.service";
+import { Socket } from "socket.io-client";
 
 @WebSocketGateway()
 export class Gateway implements OnModuleInit {
@@ -15,7 +16,7 @@ export class Gateway implements OnModuleInit {
 
     onModuleInit() {
         this.server.on('connection', (socket) => {
-			console.log("New connection from socket io ", socket.id)
+			return ;
 		});
     }
 
@@ -81,14 +82,15 @@ export class Gateway implements OnModuleInit {
 			else
 				return ;
 		}
+		this.chatService.addMessageToRoom({idSender: idSender, roomName: roomName, content: content})
 		this.server.to(roomName).emit('newRoomMessage', {
             content: content,
             nameSender: user.login,
             roomName: roomName,
         })
     }
-    async sendPrivateMessage(idSender: number, loginReceiver: string, content: string) {
-        if (!idSender || !loginReceiver || !content)
+    async sendPrivateMessage(roomName : string, idSender: number, loginReceiver: string, content: string) {
+        if (!roomName || !idSender || !loginReceiver || !content)
 			return ;
 		const user = await this.prisma.user.findFirst({
             where : {
@@ -105,23 +107,30 @@ export class Gateway implements OnModuleInit {
         if (!userReceiver)
             return ;
         // find private room where users are idSender and userReceiver.id
-        const privateRoom = await this.prisma.privateRoom.findFirst({
-            where : {
-                users: {
-                    every: {
-                        id: {
-                            in: [idSender, userReceiver.id],
-                        },
-                    },
-                },
-            },
-        });
-        if (!privateRoom)
-        {
-            await this.chatService.createPrivateRoom({idUser : idSender, loginReceiver: loginReceiver })
-        }
+		const isBlocked = await this.prisma.user.findFirst({
+			where : {
+				id: idSender,
+				blockedUsers: {
+					some: {
+						login: loginReceiver,
+					}
+				}
+			},
+		})
+		const hasBlocked = await this.prisma.user.findFirst({
+			where : {
+				id: userReceiver.id,
+				blockedUsers: {
+					some: {
+						login: user.login,
+					}
+				}
+			},
+		})
+		if (hasBlocked || isBlocked)
+			return ;
         this.chatService.addMessageToPrivateRoom({idSender: idSender, loginReceiver: loginReceiver, content: content})
-        this.server.to(userReceiver.id.toString()).emit('newPrivateMessage', {
+        this.server.to(roomName).emit('newPrivateMessage', {
             content: content,
             nameSender: user.login,
         })
@@ -129,7 +138,6 @@ export class Gateway implements OnModuleInit {
 
     @SubscribeMessage("newMessage")
     handleMessage(@MessageBody() body: any) {
-        console.log("new message received ", body)
 		if (body.type == "room")
         {
             body = body as RoomMessageDto;
@@ -138,19 +146,27 @@ export class Gateway implements OnModuleInit {
         else if (body.type == "private")
         {
             body = body as PrivateMessageDto;
-            this.sendPrivateMessage(body.idSender, body.loginReceiver, body.content)
+            this.sendPrivateMessage(body.roomName, body.idSender, body.loginReceiver, body.content)
         }
 		else
 			return ;
     }
     @SubscribeMessage("joinRoom")
-    handleJoinRoom(@MessageBody() body: {roomName: string})
-    {
-        this.server.socketsJoin(body.roomName);
-    }
+    handleJoinRoom(@MessageBody() body: {roomName: string, userList : {login: string}[] })
+	{
+		if (!body.roomName)
+			return ;
+		this.server.socketsJoin(body.roomName);
+		if (body.userList)
+			this.server.to(body.roomName).emit('roomListUpdate', {userList : body.userList, roomName : body.roomName});
+	}
     @SubscribeMessage("leaveRoom")
-    handleLeaveRoom(@MessageBody() body: {roomName: string})
+    handleLeaveRoom(@MessageBody() body: {roomName: string, userList : {login: string}[]})
     {
+		if (!body.roomName)
+			return ;
+		if (body.userList)
+			this.server.to(body.roomName).emit('roomListUpdate', {userList : body.userList, roomName : body.roomName});
         this.server.socketsLeave(body.roomName);
     }
 	@SubscribeMessage("gameRequest")

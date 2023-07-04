@@ -13,6 +13,13 @@ export class UserService {
 				where: {
 					id: decode.id,
 				},
+				include : {
+					blockedUsers: {
+						select: {
+							login: true,
+					},
+				},
+			},
 			})
 			return user;
 		}

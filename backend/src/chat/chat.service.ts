@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { ChatDtoAdminOperation, ChatDtoBlockUser, ChatDtoCreateRoom, ChatDtoGetRoom, ChatDtoJoinRoom, PrivateChatDtoCreateMessage, PrivateChatDtoCreateRoom } from './dto';
+import { ChatDtoAdminOperation, ChatDtoBlockUser, ChatDtoCreateMessage, ChatDtoCreateRoom, ChatDtoGetRoom, ChatDtoJoinRoom, PrivateChatDtoCreateMessage, PrivateChatDtoCreateRoom } from './dto';
 import * as argon from 'argon2';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -234,6 +234,19 @@ export class ChatService {
         if (isUserInRoom) {
             throw new BadRequestException('User already in room');
         }
+		const isUserAlreadyInvited = await this.prisma.room.findFirst({
+			where: {
+				name: body.roomName,
+				invitedUsers: {
+					some: {
+						login: body.loginUserToExecute,
+					}
+				}
+			}
+		});
+		if (isUserAlreadyInvited) {
+			throw new BadRequestException('User already invited');
+		}
         const updatedRoom = await this.prisma.room.update({
             where: {
                 name: body.roomName,
@@ -258,7 +271,6 @@ export class ChatService {
                 },
             },
         });
-        delete updatedRoom.password;
         return { message: "User successfully invited" }
     }
     async kickUser(body: ChatDtoAdminOperation) {
@@ -438,6 +450,11 @@ export class ChatService {
             select: {
                 name: true,
                 ownerId: true,
+				invitedUsers : {
+					select : {
+						login : true,
+					},
+				},
                 users: {
                     select: {
                         first_name: true,
@@ -457,7 +474,7 @@ export class ChatService {
                 },
                 messages: {
                     select: {
-                        id: true,
+						senderLogin : true,
                         content: true,
                     },
                 },
@@ -720,7 +737,6 @@ export class ChatService {
                     },
                 },
             });
-            //select first administrator and make him owner
             const newOwner = await this.prisma.room.findFirst({
                 where: {
                     name: body.roomName,
@@ -731,7 +747,7 @@ export class ChatService {
                     }
                 }
             });
-            if (newOwner) {
+            if (newOwner.administrators.length > 0) {
                 await this.prisma.room.update({
                     where: {
                         name: body.roomName,
@@ -753,13 +769,18 @@ export class ChatService {
                         },
                     },
                 });
-                if (newOwner) {
+                if (newOwner.users.length > 0) {
                     await this.prisma.room.update({
                         where: {
                             name: body.roomName,
                         },
                         data: {
                             ownerId: newOwner.users[0].id,
+							administrators : {
+								connect : {
+									id : newOwner.users[0].id,
+								},
+							},
                         },
                     });
                 }
@@ -770,6 +791,7 @@ export class ChatService {
                             name : body.roomName,
                         }
                     });
+					return { message : "Room deleted" };
                 }
             }
         }
@@ -849,6 +871,7 @@ export class ChatService {
         });
         return { message: "User successfully left room" }
     }
+
     async giveAdmin(body: ChatDtoAdminOperation)
     {
         const admin = await this.prisma.user.findFirst({
@@ -1356,6 +1379,34 @@ export class ChatService {
         {
             throw new BadRequestException('User who try to send message does not exist');
         }
+		const hasBlocked = await this.prisma.user.findFirst({
+			where: {
+				id: user2.id,
+				blockedUsers: {
+					some: {
+						id: body.idUser,
+					},
+				},
+			},
+		});
+		const isBlocked = await this.prisma.user.findFirst({
+			where: {
+				id: body.idUser,
+				blockedUsers: {
+					some: {
+						id: user2.id,
+					},
+				},
+			},
+		});
+		if (hasBlocked)
+		{
+			throw new BadRequestException('User has blocked you');
+		}
+		if (isBlocked)
+		{
+			throw new BadRequestException('User is blocked');
+		}
         const privateRoom = await this.prisma.privateRoom.create({
             data : {
                 id: uniqueId,
@@ -1395,7 +1446,15 @@ export class ChatService {
                 },
             },
         });
-        return { message: "Private room successfully created" }
+		const id = await this.prisma.privateRoom.findFirst({
+			where: {
+				id: uniqueId,
+			},
+			select : {
+				id : true,
+			}
+		});
+        return ({login : body.loginReceiver, id : id});
     }
     async addMessageToPrivateRoom(body : PrivateChatDtoCreateMessage)
     {
@@ -1444,6 +1503,86 @@ export class ChatService {
         });
         return { message: "Message successfully added" }
     }
+
+	async addMessageToRoom(body: ChatDtoCreateMessage)
+	{
+		const user = await this.prisma.user.findFirst({
+			where: {
+				id: body.idSender,
+			},
+		});
+		if (!user)
+		{
+			throw new BadRequestException('User does not exist');
+		}
+		const room = await this.prisma.room.findFirst({
+			where: {
+				name: body.roomName,
+			},
+		});
+		if (!room)
+		{
+			throw new BadRequestException('Room does not exist');
+		}
+		const isUserInRoom = await this.prisma.room.findFirst({
+			where: {
+				name: body.roomName,
+				users: {
+					some: {
+						login: user.login,
+					},
+				},
+			},
+		});
+		if (!isUserInRoom)
+		{
+			throw new BadRequestException('User is not in room');
+		}
+		const isUserBanned = await this.prisma.room.findFirst({
+			where: {
+				name: body.roomName,
+				bannedUsers: {
+					some: {
+						login: user.login,
+					},
+				},
+			},
+		});
+		if (isUserBanned)
+		{
+			throw new BadRequestException('User is banned in room');
+		}
+		const message = await this.prisma.message.create({
+			data: {
+				content: body.content,
+				sender: {
+					connect: {
+						id: body.idSender,
+					},
+				},
+				room: {
+					connect: {
+						name: body.roomName,
+					},
+				},
+			},
+		});
+		await this.prisma.room.update({
+			where: {
+				name: body.roomName,
+			},
+			data: {
+				messages: {
+					connect: {
+						id: message.id,
+					},
+				},
+			},
+		});
+		return { message: "Message successfully added" }
+
+	}
+
     async getPrivateRooms(body: ChatDtoGetRoom)
     {
         const user = await this.prisma.user.findFirst({
@@ -1508,6 +1647,7 @@ export class ChatService {
 				},
 			},
 			select : {
+					id : true,
 					users: {
 						where : {
 							login : {
@@ -1517,7 +1657,17 @@ export class ChatService {
 						select : {
 							login : true,
 						}
-					}
+					},
+					messages: {
+						select: {
+							content: true,
+							sender: {
+								select: {
+									login: true,
+								},
+							},
+						},
+					},
 			},
 		});
         if (!privateRoom)
@@ -1566,7 +1716,19 @@ export class ChatService {
 				},
 			},
 		});
-		return { message: "User successfully blocked" }
+		const blockedUser = await this.prisma.user.findFirst({
+			where: {
+				id: body.idUser,
+			},
+			select: {
+				blockedUsers: {
+					select : {
+						login : true,
+					},
+				},
+			},
+		});
+		return { blockedUsers: blockedUser.blockedUsers}
 	}
 	async unblockUser(body: ChatDtoBlockUser)
 	{
@@ -1610,7 +1772,19 @@ export class ChatService {
 				},
 			},
 		});
-		return { message: "User successfully unblocked" }
+		const blockedUser = await this.prisma.user.findFirst({
+			where: {
+				login: body.loginUserToBlock,
+			},
+			select: {
+				blockedUsers: {
+					select : {
+						login : true,
+				},
+			},
+			},
+		});
+		return { blockedUser}
 	}
 	async muteUser(body: ChatDtoAdminOperation)
 	{
