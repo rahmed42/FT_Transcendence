@@ -1716,7 +1716,19 @@ export class ChatService {
 				},
 			},
 		});
-		return { message: "User successfully blocked" }
+		const blockedUser = await this.prisma.user.findFirst({
+			where: {
+				id: body.idUser,
+			},
+			select: {
+				blockedUsers: {
+					select : {
+						login : true,
+					},
+				},
+			},
+		});
+		return { blockedUsers: blockedUser.blockedUsers}
 	}
 	async unblockUser(body: ChatDtoBlockUser)
 	{
@@ -1760,7 +1772,19 @@ export class ChatService {
 				},
 			},
 		});
-		return { message: "User successfully unblocked" }
+		const blockedUser = await this.prisma.user.findFirst({
+			where: {
+				login: body.loginUserToBlock,
+			},
+			select: {
+				blockedUsers: {
+					select : {
+						login : true,
+				},
+			},
+			},
+		});
+		return { blockedUser}
 	}
 	async muteUser(body: ChatDtoAdminOperation)
 	{

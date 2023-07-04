@@ -14,8 +14,15 @@ export class UserService {
                     where: {
                         id: decode.id,
                     },
-                })
-                return user;
+					include : {
+						blockedUsers: {
+							select: {
+								login: true,
+						},
+					},
+				},
+        		});
+            	return (user);
             }
         }
         async getFriendInfo(username: string) {

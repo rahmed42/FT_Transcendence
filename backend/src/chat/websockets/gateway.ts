@@ -152,17 +152,21 @@ export class Gateway implements OnModuleInit {
 			return ;
     }
     @SubscribeMessage("joinRoom")
-    handleJoinRoom(@MessageBody() body: {roomName: string})
+    handleJoinRoom(@MessageBody() body: {roomName: string, userList : {login: string}[] })
 	{
 		if (!body.roomName)
 			return ;
 		this.server.socketsJoin(body.roomName);
+		if (body.userList)
+			this.server.to(body.roomName).emit('roomListUpdate', {userList : body.userList, roomName : body.roomName});
 	}
     @SubscribeMessage("leaveRoom")
-    handleLeaveRoom(@MessageBody() body: {roomName: string})
+    handleLeaveRoom(@MessageBody() body: {roomName: string, userList : {login: string}[]})
     {
 		if (!body.roomName)
 			return ;
+		if (body.userList)
+			this.server.to(body.roomName).emit('roomListUpdate', {userList : body.userList, roomName : body.roomName});
         this.server.socketsLeave(body.roomName);
     }
 }

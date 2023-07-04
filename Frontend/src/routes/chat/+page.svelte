@@ -124,12 +124,15 @@
   });
 
   socket.on('newRoomMessage', (data: { content: string, nameSender: string, roomName: string }) => {
-	blockList.subscribe((list) => {
-		const isUserBlocked = list.includes({login : data.nameSender});
-		if (isUserBlocked)
-			return;
-	});
-
+	let bl = get(blockList);
+	if (bl)
+	{
+		for (let i = 0; i < bl.length; i++)
+		{
+			if (bl[i].login == data.nameSender)
+				return ;
+		}
+	}
     if (selectedChannel) {
       if (data.roomName === selectedChannel) {
         if (data.nameSender === login)
@@ -141,6 +144,11 @@
         }
       }
     }
+  });
+  socket.on('roomListUpdate', (data : {userList : {login : string}[] , roomName : string }) => {
+	console.log("roomListUpdate : " + data.roomName + " " + data.userList);
+	if (data.roomName == selectedChannel)
+		userList.set(data.userList);
   });
 
   async function getUserinfo() {
@@ -160,6 +168,7 @@
           userID = data.id;
           login = data.login;
           token = data.jwtToken;
+		  blockList.set(data.blockedUsers);
         }
       } else {
         console.error('Failed to fetch user info', response.statusText);
@@ -213,6 +222,29 @@
     throw new Error(data.message);
   }
 });
+
+
+async function refreshUserList(myCookie : string, selectedChannel : string)
+  {
+	const reponse = await fetch('http://localhost:3333/chat/rooms/' + selectedChannel, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: 'Bearer ' + myCookie,
+            },
+        });
+        if (!reponse.ok) {
+            const data = await reponse.json();
+            alert(data.message);
+        } else {
+            const newChannel = await reponse.json();
+			console.log(newChannel.users);
+			if (newChannel.users != null)
+				return (newChannel.users);
+			else
+				return ([]);
+  		}
+  }
 
 function checkForEnter(event: KeyboardEvent) {
     // KeyCode 13 correspond à la touche "Entrée"
@@ -623,7 +655,7 @@ function closeSetupModal() {
           {
             const newChannel = await response.json();
             channelList.update(channelList => [...channelList, { name: newChannel.room.name }]);
-            socket.emit('joinRoom', newChannel.room.name);
+			socket.emit('joinRoom', newChannel.room.name);
             closeModal();
           }
         }
@@ -708,8 +740,9 @@ function closeSetupModal() {
           {
             const newChannel = await response.json();
             channelList.update(channelList => [...channelList, { name: newChannel.room.name }]);
-            socket.emit('joinRoom', { roomName: joinChannelName});
-            console.log(newChannel.room.name);
+            let userl = await refreshUserList(token, newChannel.room.name);
+			console.log(userl);
+			socket.emit('joinRoom', { "roomName": joinChannelName, "userList" : userl});
           }
           closeJoinModal();
         }
@@ -847,20 +880,28 @@ async function getChannel(channel: string) {
             const newChannel = await response.json();
             console.log("New channel : ", newChannel);
             if (newChannel) {
-                socket.emit('joinRoom', { roomName: selectedChannel })
+                socket.emit('joinRoom', { roomName: selectedChannel})
                 userList.set(newChannel.users);
-                const messagesWithUsername = newChannel.messages.map((message : any) => {
-                  return {
-                    content : message.content,
-                    user : !(message.senderLogin === login),
-                    username: message.senderLogin
-                  }
-                });
-                messages = messagesWithUsername;
+                let bl = get(blockList);
+				let isBlocked = false;
+				let messagesWithUsername = newChannel.messages.filter((message: {senderLogin: string, content: string}) => {
+					isBlocked = false;
+					bl.forEach((blocked: {login: string}) => {
+						if (blocked.login === message.senderLogin) {
+							isBlocked = true;
+							return;
+						}
+					});
+					if (!isBlocked) {
+						return { content: message.content, user:  !(message.senderLogin == login), username: message.senderLogin };
+					}
+				});
+			 	messages = messagesWithUsername.map((message: {senderLogin: string, content: string}) => {
+					return { content: message.content, user:  !(message.senderLogin == login), username: message.senderLogin };
+				});
                 banList.set(newChannel.bannedUsers);
                 muteList.set(newChannel.mutedUsers);
                 adminList.set(newChannel.administrators);
-                blockList.set(newChannel.blockedUsers);
                 isAdmin = false;
                 if (newChannel.administrators) {
                     newChannel.administrators.forEach((admin: {id: number, login: string}) => {
@@ -917,11 +958,10 @@ async function getChannel(channel: string) {
       });
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.message);
+        alert(data.message);
       } else if (response.ok) {
         const newProfile = await response.json();
-        console.log('Contenu de newProfile:', newProfile);
-        throw new Error(newProfile.message);
+       alert(newProfile.message);
       }
     }
     catch (err) {
@@ -954,47 +994,26 @@ async function getChannel(channel: string) {
   }
 
   async function unblockUser() {
-  try
-  {
-    const response = await fetch('http://localhost:3333/chat/unblockUser', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: 'Bearer ' + token,
-      },
-      body: JSON.stringify({
-        idUser: userID,
-        loginUserToBlock: loginUserToExecute,
-      }),
-    });
-    if (!response.ok) {
-      const data = await response.json();
-      throw new Error(data.message);
-    } else {
-      const newProfile = await response.json();
-      alert("User unblocked");
-    }
-    const resp = await fetch('http://localhost:3333/chat/blockedUsers', {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: 'Bearer ' + myCookie,
-      },
-      credentials: 'include',
-    });
-    if (resp.ok)
-    {
-      const data = await resp.json();
-      if (data && data[0]) {
-        blockList.set(data.blockedUsers.blockedUsers);
-      }
-    }
-  }
-  catch(err)
-  {
-    if (err instanceof Error)
-      alert(err.message);
-  }
+	const response = await fetch('http://localhost:3333/chat/unblockUser', {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			Authorization: 'Bearer ' + token,
+		},
+		body: JSON.stringify({
+			idUser: userID,
+			loginUserToBlock: loginUserToExecute,
+		}),
+	});
+	if (!response.ok) {
+		const data = await response.json();
+		alert(data.message);
+	}
+	else {
+		const newProfile = await response.json();
+		blockList.set(newProfile.blockedUser.blockedUsers);
+		alert("User unblocked");
+	}
 }
 
   async function blockUser() {
@@ -1012,11 +1031,13 @@ async function getChannel(channel: string) {
       });
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.message);
+        alert(data.message);
       } else if (response.ok) {
         const newProfile = await response.json();
+		console.log("newProfile : ", newProfile);
+		console.log("newProfile.blockedUsers : ", newProfile.blockedUsers);
         blockList.set(newProfile.blockedUsers);
-        throw new Error("User blocked");
+        alert("User blocked");
       }
     }
     catch (err) {
@@ -1080,9 +1101,10 @@ async function getChannel(channel: string) {
 
 async function leaveRoom()
 {
-  try
-  {
-    const response = await fetch('http://localhost:3333/chat/leaveRoom', {
+	let userl = await refreshUserList(token, selectedChannel);
+	let users = userl.filter((user: any) => user.login !== login);
+	try {
+	    const response = await fetch('http://localhost:3333/chat/leaveRoom', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -1095,10 +1117,10 @@ async function leaveRoom()
     });
     if (!response.ok) {
       const data = await response.json();
-      throw new Error(data.message);
+      alert(data.message);
     } else {
       const newProfile = await response.json();
-      socket.emit('leaveRoom', { roomName: selectedChannel });
+      socket.emit('leaveRoom', { roomName: selectedChannel, userList : users });
       channelList.update(channelList => channelList.filter(channel => channel.name !== selectedChannel));
       adminList.update(adminList => adminList.filter(admin => admin.login !== login));
       refreshList();
@@ -1121,7 +1143,7 @@ async function leaveRoom()
   <div class="modal">
     <div class="modal-content">
       <h3>Invitation list</h3>
-      <input bind:value={inviteUser} id="inviteUser" type="Username ..." placeholder="inviteUser" name = "inviteUser"/>
+      <input bind:value={inviteUser} id="inviteUser" type="Username ..." placeholder="Enter username" name = "inviteUser"/>
       {#if inviteUser && selectedChannel}
         <button on:click={ ()=> inviteUsr(inviteUser)}>Invite</button>
       {:else}
