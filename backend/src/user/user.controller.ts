@@ -50,4 +50,9 @@ export class UserController {
     async deleteGameRequest(@Body() body: any) {
         return await this.userService.removeGameRequest(body);
     }
+	@Post('resetGameStatus')
+    async resetGameStatus(@Req() request: Request, @Body() body: any) {
+        const token = request.cookies;
+        return await this.userService.removeGameStatus(token, body);
+    }
 }

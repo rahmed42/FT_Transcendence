@@ -1509,9 +1509,11 @@
 		<h3 class="user-list-title">User List</h3>
 		<button class="user-button p-anim" on:click={() => openInvitationModal()}> Invitation </button>
 		{#each $userList as user}
+		{#if user.login !== login}
 			<button class="user-button p-anim" on:click={() => selectUser(user.login)}>
 				{user.login}
 			</button>
+		{/if}
 		{/each}
 		{#if gameRequest.login !== 'undefined'}
 			<div id="gameRequest">
