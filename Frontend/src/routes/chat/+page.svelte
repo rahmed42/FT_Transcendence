@@ -1831,31 +1831,7 @@
 		text-align: center;
 		font-weight: bold;
 	}
-	.greenButton {
-		background-color: #4caf50;
-		color: #fff;
-		font-size: 1rem;
-		padding: 0.5rem 1rem;
-		border: none;
-		border-radius: 15px;
-		cursor: pointer;
-	}
 
-	.greenButton:hover {
-		background-color: #3e8e41;
-	}
 
-	.redButton {
-		background-color: #f44336;
-		color: #fff;
-		font-size: 1rem;
-		padding: 0.5rem 1rem;
-		border: none;
-		border-radius: 15px;
-		cursor: pointer;
-	}
 
-	.redButton:hover {
-		background-color: #da190b;
-	}
 </style>

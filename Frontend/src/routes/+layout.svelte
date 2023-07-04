@@ -41,12 +41,12 @@
 	});
 </script>
 
-<!-- <Particles
+<Particles
 	id="tsparticles"
 	options={particlesConfig2}
 	on:particlesLoaded={onParticlesLoaded}
 	{particlesInit}
-/> -->
+/>
 
 <div>
 	<Header />
