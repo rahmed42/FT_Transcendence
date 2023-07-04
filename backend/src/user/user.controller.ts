@@ -3,10 +3,10 @@ import { UserService } from './user.service';
 import { Request } from 'express';
 import { AuthGuard } from '@nestjs/passport';
 
+@UseGuards(AuthGuard('jwt'))
 @Controller('profil')
 export class UserController {
     constructor(private userService: UserService) {}
-    // @UseGuards(AuthGuard('jwt'))
     @Get('me')
         async getUserInfo(@Req() request: Request) {
         const token = request.cookies;

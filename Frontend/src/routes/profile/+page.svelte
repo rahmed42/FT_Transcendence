@@ -25,10 +25,24 @@
 		return `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
 	}
 
+	function getCookie(name: string) {
+		const value = `; ${document.cookie}`;
+		const parts = value.split(`; ${name}=`);
+		if (parts.length === 2) {
+			return parts.pop()?.split(';').shift();
+		}
+	}
+
+	let myCookie = getCookie('jwt');
+
 	onMount(async () => {
 		async function getUserInfo() {
 			const response = await fetch('http://' + serverIP + ':3333/profil/me', {
 				method: 'GET',
+				headers: {
+					'Content-Type': 'application/json',
+					Authorization: 'Bearer ' + myCookie,
+				},
 				credentials: 'include'
 			});
 			const contentType = response.headers.get('Content-Type');
@@ -82,7 +96,8 @@
 				credentials: 'include',
 				headers: {
 					'Content-Type': 'application/json',
-					Accept: 'application/json'
+					Accept: 'application/json',
+					Authorization: 'Bearer ' + myCookie,
 				},
 				body: JSON.stringify({ data: avatar })
 			});
@@ -111,7 +126,8 @@
 			credentials: 'include',
 			headers: {
 				'Content-Type': 'application/json',
-				Accept: 'application/json'
+				Accept: 'application/json',
+				Authorization: 'Bearer ' + myCookie,
 			},
 			body: JSON.stringify({ data: username })
 		});

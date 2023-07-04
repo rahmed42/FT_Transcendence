@@ -18,6 +18,16 @@ async function load_skins() {
 	skins = await getUpdatedSkins();
 }
 
+function getCookie(name: string) {
+	const value = `; ${document.cookie}`;
+	const parts = value.split(`; ${name}=`);
+	if (parts.length === 2) {
+		return parts.pop()?.split(';').shift();
+	}
+}
+
+let myCookie = getCookie('jwt');
+
 export class Part1Scene extends Phaser.Scene {
 	//room reference
 	room: Room | undefined;
@@ -576,6 +586,7 @@ export class Part1Scene extends Phaser.Scene {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
+				Authorization: 'Bearer ' + myCookie,
 			},
 			body: JSON.stringify({
 				currentUser,
