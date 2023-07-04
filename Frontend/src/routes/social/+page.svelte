@@ -1,15 +1,43 @@
-<script>
+<script lang="ts">
 	import { notification } from '../../stores/notificationStore.js';
 	import { user } from '../../stores/user';
-
+	import io from 'socket.io-client';
+	import { onMount } from 'svelte';
     const apiUrl = import.meta.env.VITE_API_URL;
 
 	let pendingRequests = [];
 	let friends = [];
-	let requesteeLogin;
+	let requesteeLogin : string;
 	let friendRequestModalOpen = false;
   	let requesteeLoginModal = '';
-
+	let socket: any;
+	let myCookie: any;
+	  onMount(async () => {
+		function getCookie(name: string) {
+			const value = `; ${document.cookie}`;
+			const parts = value.split(`; ${name}=`);
+			if (parts.length === 2) {
+				return parts.pop()?.split(';').shift();
+			}
+		}
+		myCookie = getCookie('jwt');
+		socket = io('http://' + "localhost" + ':3333', {
+			transports: ['websocket'],
+			auth: {
+				token: myCookie
+			}
+		});
+		socket.on('connect', () => {
+			console.log('connected');
+		});
+		socket.on('disconnect', () => {
+			console.log('disconnected');
+		});
+		socket.on('friend-request', (data: {login : string}) => {
+			if (data.login == $user.login || data.login == "")
+				refreshData();
+		});
+	  });
 	// Reactive statement that triggers when $user.login changes
 	$: {
 		if ($user.login) {
@@ -17,27 +45,28 @@
 		}
 	}
 
+
 	async function refreshData() {
 		pendingRequests = await getFriendRequests($user.login);
 		friends = await getFriendList($user.login);
 	}
 
-	async function getFriendRequests(userLogin) {
+	async function getFriendRequests(userLogin : string) {
 	  const res = await fetch(`${apiUrl}/social/friend-requests/${userLogin}`);
 	  return await res.json();
 	}
 
 	async function acceptFriendRequest(id) {
-	  await fetch(`${apiUrl}/social/friend-request/${id}/accept`, { method: 'PATCH' });
-	  await refreshData();
+		await fetch(`${apiUrl}/social/friend-request/${id}/accept`, { method: 'PATCH' });
+		socket.emit("newFriendRequest", {login: ""})
 	}
 
 	async function rejectFriendRequest(id) {
 	  await fetch(`${apiUrl}/social/friend/${id}`, { method: 'DELETE' });
-	  await refreshData();
+	  socket.emit("newFriendRequest", {login: ""})
 	}
 
-	async function getFriendList(userLogin) {
+	async function getFriendList(userLogin : string) {
 	  const res = await fetch(`${apiUrl}/social/friend-list/${userLogin}`);
 	  return await res.json();
 	}
@@ -48,13 +77,13 @@
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify({ requesterLogin: $user.login, requesteeLogin })
 	  });
-
+	  socket.emit("newFriendRequest", {login: requesteeLogin})
 	  if (res.ok) {
 		notification.set('Friend request sent successfully!');
 		setTimeout(() => {
     		notification.set('');
     	}, 5000);
-		await refreshData();
+		socket.emit("newFriendRequest", {login: ""})
 	  }
 	  else {
 		notification.set('Failed to send friend request!');
@@ -66,7 +95,7 @@
 
 	async function deleteFriend(id) {
       await fetch(`${apiUrl}/social/friend/${id}`, { method: 'DELETE' });
-      await refreshData();
+	  socket.emit("newFriendRequest", {login: ""})
 	}
 
 	function openFriendRequestModal() {
