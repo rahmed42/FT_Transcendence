@@ -130,11 +130,22 @@ export class UserService {
 	async invitePlayer(body: any) {
 		await this.prisma.user.update({
 			where: {
-				login: body.myLogin,
+				login: body.guestLogin,
 			},
 			data: {
 				gameTypeInvitation: body.gameType,
-				loginGameInvitation: body.guestLogin,
+				loginGameInvitation: body.myLogin,
+			}
+		})
+	}
+	async removeGameRequest(body: any) {
+		await this.prisma.user.update({
+			where: {
+				login: body.myLogin,
+			},
+			data: {
+				gameTypeInvitation: 'undefined',
+				loginGameInvitation: 'undefined',
 			}
 		})
 	}

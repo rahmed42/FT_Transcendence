@@ -17,9 +17,10 @@ const serverIP = import.meta.env.VITE_SERVER_IP;
   let messages:Message[] = [];
 
   // invitationGame
-  let gameRequest = false;
-  let playerLogin = '';
-  let gameType= '';
+  let gameRequest = {
+    login: 'undefined',
+    type: 'undefined',
+  };
 
   //invitation modal
   let isInvitationModalOpen = false;
@@ -97,6 +98,7 @@ const serverIP = import.meta.env.VITE_SERVER_IP;
         token: myCookie,
       },
     });
+    await getGameRequest()
     /*const resp = await fetch('http://' + serverIP + ':3333/chat/blockedUsers', {
       method: 'GET',
       headers: {
@@ -920,9 +922,9 @@ async function getChannel(channel: string) {
     }
   }
 
-  async function inviteGame() {
+  async function createGameRequest() {
     try {
-      const response = await fetch('http://localhost:3333/profil/inviteGame', {
+      const response = await fetch('http://localhost:3333/profil/createGameRequest', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -935,6 +937,67 @@ async function getChannel(channel: string) {
         }),
       });
       closeUserModal();
+    }
+    catch (err) {
+      if (err instanceof Error)
+        alert(err.message);
+    }
+  }
+
+  async function deleteGameRequest() {
+    try {
+      const response = await fetch('http://localhost:3333/profil/deleteGameRequest', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + token,
+        },
+        body: JSON.stringify({
+          myLogin: login,
+        }),
+      });
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message);
+      } else {
+        gameRequest.login = 'undefined';
+        gameRequest.type = 'undefined';
+      }
+    }
+    catch (err) {
+      if (err instanceof Error)
+        alert(err.message);
+    }
+  }
+
+  async function acceptGameRequest() {
+    try {
+        await deleteGameRequest();
+    }
+    catch (err) {
+      if (err instanceof Error)
+        alert(err.message);
+    }
+  }
+
+  async function getGameRequest() {
+    try {
+      const response = await fetch('http://' + serverIP + ':3333/profil/me', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'applications/json',
+          Authorization: 'Bearer ' + token,
+        },
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message);
+      } else {
+        const data = await response.json();
+        gameRequest.login = data.loginGameInvitation;
+        gameRequest.type = data.gameTypeInvitation;
+      }
     }
     catch (err) {
       if (err instanceof Error)
@@ -1153,7 +1216,7 @@ async function leaveRoom()
 				<button on:click={closeUserModal}>Close</button>
 			</div>
 			<div>
-				<button on:click={inviteGame}>Invite Game</button>
+				<button on:click={createGameRequest}>Invite Game</button>
 				<input
 					type="radio"
 					value="Original"
@@ -1397,8 +1460,6 @@ async function leaveRoom()
 	</div>
 {/if}
 <div class="container">
-  <div>
-  </div>
 	<div class="sidebar">
 		<div class="chat-area">
 			{#if selectedChannel != '' || selectedPrivateChannel != ''}
@@ -1481,7 +1542,15 @@ async function leaveRoom()
 				{user.login}
 			</button>
 		{/each}
-    <p id="invitationGame">invitation Popup</p>
+    {#if gameRequest.login !== 'undefined'}
+      <div id="gameRequest">
+        <p id="gameRequestPopup">{gameRequest.login} invite you to play {gameRequest.type} game</p>
+        <div id="gameRequestButtons">
+          <button on:click={() => acceptGameRequest()}>Accept </button>
+          <button on:click={() => deleteGameRequest()}>Decline </button>
+        </div>
+      </div>
+    {/if}
 	</div>
 
 	{#if isModalOpen}
@@ -1781,7 +1850,7 @@ async function leaveRoom()
 			font-family: Arial, sans-serif;
 		}
 	}
-  #invitationGame {
+  #gameRequest {
     display: flex;
     margin-left: auto;
     margin-right: auto;
