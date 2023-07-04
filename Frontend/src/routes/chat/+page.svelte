@@ -22,23 +22,24 @@
 		type: 'undefined'
 	};
 
-	//invitation modal
-	let isInvitationModalOpen = false;
-	let selectedInvitation = '';
-	let inviteUser = '';
+  //invitation modal
+  let isInvitationModalOpen = false;
+  let selectedInvitation = '';
+  let inviteUser = '';
 
-	//admin modal
-	let isUserModalOpen = false;
-	let openAdminModal = false;
-	let changePassword = false;
-	let banUser = false;
-	let muteUser = false;
-	let grantAdmin = false;
-	let expulUser = false;
-	let selectedUserparam = '';
-	let newPassword = '';
-	let muteDuration = 0;
-	let loginUserToExecute = '';
+
+  //admin modal
+  let isUserModalOpen = false;
+  let openAdminModal = false;
+  let changePassword = false;
+  let banUser = false;
+  let muteUser = false;
+  let grantAdmin = false;
+  let expulUser = false;
+  let selectedUserparam = '';
+  let newPassword = '';
+  let muteDuration = 0;
+  let loginUserToExecute = '';
 
 	//private message modal
 	let isPrivateMessageModalOpen = false;
@@ -46,59 +47,58 @@
 	let messageContent = '';
 	let privateMessageError = '';
 
-	//channel modal
-	let isAdmin = false;
-	let isInvalidType = false;
-	let isInvalidName = false;
-	let isInvalidPassword = false;
-	let isJoinInvalidType = false;
-	let isJoinInvalidName = false;
-	let isJoinInvalidPassword = false;
-	let isModalOpen = false;
-	let isJoinModalOpen = false;
-	let newChannelName = '';
-	let newChannelType = '';
-	let newChannelPassword = '';
-	let joinChannelName = '';
-	let joinChannelType = '';
-	let joinGameType = 'Original';
-	let joinChannelPassword = '';
-	let userID = 0;
-	let token = '';
-	let channelList = writable<{ name: string }[]>([]);
-	let userList = writable<{ login: string }[]>([]);
-	let banList = writable<{ login: string }[]>([]);
-	let muteList = writable<{ login: string }[]>([]);
-	let blockList = writable<{ login: string }[]>([]);
-	let adminList = writable<{ login: string }[]>([]);
-	let privateList = writable<{ login: string }[]>([]);
-	let invitationList = writable<{ login: string }[]>([]);
-	let error: string = '';
-	let selectedChannel = '';
-	let selectedPrivateChannel = '';
-	let selectedUser = '';
-	let selectedSection = '';
-	let login: string = '';
-	let socket: any;
-	let myCookie: any;
-	let privateId: any;
+  //channel modal
+  let isAdmin = false;
+  let isInvalidType = false;
+  let isInvalidName = false;
+  let isInvalidPassword = false;
+  let isJoinInvalidType = false;
+  let isJoinInvalidName = false;
+  let isJoinInvalidPassword = false;
+  let isModalOpen = false;
+  let isJoinModalOpen = false;
+  let newChannelName = '';
+  let newChannelType = '';
+  let newChannelPassword = '';
+  let joinChannelName = '';
+  let joinChannelType = '';
+  let joinChannelPassword = '';
+  let userID = 0;
+  let token = '';
+  let channelList = writable<{ name: string }[]>([]);
+  let userList = writable<{ login: string }[]>([]);
+  let banList = writable<{ login: string }[]>([]);
+  let muteList = writable<{ login: string }[]>([]);
+  let blockList = writable<{ login: string }[]>([]);
+  let adminList = writable<{ login: string }[]>([]);
+  let privateList = writable<{ login: string }[]>([]);
+  let invitationList = writable<{ login: string }[]>([]);
+  let error: string = '';
+  let selectedChannel = '';
+  let selectedPrivateChannel = '';
+  let selectedUser = '';
+  let selectedSection = '';
+  let login: string = '';
+  let socket: any;
+  let myCookie: any;
+  let privateId : any;
 
-	onMount(async () => {
-		function getCookie(name: string) {
-			const value = `; ${document.cookie}`;
-			const parts = value.split(`; ${name}=`);
-			if (parts.length === 2) {
-				return parts.pop()?.split(';').shift();
-			}
-		}
-		myCookie = getCookie('jwt');
-		socket = io('http://' + serverIP + ':3333', {
-			transports: ['websocket'],
-			auth: {
-				token: myCookie
-			}
-		});
-		/*const resp = await fetch('http://' + serverIP + ':3333/chat/blockedUsers', {
+  onMount(async () => {
+    function getCookie(name: string) {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) {
+        return parts.pop()?.split(';').shift();
+      }
+    }
+    myCookie = getCookie('jwt');
+    socket = io('http://localhost:3333', {
+      transports: ['websocket'],
+      auth: {
+        token: myCookie,
+      },
+    });
+    /*const resp = await fetch('http://localhost:3333/chat/blockedUsers', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -116,88 +116,80 @@
       else
         blockList.set([])
     }*/
-		socket.on('connect', () => {
-			console.log('connected');
-		});
+  socket.on('connect', () => {
+    console.log('connected');
+  });
 
-		socket.on('disconnect', () => {
-			console.log('disconnected');
-		});
+  socket.on('disconnect', () => {
+    console.log('disconnected');
+  });
 
-		socket.on('newPrivateMessage', (data: { content: string; nameSender: string }) => {
-			console.log('Mutelist : ', muteList);
-			console.log('Blocklist : ', blockList);
-			console.log('Message');
-			if (blockList && !(data.nameSender === login) && data.nameSender === selectedPrivateChannel) {
-				if (muteList) {
-					messages = [
-						...messages,
-						{ username: data.nameSender, content: data.content, user: true }
-					];
-				}
-			}
-		});
+  socket.on('newPrivateMessage', (data: {content: string, nameSender: string}) => {
+    console.log("Mutelist : ", muteList);
+    console.log("Blocklist : ", blockList);
+    console.log("Message");
+    if ((blockList) && !(data.nameSender === login) && data.nameSender === selectedPrivateChannel) {
+      if (muteList)
+      {
+        messages = [...messages, { username: data.nameSender, content: data.content, user: true }];
+      }
+    }
+  });
 
-		socket.on(
-			'newRoomMessage',
-			(data: { content: string; nameSender: string; roomName: string }) => {
-				if (blockList && !(data.nameSender === login) && data.nameSender === selectedChannel) {
-					if (muteList)
-						messages = [
-							...messages,
-							{ username: data.nameSender, content: data.content, user: true }
-						];
-				} else if (
-					muteList &&
-					!(data.nameSender === login) &&
-					data.nameSender === selectedChannel
-				) {
-					messages = [
-						...messages,
-						{ username: data.nameSender, content: data.content, user: true }
-					];
-				}
-			}
-		);
-		socket.on('newGameRequest', (data:  {
-			sender: string,
-			login: string,
-			type: string,
-		 }) => {
-			if (data.login == login)
-				getGameRequest();
-		});
-		socket.on('redirectGame', (data: {login: string, type: string}) =>
+  socket.on('newRoomMessage', (data: { content: string, nameSender: string, roomName: string }) => {
+	let bl = get(blockList);
+	if (bl)
+	{
+		for (let i = 0; i < bl.length; i++)
 		{
-			console.log(data)
-			if (data.login == login)
-				goto("/game")
-		});
-		async function getUserinfo() {
-			try {
-				const response = await fetch('http://' + serverIP + ':3333/profil/me', {
-					method: 'GET',
-					headers: {
-						'Content-Type': 'application/json',
-						Authorization: 'Bearer ' + myCookie
-					},
-					credentials: 'include'
-				});
-
-				if (response.ok) {
-					const data = await response.json();
-					if (data) {
-						userID = data.id;
-						login = data.login;
-						token = data.jwtToken;
-					}
-				} else {
-					console.error('Failed to fetch user info', response.statusText);
-				}
-			} catch (error) {
-				console.error('An error occurred while fetching user info:', error);
-			}
+			if (bl[i].login == data.nameSender)
+				return ;
 		}
+	}
+    if (selectedChannel) {
+      if (data.roomName === selectedChannel) {
+        if (data.nameSender === login)
+          return;
+        else
+        {
+          messages = [...messages, { username: data.nameSender, content: data.content, user: true }];
+          return ;
+        }
+      }
+    }
+  });
+  socket.on('roomListUpdate', (data : {userList : {login : string}[] , roomName : string }) => {
+	console.log("roomListUpdate : " + data.roomName + " " + data.userList);
+	if (data.roomName == selectedChannel)
+		userList.set(data.userList);
+  });
+
+  async function getUserinfo() {
+    try {
+      const response = await fetch('http://localhost:3333/profil/me', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + myCookie,
+        },
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data) {
+          userID = data.id;
+          login = data.login;
+          token = data.jwtToken;
+		  blockList.set(data.blockedUsers);
+        }
+      } else {
+        console.error('Failed to fetch user info', response.statusText);
+      }
+    } catch (error) {
+      console.error('An error occurred while fetching user info:', error);
+    }
+  }
 
 		// Wait for getUserinfo to complete before moving on
 		await getUserinfo();
@@ -212,53 +204,79 @@
 			credentials: 'include'
 		});
 
-		if (response.ok) {
-			const data = await response.json();
-			console.log(data.rooms);
-			if (data && data.rooms) {
-				channelList.set(data.rooms);
-			}
-		} else {
-			const data = await response.json();
-			throw new Error(data.message);
-		}
+  if (response.ok) {
+    const data = await response.json();
+    console.log(data.rooms);
+    if (data && data.rooms) {
+      channelList.set(data.rooms);
+    }
+  } else {
+    const data = await response.json();
+    throw new Error(data.message);
+  }
 
-		// Fetch all the private rooms
-		const response2 = await fetch('http://' + serverIP + ':3333/chat/privateRooms', {
-			method: 'GET',
-			headers: {
-				'Content-Type': 'application/json',
-				Authorization: 'Bearer ' + token
-			},
-			credentials: 'include'
-		});
+  // Fetch all the private rooms
+  const response2 = await fetch('http://localhost:3333/chat/privateRooms', {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: 'Bearer ' + token,
+    },
+    credentials: 'include',
+  });
 
-		if (response2.ok) {
-			const data = await response2.json();
-			if (data && data[0]) {
-				privateList.update((currentPrivateList) => [
-					...currentPrivateList,
-					{ login: data[0].users[0].login }
-				]);
-			}
-		} else {
-			const data = await response2.json();
-			throw new Error(data.message);
-		}
-	});
+  if (response2.ok) {
+    const data = await response2.json();
+    if (data && data[0]) {
+      privateList.update(currentPrivateList => [...currentPrivateList, { login: data[0].users[0].login }]);
+    }
+  } else {
+    const data = await response2.json();
+    throw new Error(data.message);
+  }
+});
 
-	function refreshList() {
-		userList.set([]);
-		banList.set([]);
-		muteList.set([]);
-		blockList.set([]);
-		adminList.set([]);
-		invitationList.set([]);
-		messages = [];
-		selectedChannel = '';
-		selectedPrivateChannel = '';
-		isAdmin = false;
-	}
+
+async function refreshUserList(myCookie : string, selectedChannel : string)
+  {
+	const reponse = await fetch('http://localhost:3333/chat/rooms/' + selectedChannel, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: 'Bearer ' + myCookie,
+            },
+        });
+        if (!reponse.ok) {
+            const data = await reponse.json();
+            alert(data.message);
+        } else {
+            const newChannel = await reponse.json();
+			console.log(newChannel.users);
+			if (newChannel.users != null)
+				return (newChannel.users);
+			else
+				return ([]);
+  		}
+  }
+
+function checkForEnter(event: KeyboardEvent) {
+    // KeyCode 13 correspond à la touche "Entrée"
+    if (event.key === 'Enter') {
+      sendMessage();
+    }
+  }
+
+function refreshList() {
+  userList.set([]);
+  banList.set([]);
+  muteList.set([]);
+  blockList.set([]);
+  adminList.set([]);
+  messages = [];
+  selectedChannel = '';
+  selectedPrivateChannel = '';
+  isAdmin = false;
+}
 
 	function openInvitationModal() {
 		isInvitationModalOpen = true;
@@ -277,59 +295,71 @@
 		privateMessageError = '';
 	}
 
-	async function changeUserPassword(newPassword: string) {
-		try {
-			const response = await fetch("http://' + serverIP + ':3333/chat/changePassword", {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-					Authorization: 'Bearer ' + token
-				},
-				body: JSON.stringify({
-					idUser: userID,
-					roomName: selectedChannel,
-					password: newPassword
-				})
-			});
-			if (!response.ok) {
-				const data = await response.json();
-				throw new Error(data.message);
-			} else {
-				const data = await response.json();
-				throw new Error(data.message);
-			}
-		} catch (err) {
-			if (err instanceof Error) alert(err.message);
-		}
-	}
+  async function changeUserPassword(newPassword: string)
+  {
+    try
+    {
+      const response = await fetch("http://localhost:3333/chat/changePassword", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + token,
+        },
+          body: JSON.stringify({
+          idUser: userID,
+          roomName: selectedChannel,
+          password: newPassword,
+          }),
+        });
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.message);
+        }
+        else
+        {
+          const data = await response.json();
+          throw new Error(data.message);
+        }
+      }
+      catch (err) {
+        if (err instanceof Error)
+          alert(err.message);
+    }
+  }
 
-	async function grantUserAdmin() {
-		try {
-			const response = await fetch("http://' + serverIP + ':3333/chat/giveAdmin", {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-					Authorization: 'Bearer ' + token
-				},
-				body: JSON.stringify({
-					idAdmin: userID,
-					roomName: selectedChannel,
-					loginUserToExecute: selectedUserparam
-				})
-			});
-			if (!response.ok) {
-				const data = await response.json();
-				throw new Error(data.message);
-			} else {
-				const data = await response.json();
-				adminList.set(data.administrators);
-				//need to change the state of the other user (websocket)
-				throw new Error(data.message);
-			}
-		} catch (err) {
-			if (err instanceof Error) alert(err.message);
-		}
-	}
+async function grantUserAdmin()
+{
+  try
+  {
+    const response = await fetch("http://localhost:3333/chat/giveAdmin", {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: 'Bearer ' + token,
+    },
+      body: JSON.stringify({
+      idAdmin: userID,
+      roomName: selectedChannel,
+      loginUserToExecute: selectedUserparam,
+      }),
+    });
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.message);
+    }
+    else
+    {
+      const data = await response.json();
+      adminList.set(data.administrators);
+      //need to change the state of the other user (websocket)
+      throw new Error(data.message);
+    }
+  }
+  catch (err) {
+    if (err instanceof Error)
+      alert(err.message);
+  }
+}
 
 	async function expulSelectedUser() {
 		try {
@@ -348,48 +378,53 @@
 
 			const data = await response.json();
 
-			if (!response.ok) {
-				throw new Error(data.message);
-			} else {
-				userList.update((currentUsers) =>
-					currentUsers.filter((user) => user.login !== selectedUserparam)
-				);
-				//need to use socket to kick the user
-				alert('User successfully kicked out of the channel.');
-			}
-		} catch (err) {
-			if (err instanceof Error) {
-				alert(err.message);
-			}
-		}
-	}
+    if (!response.ok) {
+      throw new Error(data.message);
+    } else {
+      userList.update(currentUsers => currentUsers.filter(user => user.login !== selectedUserparam));
+      //need to use socket to kick the user
+      alert('User successfully kicked out of the channel.');
+    }
 
-	async function banSelectedUser() {
-		try {
-			const response = await fetch("http://' + serverIP + ':3333/chat/banUser", {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-					Authorization: 'Bearer ' + token
-				},
-				body: JSON.stringify({
-					idAdmin: userID,
-					roomName: selectedChannel,
-					loginUserToExecute: selectedUserparam
-				})
-			});
-			if (!response.ok) {
-				const data = await response.json();
-				throw new Error(data.message);
-			} else {
-				const data = await response.json();
-				throw new Error(data.message);
-				//need to get the newlist of userban, to update the list
-			}
-		} catch (err) {
-			if (err instanceof Error) alert(err.message);
-		}
-	}
+  } catch (err) {
+    if (err instanceof Error) {
+      alert(err.message);
+    }
+  }
+}
+
+
+async function banSelectedUser() {
+  try
+  {
+    const response = await fetch("http://localhost:3333/chat/banUser", {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: 'Bearer ' + token,
+    },
+      body: JSON.stringify({
+      idAdmin: userID,
+      roomName: selectedChannel,
+      loginUserToExecute: selectedUserparam,
+      }),
+    });
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.message);
+    }
+    else
+    {
+      const data = await response.json();
+      throw new Error(data.message);
+      //need to get the newlist of userban, to update the list
+    }
+  }
+  catch (err) {
+    if (err instanceof Error)
+      alert(err.message);
+  }
+}
 
 	async function unmuteUser() {
 		try {
@@ -484,61 +519,71 @@
 		}
 	}
 
-	async function changeChannelType() {
-		try {
-			const response = await fetch("http://' + serverIP + ':3333/chat/changeRoomType", {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-					Authorization: 'Bearer ' + token
-				},
-				body: JSON.stringify({
-					idUser: userID,
-					roomName: selectedChannel,
-					password: newPassword,
-					type: newChannelType
-				})
-			});
-			if (!response.ok) {
-				const data = await response.json();
-				throw new Error(data.message);
-			} else {
-				const data = await response.json();
-				throw new Error(data.message);
-			}
-		} catch (err) {
-			if (err instanceof Error) alert(err.message);
-		}
-	}
+async function changeChannelType() {
+  try
+  {
+    const response = await fetch("http://localhost:3333/chat/changeRoomType", {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: 'Bearer ' + token,
+    },
+      body: JSON.stringify({
+      idUser: userID,
+      roomName: selectedChannel,
+      password: newPassword,
+      type: newChannelType,
+      }),
+    });
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.message);
+    }
+    else
+    {
+      const data = await response.json();
+      throw new Error(data.message);
+    }
+  }
+  catch (err) {
+    if (err instanceof Error)
+      alert(err.message);
+  }
+}
 
-	async function muteSelectedUser(muteDuration: number) {
-		try {
-			const response = await fetch("http://' + serverIP + ':3333/chat/muteUser", {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-					Authorization: 'Bearer ' + token
-				},
-				body: JSON.stringify({
-					idAdmin: userID,
-					roomName: selectedChannel,
-					loginUserToExecute: selectedUserparam,
-					muteDuration: muteDuration
-				})
-			});
-			if (!response.ok) {
-				const data = await response.json();
-				throw new Error(data.message);
-			} else {
-				const newMuteList = await response.json();
-				throw new Error(newMuteList.message);
-				muteList.set(newMuteList.mutedUsers.mutedUsers.login);
-			}
-			muteDuration = 0;
-		} catch (err) {
-			if (err instanceof Error) alert(err.message);
-		}
-	}
+async function muteSelectedUser(muteDuration: number) {
+  try
+  {
+    const response = await fetch("http://localhost:3333/chat/muteUser", {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: 'Bearer ' + token,
+    },
+      body: JSON.stringify({
+      idAdmin: userID,
+      roomName: selectedChannel,
+      loginUserToExecute: selectedUserparam,
+      muteDuration: muteDuration,
+      }),
+    });
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.message);
+    }
+    else
+    {
+      const newMuteList = await response.json();
+      throw new Error(newMuteList.message);
+      muteList.set(newMuteList.mutedUsers.mutedUsers.login);
+    }
+    muteDuration = 0;
+  }
+  catch (err) {
+    if (err instanceof Error)
+      alert(err.message);
+  }
+}
 
 	function closeSetupModal() {
 		openAdminModal = false;
@@ -580,52 +625,55 @@
 		isJoinInvalidPassword = false;
 	}
 
-	async function createChannel() {
-		try {
-			if (
-				newChannelName.trim() !== '' &&
-				newChannelName.length <= 10 &&
-				isValidChannelName(newChannelName)
-			) {
-				if (newChannelType === '') {
-					isInvalidType = true;
-				} else {
-					if (newChannelType === 'protected') {
-						if (newChannelPassword.trim() === '') {
-							isInvalidPassword = true;
-							return;
-						}
-					}
-					const response = await fetch('http://' + serverIP + ':3333/chat/createRoom', {
-						method: 'POST',
-						headers: {
-							'Content-Type': 'application/json',
-							Authorization: 'Bearer ' + token
-						},
-						body: JSON.stringify({
-							idUser: userID,
-							roomName: newChannelName,
-							type: newChannelType,
-							password: newChannelPassword
-						})
-					});
-					if (!response.ok) {
-						const data = await response.json();
-						throw new Error(data.message);
-					} else {
-						const newChannel = await response.json();
-						channelList.update((channelList) => [...channelList, { name: newChannel.room.name }]);
-						socket.emit('joinRoom', newChannel.room.name);
-						closeModal();
-					}
-				}
-			} else {
-				isInvalidName = true;
-			}
-		} catch (err) {
-			if (err instanceof Error) alert(err.message);
-		}
-	}
+  async function createChannel() {
+    try {
+      if (
+        newChannelName.trim() !== '' &&
+        newChannelName.length <= 10 &&
+        isValidChannelName(newChannelName)
+      ) {
+        if (newChannelType === '') {
+          isInvalidType = true;
+        } else {
+          if (newChannelType === 'protected') {
+            if (newChannelPassword.trim() === '') {
+              isInvalidPassword = true;
+              return;
+            }
+          }
+          const response = await fetch('http://localhost:3333/chat/createRoom', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: 'Bearer ' + token,
+            },
+            body: JSON.stringify({
+              idUser: userID,
+              roomName: newChannelName,
+              type: newChannelType,
+              password: newChannelPassword,
+            }),
+          });
+          if (!response.ok) {
+            const data = await response.json();
+            throw new Error(data.message);
+          } else
+          {
+            const newChannel = await response.json();
+            channelList.update(channelList => [...channelList, { name: newChannel.room.name }]);
+			socket.emit('joinRoom', newChannel.room.name);
+            closeModal();
+          }
+        }
+      } else {
+        isInvalidName = true;
+      }
+    } catch (err) {
+      if (err instanceof Error)
+        alert(err.message);
+    }
+  }
+
 
 	function isValidChannelName(name: string) {
 		for (let i = 0; i < name.length; i++) {
@@ -649,130 +697,130 @@
 		loginUserToExecute = '';
 	}
 
-	async function joinChannel() {
-		try {
-			if (
-				joinChannelName.trim() !== '' &&
-				joinChannelName.length <= 10 &&
-				isValidChannelName(joinChannelName)
-			) {
-				if (joinChannelType === '') {
-					isJoinInvalidType = true;
-					return;
-				} else {
-					if (joinChannelType === 'protected') {
-						if (joinChannelPassword.trim() === '') {
-							isJoinInvalidPassword = true;
-							return;
-						}
-					}
-				}
-				const response = await fetch('http://' + serverIP + ':3333/chat/joinRoom', {
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json',
-						Authorization: 'Bearer ' + token
-					},
-					body: JSON.stringify({
-						idUser: userID,
-						roomName: joinChannelName,
-						password: joinChannelPassword
-					})
-				});
-				if (!response.ok) {
-					const data = await response.json();
-					closeJoinModal();
-					throw new Error(data.message);
-				} else if (response.ok) {
-					const newChannel = await response.json();
-					channelList.update((channelList) => [...channelList, { name: newChannel.room.name }]);
-					socket.emit('joinRoom', { roomName: joinChannelName });
-					console.log(newChannel.room.name);
-				}
-				closeJoinModal();
-			} else {
-				isJoinInvalidName = true;
-				return;
-			}
-		} catch (err) {
-			if (err instanceof Error) alert(err.message);
-		}
-	}
+  async function joinChannel()
+  {
+    try
+    {
+      if (joinChannelName.trim() !== '' &&
+        joinChannelName.length <= 10 &&
+        isValidChannelName(joinChannelName))
+        {
+          if (joinChannelType === '')
+          {
+            isJoinInvalidType = true;
+            return;
+          }
+          else
+          {
+            if (joinChannelType === 'protected')
+            {
+              if (joinChannelPassword.trim() === '')
+              {
+                isJoinInvalidPassword = true;
+                return;
+              }
+            }
+          }
+          const response = await fetch('http://localhost:3333/chat/joinRoom',
+          {
+            method: 'POST',
+            headers:
+            {
+              'Content-Type': 'application/json',
+              Authorization: 'Bearer ' + token,
+            },
+            body: JSON.stringify({
+              idUser: userID,
+              roomName: joinChannelName,
+              password: joinChannelPassword,
+            }),
+          });
+          if (!response.ok)
+          {
+            const data = await response.json();
+            closeJoinModal();
+            throw new Error(data.message);
+          }
+          else if (response.ok)
+          {
+            const newChannel = await response.json();
+            channelList.update(channelList => [...channelList, { name: newChannel.room.name }]);
+            socket.emit('joinRoom', { roomName: joinChannelName});
+            console.log(newChannel.room.name);
+          }
+          closeJoinModal();
+        }
+      else
+      {
+        isJoinInvalidName = true;
+        return;
+      }
+    }
+    catch (err) {
+      if (err instanceof Error)
+        alert(err.message);
+    }
+  }
 
-	async function sendPrivateMessage() {
-		let loginToSend = recipientName;
-		let contentMessage = messageContent;
-		closePrivateMessageModal();
-		// await new Promise(r => setTimeout(r, 1000));
-		const response = await fetch('http://' + serverIP + ':3333/chat/createPrivateRoom', {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-				Authorization: 'Bearer ' + token
-			},
-			body: JSON.stringify({
-				idUser: userID,
-				loginReceiver: loginToSend
-			})
-		});
-		if (!response.ok) {
-			const data = await response.json();
-			console.log('Error : ', data);
-			throw new Error(data.message);
-		} else if (response.ok) {
-			const newChannel = await response.json();
-			console.log('New channel : ', newChannel);
-			socket.emit('joinRoom', { roomName: newChannel.id });
-			socket.emit('newMessage', {
-				idSender: userID,
-				roomName: newChannel.id,
-				loginReceiver: loginToSend,
-				content: contentMessage,
-				type: 'private'
-			});
-			privateId = newChannel.id;
-			messages = [...messages, { username: login, content: contentMessage, user: false }];
-			privateList.update((privateList) => [...privateList, { login: newChannel.users[0].login }]);
-			recipientName = '';
-			messageContent = '';
-			alert(newChannel.message);
-		}
-	}
+  async function sendPrivateMessage() {
+	let loginToSend = recipientName;
+	let contentMessage = messageContent;
+  closePrivateMessageModal();
+	// await new Promise(r => setTimeout(r, 1000));
+  const response = await fetch('http://localhost:3333/chat/createPrivateRoom', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: 'Bearer ' + token,
+    },
+    body: JSON.stringify({
+      idUser: userID,
+      loginReceiver: loginToSend,
+    }),
+  });
+  if (!response.ok)
+  {
+    const data = await response.json();
+	  console.log("Error : ", data)
+	  throw new Error(data.message);
+  }
+  else if (response.ok)
+  {
+    const newChannel = await response.json();
+    console.log("New channel : ", newChannel);
+    socket.emit('joinRoom', { roomName: newChannel.id });
+    socket.emit('newMessage', { idSender: userID, roomName : newChannel.id, loginReceiver: loginToSend, content: contentMessage, type: "private" });
+    privateId = newChannel.id;
+    messages = [...messages, { username: login, content: contentMessage, user: false }];
+	  privateList.update(privateList => [...privateList, { login: newChannel.users[0].login }]);
+    recipientName = '';
+    messageContent = '';
+    alert(newChannel.message);
+  }
+}
 
-	async function sendMessage() {
-		if (selectedChannel === '' && selectedPrivateChannel === '') {
-			messageInput = '';
-			return;
-		}
-		if (messageInput.trim() === '') {
-			return;
-		}
-		if (selectedChannel !== '') {
-			let roomName = selectedChannel;
-			socket.emit('newMessage', {
-				roomName: roomName,
-				content: messageInput,
-				idSender: userID,
-				type: 'room'
-			});
-			console.log('Message before : ', messages);
-			messages = [...messages, { username: login, content: messageInput, user: false }];
-			console.log('Message after : ', messages);
-			messageInput = '';
-		} else if (selectedPrivateChannel !== '') {
-			let loginToSend = selectedPrivateChannel;
-			socket.emit('joinRoom', { roomName: privateId });
-			socket.emit('newMessage', {
-				idSender: userID,
-				roomName: privateId,
-				loginReceiver: loginToSend,
-				content: messageInput,
-				type: 'private'
-			});
-			messages = [...messages, { username: login, content: messageInput, user: false }];
-			messageInput = '';
-		}
-	}
+  async function sendMessage() {
+    if (selectedChannel === '' && selectedPrivateChannel === '') {
+      messageInput = '';
+      return;
+    }
+    if (messageInput.trim() === '') {
+      return;
+    }
+    if (selectedChannel !== '') {
+      let roomName = selectedChannel;
+      socket.emit('newMessage', { roomName: roomName, content: messageInput, idSender: userID, type: "room" });
+      messages = [...messages, { username: login, content: messageInput, user: false}];
+      messageInput = '';
+    }
+    else if (selectedPrivateChannel !== '') {
+      let loginToSend = selectedPrivateChannel;
+      socket.emit('joinRoom', { roomName: privateId });
+      socket.emit('newMessage', { idSender: userID, roomName: privateId, loginReceiver: loginToSend, content: messageInput, type: "private" });
+      messages = [...messages, { username: login, content: messageInput, user: false}];
+      messageInput = '';
+    }
+  }
 
 	async function confirmSelection() {
 		if (selectedSection === 'changePassword') {
@@ -823,147 +871,101 @@
 				}
 			});
 
-			if (!response.ok) {
-				const data = await response.json();
-				throw new Error(data.message);
-			} else if (response.ok) {
-				const newChannel = await response.json();
-				console.log('New channel : ', newChannel);
-				if (newChannel) {
-					socket.emit('joinRoom', { roomName: selectedChannel });
-					userList.set(newChannel.users);
-					const messagesWithUsername = newChannel.messages.map((message: any) => {
-						return {
-							content: message.content,
-							user: !(message.senderLogin === login),
-							username: message.senderLogin
-						};
-					});
-					messages = messagesWithUsername;
-					banList.set(newChannel.bannedUsers);
-					muteList.set(newChannel.mutedUsers);
-					adminList.set(newChannel.administrators);
-					invitationList.set(newChannel.invitations);
-					blockList.set(newChannel.blockedUsers);
-					isAdmin = false;
-					if (newChannel.administrators) {
-						newChannel.administrators.forEach((admin: { id: number; login: string }) => {
-							if (admin.login === login && admin.id === userID) {
-								isAdmin = true;
-								return;
-							}
-						});
-					}
-				}
-			}
-		} catch (err) {
-			if (err instanceof Error) {
-				alert(err.message);
-			}
-		}
-	}
+        if (!response.ok) {
+            const data = await response.json();
+            throw new Error(data.message);
+        } else if (response.ok) {
+            const newChannel = await response.json();
+            console.log("New channel : ", newChannel);
+            if (newChannel) {
+                socket.emit('joinRoom', { roomName: selectedChannel })
+                userList.set(newChannel.users);
+                const messagesWithUsername = newChannel.messages.map((message : any) => {
+                  return {
+                    content : message.content,
+                    user : !(message.senderLogin === login),
+                    username: message.senderLogin
+                  }
+                });
+                messages = messagesWithUsername;
+                banList.set(newChannel.bannedUsers);
+                muteList.set(newChannel.mutedUsers);
+                adminList.set(newChannel.administrators);
+                invitationList.set(newChannel.invitations);
+                blockList.set(newChannel.blockedUsers);
+                isAdmin = false;
+                if (newChannel.administrators) {
+                    newChannel.administrators.forEach((admin: {id: number, login: string}) => {
+                        if (admin.login === login && admin.id === userID) {
+                            isAdmin = true;
+                            return;
+                        }
+                    });
+                }
+            }
+        }
+    } catch (err) {
+        if (err instanceof Error) {
+            alert(err.message);
+        }
+    }
+}
 
-	function getProfile() {
-		let redir = '/profile/info/?login=' + loginUserToExecute;
-		goto(redir);
-	}
-
-	async function inviteUsr(inviteUser: string) {
-		try {
-			const response = await fetch('http://' + serverIP + ':3333/chat/inviteUser/', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-					Authorization: 'Bearer ' + token
-				},
-				body: JSON.stringify({
-					idAdmin: userID,
-					roomName: selectedChannel,
-					loginUserToExecute: inviteUser
-				})
-			});
-			if (!response.ok) {
-				const data = await response.json();
-				throw new Error(data.message);
-			} else if (response.ok) {
-				const newProfile = await response.json();
-				console.log('Contenu de newProfile:', newProfile);
-				//need socket to send invitation
-				invitationList.update((currentInvitations) => [
-					...currentInvitations,
-					{ login: inviteUser }
-				]);
-				throw new Error(newProfile.message);
-			}
-		} catch (err) {
-			if (err instanceof Error) alert(err.message);
-		}
-	}
-
-	async function createGameRequest() {
-		try {
-			const response = await fetch('http://' + serverIP + ':3333/profil/createGameRequest', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-					Authorization: 'Bearer ' + token
-				},
-				body: JSON.stringify({
-					myLogin: login,
-					guestLogin: loginUserToExecute,
-					gameType: joinGameType
-				})
-			});
-			socket.emit('gameRequest', {
-				sender: login,
-				login : loginUserToExecute,
-				type: joinGameType
-			});
-			closeUserModal();
-		} catch (err) {
-			if (err instanceof Error) alert(err.message);
-		}
-	}
-
-	async function deleteGameRequest() {
-		try {
-			const response = await fetch('http://' + serverIP + ':3333/profil/deleteGameRequest', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-					Authorization: 'Bearer ' + token
-				},
-				body: JSON.stringify({
-					myLogin: login
-				})
-			});
-			if (!response.ok) {
-				const data = await response.json();
-				throw new Error(data.message);
-			} else {
-				gameRequest.login = 'undefined';
-				console.log('gameRequest.login : ', gameRequest.login);
-				gameRequest.type = 'undefined';
-				console.log('gameRequest.type : ', gameRequest.type);
-			}
-		} catch (err) {
-			if (err instanceof Error) alert(err.message);
-		}
-	}
-
-	async function acceptGameRequest() {
-		try {
-			goto('/game');
-			socket.emit('acceptGameRequest', {
-				login : gameRequest.login,
-				type: gameRequest.type
-			});
-			gameRequest.login = 'undefined';
-			gameRequest.type = 'undefined';
-		} catch (err) {
-			if (err instanceof Error) alert(err.message);
-		}
-	}
+    async function getProfile() {
+    try {
+      const response = await fetch('http://localhost:3333/chat/profile/' + selectedUserparam, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + token,
+        },
+      });
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message);
+      } else if (response.ok) {
+        const newProfile = await response.json();
+        console.log('Contenu de newProfile:', newProfile);
+      }
+    }
+    catch (err) {
+      if (err instanceof Error)
+        alert(err.message);
+    }
+  }
+  async function inviteUsr(inviteUser: string){
+    try {
+      const response = await fetch('http://localhost:3333/chat/inviteUser/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + token,
+        },
+        body: JSON.stringify({
+          idAdmin: userID,
+          roomName: selectedChannel,
+          loginUserToExecute: inviteUser,
+        }),
+      });
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message);
+      } else if (response.ok) {
+        const newProfile = await response.json();
+        console.log('Contenu de newProfile:', newProfile);
+        //need socket to send invitation
+        invitationList.update(currentInvitations => [
+        ...currentInvitations,
+        { login: inviteUser }
+        ]);
+        throw new Error(newProfile.message);
+      }
+    }
+    catch (err) {
+      if (err instanceof Error)
+        alert(err.message);
+    }
+  }
 
 	async function getGameRequest() {
 		try {
@@ -990,148 +992,145 @@
 		}
 	}
 
-	async function unblockUser() {
-		try {
-			const response = await fetch('http://' + serverIP + ':3333/chat/unblockUser', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-					Authorization: 'Bearer ' + token
-				},
-				body: JSON.stringify({
-					idUser: userID,
-					loginUserToBlock: loginUserToExecute
-				})
-			});
-			if (!response.ok) {
-				const data = await response.json();
-				throw new Error(data.message);
-			} else {
-				const newProfile = await response.json();
-				alert('User unblocked');
-			}
-			const resp = await fetch('http://' + serverIP + ':3333/chat/blockedUsers', {
-				method: 'GET',
-				headers: {
-					'Content-Type': 'application/json',
-					Authorization: 'Bearer ' + myCookie
-				},
-				credentials: 'include'
-			});
-			if (resp.ok) {
-				const data = await resp.json();
-				if (data && data[0]) {
-					blockList.set(data.blockedUsers.blockedUsers);
-				}
-			}
-		} catch (err) {
-			if (err instanceof Error) alert(err.message);
-		}
+  async function unblockUser() {
+	const response = await fetch('http://localhost:3333/chat/unblockUser', {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			Authorization: 'Bearer ' + token,
+		},
+		body: JSON.stringify({
+			idUser: userID,
+			loginUserToBlock: loginUserToExecute,
+		}),
+	});
+	if (!response.ok) {
+		const data = await response.json();
+		alert(data.message);
 	}
+	else {
+		const newProfile = await response.json();
+		blockList.set(newProfile.blockedUser.blockedUsers);
+		alert("User unblocked");
+	}
+}
 
-	async function blockUser() {
-		try {
-			const response = await fetch('http://' + serverIP + ':3333/chat/blockUser', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-					Authorization: 'Bearer ' + token
-				},
-				body: JSON.stringify({
-					idUser: userID,
-					loginUserToBlock: loginUserToExecute
-				})
-			});
-			if (!response.ok) {
-				const data = await response.json();
-				throw new Error(data.message);
-			} else if (response.ok) {
-				const newProfile = await response.json();
-				blockList.set(newProfile.blockedUsers);
-				throw new Error('User blocked');
-			}
-		} catch (err) {
-			if (err instanceof Error) alert(err.message);
-		}
-	}
+  async function blockUser() {
+	try {
+      const response = await fetch('http://localhost:3333/chat/blockUser', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + token,
+        },
+        body: JSON.stringify({
+          idUser: userID,
+          loginUserToBlock: loginUserToExecute,
+        }),
+      });
+      if (!response.ok) {
+        const data = await response.json();
+        alert(data.message);
+      } else if (response.ok) {
+        const newProfile = await response.json();
+		console.log("newProfile : ", newProfile);
+		console.log("newProfile.blockedUsers : ", newProfile.blockedUsers);
+        blockList.set(newProfile.blockedUsers);
+        alert("User blocked");
+      }
+    }
+    catch (err) {
+      if (err instanceof Error)
+        alert(err.message);
+    }
+  }
 
 	async function setup() {
 		openAdminModal = true;
 	}
 
-	async function getPrivateChannel(Channel: string) {
-		selectedChannel = '';
-		selectedPrivateChannel = Channel;
-		const response = await fetch('http://' + serverIP + ':3333/chat/privateRooms/' + Channel, {
-			method: 'GET',
-			headers: {
-				'Content-Type': 'application/json',
-				Authorization: 'Bearer ' + token
-			}
-		});
-		if (response.ok) {
-			const data = await response.json();
-			if (data && data.messages) {
-				privateId = data.id;
-				socket.emit('joinRoom', { roomName: privateId });
-				userList.set(data.users);
-				const messagesRecus = data.messages;
-				messages.length = 0;
-				for (const msg of messagesRecus) {
-					if (msg && msg.content && msg.sender && msg.sender.login) {
-						if (msg.sender.login == login) {
-							const message = {
-								content: msg.content,
-								username: msg.sender.login,
-								user: false
-							};
-							messages.push(message);
-						} else {
-							const message = {
-								content: msg.content,
-								username: msg.sender.login,
-								user: true
-							};
-							messages.push(message);
-						}
-					}
-				}
-			}
-		} else {
-			const data = await response.json();
-			throw Error(data.message);
-		}
-	}
+    async function getPrivateChannel(Channel: string) {
+    selectedChannel = '';
+    selectedPrivateChannel = Channel;
+	console.log("selectedPrivateChannel : ", selectedPrivateChannel);
+  	const response = await fetch('http://localhost:3333/chat/privateRooms/' + selectedPrivateChannel, {
+		method: 'GET',
+		headers: {
+		'Content-Type': 'application/json',
+		Authorization: 'Bearer ' + token,
+		},
+	});
+  if (response.ok) {
+    const data = await response.json();
+    if (data && data.messages) {
+      privateId = data.id;
+      socket.emit('joinRoom', { roomName: privateId })
+      userList.set(data.users);
+      const messagesRecus = data.messages;
+      messages.length = 0;
+      for (const msg of messagesRecus) {
+        if (msg && msg.content && msg.sender && msg.sender.login)
+        {
+          if (msg.sender.login == login)
+          {
+            const message = {
+              content: msg.content,
+              username: msg.sender.login,
+              user: false,
+            };
+            messages.push(message);
+          }
+          else
+          {
+            const message = {
+              content: msg.content,
+              username: msg.sender.login,
+              user: true,
+            };
+            messages.push(message);
+          }
+        }
+      }
+    }
+  } else {
+    const data = await response.json();
+    throw Error(data.message);
+  }
+}
 
-	async function leaveRoom() {
-		try {
-			const response = await fetch('http://' + serverIP + ':3333/chat/leaveRoom', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-					Authorization: 'Bearer ' + token
-				},
-				body: JSON.stringify({
-					idUser: userID,
-					roomName: selectedChannel
-				})
-			});
-			if (!response.ok) {
-				const data = await response.json();
-				throw new Error(data.message);
-			} else {
-				const newProfile = await response.json();
-				socket.emit('leaveRoom', { roomName: selectedChannel });
-				channelList.update((channelList) =>
-					channelList.filter((channel) => channel.name !== selectedChannel)
-				);
-				adminList.update((adminList) => adminList.filter((admin) => admin.login !== login));
-				refreshList();
-			}
-		} catch (err) {
-			if (err instanceof Error) alert(err.message);
-		}
-	}
+async function leaveRoom()
+{
+	let userl = await refreshUserList(token, selectedChannel);
+	let users = userl.filter((user: any) => user.login !== login);
+	try {
+	    const response = await fetch('http://localhost:3333/chat/leaveRoom', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + token,
+      },
+      body: JSON.stringify({
+        idUser: userID,
+        roomName: selectedChannel,
+      }),
+    });
+    if (!response.ok) {
+      const data = await response.json();
+      alert(data.message);
+    } else {
+      const newProfile = await response.json();
+      socket.emit('leaveRoom', { roomName: selectedChannel, userList : users });
+      channelList.update(channelList => channelList.filter(channel => channel.name !== selectedChannel));
+      adminList.update(adminList => adminList.filter(admin => admin.login !== login));
+      refreshList();
+    }
+  }
+  catch(err)
+  {
+    if (err instanceof Error)
+      alert(err.message);
+  }
+}
 </script>
 
 <svelte:head>
@@ -1140,40 +1139,18 @@
 </svelte:head>
 
 {#if isInvitationModalOpen}
-	<div class="modal">
-		<div class="modal-content">
-			<h3>Invitation list</h3>
-			<input
-				bind:value={inviteUser}
-				id="inviteUser"
-				type="inviteUser"
-				placeholder="inviteUser"
-				name="inviteUser"
-			/>
-			{#if inviteUser && selectedChannel}
-				<button on:click={() => inviteUsr(inviteUser)}>Invite</button>
-			{:else}
-				<p class="error-message">Need to be in a channel and add a username to invite</p>
-			{/if}
-			{#if $invitationList}
-				<select name="selectedInvitation" bind:value={selectedInvitation}>
-					<option disabled selected>Select an invitation</option>
-					{#each $invitationList as invitation}
-						<option value={invitation.login}>{invitation.login}</option>
-					{/each}
-				</select>
-				{#if isAdmin && selectedInvitation}
-					<div>
-						<button on:click={() => acceptInvitation(selectedInvitation)}>Accept</button>
-						<button on:click={() => declineInvitation(selectedInvitation)}>Decline</button>
-					</div>
-				{/if}
-			{:else}
-				<p>No invitation</p>
-			{/if}
-			<button on:click={closeInvitationModal}>Close</button>
-		</div>
-	</div>
+  <div class="modal">
+    <div class="modal-content">
+      <h3>Invitation list</h3>
+      <input bind:value={inviteUser} id="inviteUser" type="Username ..." placeholder="Enter username" name = "inviteUser"/>
+      {#if inviteUser && selectedChannel}
+        <button on:click={ ()=> inviteUsr(inviteUser)}>Invite</button>
+      {:else}
+        <p class="error-message">Need to be in a channel and add a username to invite</p>
+      {/if}
+      <button on:click={closeInvitationModal}>Close</button>
+    </div>
+  </div>
 {/if}
 
 {#if isUserModalOpen}
@@ -1209,48 +1186,24 @@
 		<div class="modal-content">
 			<h3>Setup</h3>
 
-			{#if selectedSection === 'changeChannelType'}
-				<div class="selected-option">
-					<p>Change Type:</p>
-					<label>
-						<input
-							type="radio"
-							value="public"
-							id="public"
-							name="channelType"
-							bind:group={newChannelType}
-						/> Public
-					</label>
-					<label>
-						<input
-							type="radio"
-							value="private"
-							id="private"
-							name="channelType"
-							bind:group={newChannelType}
-						/> Private
-					</label>
-					<label>
-						<input
-							type="radio"
-							value="protected"
-							id="protected"
-							name="channelType"
-							bind:group={newChannelType}
-						/> Protected
-					</label>
+      {#if selectedSection === 'changeChannelType'}
+      <div class="selected-option">
+        <p>Change Type:</p>
+        <label>
+          <input type="radio" value="public" id="public" name="channelType" bind:group={newChannelType} /> Public
+        </label>
+        <label>
+          <input type="radio" value="private" id="private" name="channelType" bind:group={newChannelType} /> Private
+        </label>
+        <label>
+          <input type="radio" value="protected" id="protected" name="channelType" bind:group={newChannelType} /> Protected
+        </label>
 
-					{#if newChannelType === 'protected'}
-						<input
-							bind:value={newPassword}
-							type="password"
-							id="channelPassword"
-							placeholder="Password"
-							name="NewPassword"
-						/>
-					{/if}
-				</div>
-			{/if}
+        {#if newChannelType === 'protected'}
+          <input bind:value={newPassword} type="password" id="channelPassword" placeholder="Password" name = NewPassword />
+        {/if}
+      </div>
+    {/if}
 
 			{#if selectedSection === 'changePassword'}
 				<div class="selected-option">
@@ -1529,6 +1482,7 @@
 		{/if}
 	</div>
 
+
 	{#if isModalOpen}
 		<div class="modal">
 			<div class="modal-content">
@@ -1611,10 +1565,10 @@
 </div>
 
 <style>
-	.container {
-		display: flex;
-		margin-top: 10px;
-	}
+  .container {
+    display: flex;
+    margin-top: 10px;
+  }
 
 	.sidebar {
 		width: 150px;
@@ -1777,15 +1731,17 @@
 		color: #6e98b8;
 	}
 
-	.p-anim:hover {
-		color: #eda11a;
-	}
+  .p-anim:hover {
+    color: #EDA11A;
+  }
 
-	@media screen and (max-width: 600px) {
-		.container {
-			flex-direction: column;
-			margin: 10px;
-		}
+
+  @media screen and (max-width: 600px) {
+  .container
+  {
+    flex-direction: column;
+    margin: 10px;
+  }
 
 		.sidebar,
 		.chat-area,

@@ -80,6 +80,18 @@ export class PrivateChatDtoCreateMessage
     content : string;
 }
 
+export class ChatDtoCreateMessage
+{
+	@IsNotEmpty()
+	@IsNumber()
+	idSender : number;
+
+	@IsNotEmpty()
+	roomName : string;
+
+	@IsNotEmpty()
+	content : string;
+}
 
 export class ChatDtoBlockUser {
 	@IsNotEmpty()
