@@ -42,4 +42,8 @@ export class UserController {
     async get_user_skins(@Body() body: any) {
         return await this.userService.get_skins(body);
     }
+    @Post('inviteGame')
+    async inviteToPlay(@Body() body: any) {
+        return await this.userService.invitePlayer(body);
+    }
 }

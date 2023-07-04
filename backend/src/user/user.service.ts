@@ -127,4 +127,15 @@ export class UserService {
 		}
 		return payload
 	}
+	async invitePlayer(body: any) {
+		await this.prisma.user.update({
+			where: {
+				login: body.myLogin,
+			},
+			data: {
+				gameTypeInvitation: body.gameType,
+				loginGameInvitation: body.guestLogin,
+			}
+		})
+	}
 }

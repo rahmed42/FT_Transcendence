@@ -64,14 +64,6 @@
 		}
 		if (checkJwtCookie() && !currentUser.check_2fa) await getUserInfo();
 
-<<<<<<< HEAD
-		// if current user is not logged in, goto login page
-		// if (currentUser !== undefined && currentUser.login === '') {
-		// 	if (window.location.pathname !== '/') goto('/');
-		// } else if (window.location.pathname === '/') goto('/home');
-
-=======
->>>>>>> ca80b1197b5dfce7c5f620def0a4f425682205a0
 		// Clean up the subscription on unmount
 		return () => {
 			unsubscribe();

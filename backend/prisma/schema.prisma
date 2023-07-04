@@ -45,6 +45,8 @@ model User {
   selectedMyPaddle String @default("src/lib/assets/paddles/defaultPaddle/defaultPaddleWhite.png")
   selectedOpponentPaddle String @default("src/lib/assets/paddles/defaultPaddle/defaultPaddleWhite.png")
   selectedBall String @default("src/lib/assets/balls/ballWhite.png")
+  gameTypeInvitation String @default("undefined")
+  loginGameInvitation String @default("undefined")
 }
 
 model Stats {

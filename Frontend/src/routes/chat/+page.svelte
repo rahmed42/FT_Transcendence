@@ -16,6 +16,11 @@ const serverIP = import.meta.env.VITE_SERVER_IP;
   }
   let messages:Message[] = [];
 
+  // invitationGame
+  let gameRequest = false;
+  let playerLogin = '';
+  let gameType= '';
+
   //invitation modal
   let isInvitationModalOpen = false;
   let selectedInvitation = '';
@@ -917,7 +922,7 @@ async function getChannel(channel: string) {
 
   async function inviteGame() {
     try {
-      const response = await fetch('http://localhost:3333/chat/inviteGame', {
+      const response = await fetch('http://localhost:3333/profil/inviteGame', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -926,9 +931,10 @@ async function getChannel(channel: string) {
         body: JSON.stringify({
           myLogin: login,
           guestLogin: loginUserToExecute,
-          gameType: joinGameType;
+          gameType: joinGameType,
         }),
       });
+      closeUserModal();
     }
     catch (err) {
       if (err instanceof Error)
@@ -1391,6 +1397,8 @@ async function leaveRoom()
 	</div>
 {/if}
 <div class="container">
+  <div>
+  </div>
 	<div class="sidebar">
 		<div class="chat-area">
 			{#if selectedChannel != '' || selectedPrivateChannel != ''}
@@ -1473,6 +1481,7 @@ async function leaveRoom()
 				{user.login}
 			</button>
 		{/each}
+    <p id="invitationGame">invitation Popup</p>
 	</div>
 
 	{#if isModalOpen}
@@ -1772,4 +1781,9 @@ async function leaveRoom()
 			font-family: Arial, sans-serif;
 		}
 	}
+  #invitationGame {
+    display: flex;
+    margin-left: auto;
+    margin-right: auto;
+  }
 </style>
