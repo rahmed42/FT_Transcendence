@@ -16,18 +16,19 @@
         return `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
     }
 
-    function getCookie(name: string) {
-		const value = `; ${document.cookie}`;
-		const parts = value.split(`; ${name}=`);
-		if (parts.length === 2) {
-			return parts.pop()?.split(';').shift();
-		}
-	}
-
-	let myCookie = getCookie('jwt');
-
 	onMount(async () => {
+        function getCookie(name: string) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) {
+                return parts.pop()?.split(';').shift();
+            }
+        }
+
+        let myCookie = getCookie('jwt');
+
         const friend_username = new URLSearchParams(window.location.search).get('login');
+
 		async function getUserInfo() {
 			const response = await fetch('http://' + serverIP + ':3333/profil/friends?login=' + friend_username, {
 				method: 'GET',
