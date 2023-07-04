@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
@@ -7,18 +7,18 @@ export class SocialService {
 
   async sendFriendRequest(requesterLogin: string, requesteeLogin: string): Promise<any> {
     if(requesterLogin === requesteeLogin){
-      throw new Error('Cannot send friend request to yourself');
+      throw new ForbiddenException('Cannot send friend request to yourself');
     }
 
     if(!requesterLogin || !requesteeLogin){
-      throw new Error('Invalid user login');
+      throw new ForbiddenException('Invalid user login');
     }
 
     const requester = await this.prisma.user.findUnique({ where: { login: requesterLogin }});
     const requestee = await this.prisma.user.findUnique({ where: { login: requesteeLogin }});
 
     if(!requester || !requestee){
-      throw new Error('One or more users not found');
+      throw new ForbiddenException('One or more users not found');
     }
 
     // Check if a friend request already exists between the users
@@ -33,7 +33,7 @@ export class SocialService {
     });
 
     if (existingRequest) {
-      throw new Error('Friend request already exists');
+      throw new ForbiddenException('Friend request already exists');
     }
 
     const friendRequest = await this.prisma.friend.create({
@@ -42,14 +42,14 @@ export class SocialService {
         requesteeId: requestee.id,
         status: 'pending',      },
       });
-  
+
       return friendRequest;
     }
-  
+
     async getFriendRequests(userLogin: string): Promise<any> {
       const user = await this.prisma.user.findUnique({ where: { login: userLogin } });
       if(!user){
-        throw new Error('User not found');
+        throw new ForbiddenException('User not found');
       }
       const friendRequests = await this.prisma.friend.findMany({
         where: {
@@ -62,8 +62,8 @@ export class SocialService {
         },
       });
       return friendRequests;
-    }    
-  
+    }
+
     async acceptFriendRequest(id: number): Promise<any> {
       const friendRequest = await this.prisma.friend.findUnique({ where: { id } });
       if(!friendRequest){
@@ -75,7 +75,7 @@ export class SocialService {
       });
       return updatedFriendRequest;
     }
-  
+
     async rejectFriendRequest(id: number): Promise<any> {
       const friendRequest = await this.prisma.friend.findUnique({ where: { id } });
       if(!friendRequest){
@@ -87,11 +87,11 @@ export class SocialService {
       });
       return updatedFriendRequest;
     }
-  
+
     async getFriendList(userLogin: string): Promise<any> {
       const user = await this.prisma.user.findUnique({ where: { login: userLogin }});
       if(!user){
-        throw new Error('User not found');
+        throw new ForbiddenException('User not found');
       }
       const friendList = await this.prisma.friend.findMany({
         where: {
@@ -108,14 +108,14 @@ export class SocialService {
             select: { login: true, small_pic: true, status: true, avatar: true }
           },
         },
-      });      
-    
+      });
+
       return friendList.map((friend) => ({
         id: friend.id,
         friend: friend.requesterId === user.id ? friend.requestee : friend.requester,
       }));
     }
-    
+
     // // Soft delete
     // async deleteFriend(id: number): Promise<any> {
     //   const friend = await this.prisma.friend.findUnique({ where: { id } });
@@ -145,24 +145,24 @@ export class SocialService {
       if(!user){
         throw new NotFoundException('User not found');
       }
-  
+
       const userStats = await this.prisma.stats.findUnique({ where: { userId: user.id } });
-  
+
       if (!userStats) {
         throw new NotFoundException('No stats available for this user');
       }
-  
+
       return userStats;
     }
-  
+
     async getUserMatchHistory(userLogin: string): Promise<any> {
       const user = await this.prisma.user.findUnique({ where: { login: userLogin } });
       if(!user){
         throw new NotFoundException('User not found');
       }
-  
+
       const matchHistory = await this.prisma.matchHistory.findMany({ where: { userId: user.id } });
-  
+
       return matchHistory || [];
     }
   }
