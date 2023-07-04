@@ -942,9 +942,7 @@
 				throw new Error(data.message);
 			} else {
 				gameRequest.login = 'undefined';
-				console.log('gameRequest.login : ', gameRequest.login);
 				gameRequest.type = 'undefined';
-				console.log('gameRequest.type : ', gameRequest.type);
 			}
 		} catch (err) {
 			if (err instanceof Error) alert(err.message);

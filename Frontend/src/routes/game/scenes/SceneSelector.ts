@@ -16,11 +16,22 @@ let selectedBall: string = "ball"
 let currentUser = get(user);
 const serverIP = import.meta.env.VITE_SERVER_IP;
 
+function getCookie(name: string) {
+	const value = `; ${document.cookie}`;
+	const parts = value.split(`; ${name}=`);
+	if (parts.length === 2) {
+		return parts.pop()?.split(';').shift();
+	}
+}
+
+let myCookie = getCookie('jwt');
+
 async function get_user_skins() {
 	const response = await fetch('http://' + serverIP + ':3333/profil/get_skins', {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',
+			Authorization: 'Bearer ' + myCookie,
 		},
 		body: JSON.stringify({
 			currentUser,

@@ -5,13 +5,15 @@
 	import { onMount } from 'svelte';
 	import { setUser, user, resetUser } from '../stores/user';
 	import type { User } from '../stores/user';
-	import { goto } from '$app/navigation';
+	import io from 'socket.io-client';
 
 	let currentUser: User;
+	let myCookie: String | undefined = '';
 	const serverIP = import.meta.env.VITE_SERVER_IP;
 
 	// onMount is called when the component is mounted in the DOM
 	onMount(async () => {
+
 		// Subscribe to the user store
 		const unsubscribe = user.subscribe((value) => {
 			currentUser = value;
@@ -43,6 +45,10 @@
 			if (currentUser.check_2fa) {
 				const response = await fetch('http://' + serverIP + ':3333/profil/me', {
 					method: 'GET',
+					headers: {
+						'Content-Type': 'application/json',
+						Authorization: 'Bearer ' + myCookie,
+					},
 					credentials: 'include'
 				});
 				const contentType = response.headers.get('Content-Type');
@@ -53,6 +59,10 @@
 				}
 				const res = await fetch('http://' + serverIP + ':3333/profil/me', {
 					method: 'GET',
+					headers: {
+						'Content-Type': 'application/json',
+						Authorization: 'Bearer ' + myCookie,
+					},
 					credentials: 'include'
 				});
 				const content = response.headers.get('Content-Type');
@@ -70,6 +80,14 @@
 		};
 	});
 
+	function getCookie(name: string) {
+		const value = `; ${document.cookie}`;
+		const parts = value.split(`; ${name}=`);
+		if (parts.length === 2) {
+			return parts.pop()?.split(';').shift();
+		}
+	}
+
 	async function getToken(code: string) {
 		// Fetch token from the server
 		const response = await fetch('http://' + serverIP + ':3333/auth/userInfo?code=' + code, {
@@ -81,6 +99,7 @@
 			const data = await response.json();
 			if (data !== 'undefined') {
 				document.cookie = 'jwt=' + data.token;
+				myCookie = getCookie('jwt');
 			}
 		}
 	}
@@ -118,6 +137,10 @@
 		// Fetch user informations from the server
 		const response = await fetch('http://' + serverIP + ':3333/profil/me', {
 			method: 'GET',
+			headers: {
+				'Content-Type': 'application/json',
+				Authorization: 'Bearer ' + myCookie,
+			},
 			credentials: 'include'
 		});
 		// add endpoint to push status: true to tell the user is logged

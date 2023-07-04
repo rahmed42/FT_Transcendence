@@ -4,6 +4,16 @@
 	const serverIP = import.meta.env.VITE_SERVER_IP;
 	let game: any | undefined = undefined;
 
+	function getCookie(name: string) {
+		const value = `; ${document.cookie}`;
+		const parts = value.split(`; ${name}=`);
+		if (parts.length === 2) {
+			return parts.pop()?.split(';').shift();
+		}
+	}
+
+	let myCookie = getCookie('jwt');
+
 	// Fonction afterUpdate - appelée après la mise à jour du composant
 	onMount(() => {
 		// SSR server side rendering
@@ -60,7 +70,11 @@
 		// ADD check if the user has an invite
 		const response = await fetch('http://' + serverIP + ':3333/profil/me', {
 			method: 'GET',
-			credentials: 'include'
+			headers: {
+				'Content-Type': 'application/json',
+				Authorization: 'Bearer ' + myCookie,
+			},
+			credentials: 'include',
 		});
 		console.log('in check invite');
 		if (response.ok) {
@@ -76,6 +90,10 @@
 		}
 		const deleteGameRequest = await fetch('http://' + serverIP + ':3333/profil/resetGameStatus', {
 			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				Authorization: 'Bearer ' + myCookie,
+			},
 			credentials: 'include'
 		});
 
