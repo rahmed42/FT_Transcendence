@@ -1,5 +1,4 @@
 <script lang="ts">
-
 import { notification } from '../../stores/notificationStore.js';
 import { user } from '../../stores/user';
 import io from 'socket.io-client';
@@ -192,7 +191,7 @@ async function sendFriendRequestModal() {
 }
 </script>
 
-<section>
+<section class="actions">
     <button class="btn" on:click={openFriendRequestModal}>Send a friend request</button>
     {#if friendRequestModalOpen}
     <div class="modal">
@@ -210,38 +209,43 @@ async function sendFriendRequestModal() {
 </section>
 
 <section>
-    <h2 class="section-heading">Pending friend requests</h2>
-    <div class="friends-container">
-        {#each pendingRequests as request (request.id)}
-        <div class="friend-card">
-            <img src={request.requester.avatar ? request.requester.avatar : request.requester.small_pic} alt="{request.requester.login}'s picture" class="friend-image" />
-            <h3 class="friend-name">{request.requester.login}</h3>
-            <button class="accept-button" on:click={() => acceptFriendRequest(request.id)}>Accept</button>
-            <button class="reject-button" on:click={() => rejectFriendRequest(request.id)}>Reject</button>
+    <div class="white-frame">
+        <h2 class="section-heading">Pending Friend Requests</h2>
+        <div class="friends-container">
+            {#each pendingRequests as request (request.id)}
+            <div class="friend-card">
+                <img src={request.requester.avatar ? request.requester.avatar : request.requester.small_pic} alt="{request.requester.login}'s picture" class="friend-image" />
+                <h3 class="friend-name">{request.requester.login}</h3>
+                <button class="accept-button" on:click={() => acceptFriendRequest(request.id)}>Accept</button>
+                <button class="reject-button" on:click={() => rejectFriendRequest(request.id)}>Reject</button>
+            </div>
+            {/each}
         </div>
-        {/each}
     </div>
 </section>
 
 <section>
-    <h2 class="section-heading">Your friends</h2>
-    <div class="friends-container">
-        {#each friends as friend (friend.id)}
-        <div class="friend-card">
-            <button class="delete-icon" on:click={() => deleteFriend(friend.id)}>X</button>
-            <img src={friend.friend.avatar ? friend.friend.avatar : friend.friend.small_pic} alt="{friend.friend.login}'s picture" class="friend-image" />
-            <h3 class="friend-name">{friend.friend.login}</h3>
-            <p class="status">
-                <span class={`status-circle ${friend.friend.status}`}></span>
-                {friend.friend.status === 'login' ? 'Connected' : friend.friend.status === 'logout' ? 'Disconnected' : 'In Game'}
-            </p>
-            <a href={`/profile/info/?login=${friend.friend.login}`} class="friend-button">View Profile</a>
+    <div class="white-frame">
+        <h2 class="section-heading">Friends</h2>
+        <div class="friends-container">
+            {#each friends as friend (friend.id)}
+            <div class="friend-card">
+                <img src={friend.friend.avatar ? friend.friend.avatar : friend.friend.small_pic} alt="{friend.friend.login}'s picture" class="friend-image" />
+                <h3 class="friend-name">{friend.friend.login}</h3>
+                <p class="status">
+                    <span class={`status-circle ${friend.friend.status}`}></span>
+                    {friend.friend.status === 'login' ? 'Connected' : friend.friend.status === 'logout' ? 'Disconnected' : 'In Game'}
+                </p>
+                <a href={`/profile/info/?login=${friend.friend.login}`} class="friend-button">View Profile</a>
+                <button class="delete-button" on:click={() => deleteFriend(friend.id)}>Delete Friend</button>
+            </div>
+            {/each}
         </div>
-        {/each}
     </div>
 </section>
 
-<style>
+    
+    <style>
 .section-heading {
     font-weight: bold;
     font-size: 20px;
@@ -291,10 +295,26 @@ async function sendFriendRequestModal() {
     gap: 10px;
 }
 
+.delete-button {
+    font-size: 1rem;
+    margin-top: 5px;
+    padding: 2px 2px;
+    border: none;
+    border-radius: 5px;
+    color: #fff;
+    cursor: pointer;
+    background-color: #f44336;
+}
+
+.delete-button:hover {
+    background-color: #da190b;
+    text-decoration: none;
+}
+
 .friend-card {
     position: relative;
     flex: 0 0 auto;
-    width: 100px;
+    width: 105px;
     border: 1px solid #ccc;
     border-radius: 10px;
     margin: 10px;
@@ -308,11 +328,12 @@ async function sendFriendRequestModal() {
 
 .delete-icon {
     position: absolute;
-    top: 2px;
-    right: 2px;
+    top: 10px;
+    right: 10px;
     color: #f44336;
     cursor: pointer;
     font-weight: bold;
+    font-size: 20px;
 }
 
 .friend-image {
@@ -431,5 +452,36 @@ button {
     font-size: 1.2rem;
     color: rgb(0, 255, 0);
     font-weight: bold;
+}
+
+/* White Frame Sections */
+.white-frame {
+    border: 2px solid #fff;
+    padding: 15px;
+    border-radius: 10px;
+    min-height: 50px;
+    margin: 10px 0;
+}
+
+.section-heading {
+    text-align: left;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+.friend-card {
+    margin: 5px;
+}
+
+/* Notifications Location */
+.actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.notification-error,
+.notification-success {
+    margin: 0;
 }
 </style>
