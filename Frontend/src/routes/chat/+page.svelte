@@ -1,6 +1,5 @@
 <script lang="ts">
-  import { user } from '../../stores/user';
-  import { onDestroy, onMount } from 'svelte';
+  import { onMount } from 'svelte';
   import { get } from 'svelte/store';
   import { writable } from 'svelte/store';
   import io from 'socket.io-client';
@@ -63,7 +62,6 @@
   let blockList = writable<{ login: string }[]>([]);
   let adminList = writable<{ login: string }[]>([]);
   let privateList = writable<{ login: string }[]>([]);
-  let invitationList = writable<{ login: string }[]>([]);
   let error: string = '';
   let selectedChannel = '';
   let selectedPrivateChannel = '';
@@ -126,8 +124,12 @@
   });
 
   socket.on('newRoomMessage', (data: { content: string, nameSender: string, roomName: string }) => {
-    if ((blockList) && !(data.nameSender === login) && data.nameSender === selectedChannel)
-      return;
+	blockList.subscribe((list) => {
+		const isUserBlocked = list.includes({login : data.nameSender});
+		if (isUserBlocked)
+			return;
+	});
+
     if (selectedChannel) {
       if (data.roomName === selectedChannel) {
         if (data.nameSender === login)
@@ -225,7 +227,6 @@ function refreshList() {
   muteList.set([]);
   blockList.set([]);
   adminList.set([]);
-  invitationList.set([]);
   messages = [];
   selectedChannel = '';
   selectedPrivateChannel = '';
@@ -859,7 +860,6 @@ async function getChannel(channel: string) {
                 banList.set(newChannel.bannedUsers);
                 muteList.set(newChannel.mutedUsers);
                 adminList.set(newChannel.administrators);
-                invitationList.set(newChannel.invitations);
                 blockList.set(newChannel.blockedUsers);
                 isAdmin = false;
                 if (newChannel.administrators) {
@@ -921,11 +921,6 @@ async function getChannel(channel: string) {
       } else if (response.ok) {
         const newProfile = await response.json();
         console.log('Contenu de newProfile:', newProfile);
-        //need socket to send invitation
-        invitationList.update(currentInvitations => [
-        ...currentInvitations,
-        { login: inviteUser }
-        ]);
         throw new Error(newProfile.message);
       }
     }
@@ -1003,7 +998,7 @@ async function getChannel(channel: string) {
 }
 
   async function blockUser() {
-    try {
+	try {
       const response = await fetch('http://localhost:3333/chat/blockUser', {
         method: 'POST',
         headers: {
@@ -1126,27 +1121,11 @@ async function leaveRoom()
   <div class="modal">
     <div class="modal-content">
       <h3>Invitation list</h3>
-      <input bind:value={inviteUser} id="inviteUser" type="inviteUser" placeholder="inviteUser" name = "inviteUser"/>
+      <input bind:value={inviteUser} id="inviteUser" type="Username ..." placeholder="inviteUser" name = "inviteUser"/>
       {#if inviteUser && selectedChannel}
         <button on:click={ ()=> inviteUsr(inviteUser)}>Invite</button>
       {:else}
         <p class="error-message">Need to be in a channel and add a username to invite</p>
-      {/if}
-        {#if $invitationList}
-        <select name="selectedInvitation" bind:value={selectedInvitation}>
-          <option disabled selected>Select an invitation</option>
-          {#each $invitationList as invitation}
-            <option value={invitation.login}>{invitation.login}</option>
-          {/each}
-        </select>
-        {#if isAdmin && selectedInvitation}
-          <div>
-            <button on:click={() => acceptInvitation(selectedInvitation)}>Accept</button>
-            <button on:click={() => declineInvitation(selectedInvitation)}>Decline</button>
-          </div>
-        {/if}
-      {:else}
-        <p>No invitation</p>
       {/if}
       <button on:click={closeInvitationModal}>Close</button>
     </div>
@@ -1410,17 +1389,20 @@ async function leaveRoom()
         <button on:click={sendMessage}>Send</button>
       </div>
     </div>
-  <div class="user-list">
-    <h3 class="user-list-title">Member</h3>
-    <button class="user-button p-anim" on:click={() => openInvitationModal()}>
-      Invitation
-    </button>
-    {#each $userList as user}
-      <button class="user-button p-anim" on:click={() => selectUser(user.login)}>
-        {user.login}
+    <div class="user-list">
+      {#if selectedPrivateChannel || selectedChannel}
+      <h3 class="user-list-title">Member</h3>
+      <button class="user-button p-anim" on:click={() => openInvitationModal()}>
+        Invitation
       </button>
-    {/each}
-  </div>
+      {#each $userList as user}
+        <button class="user-button p-anim" on:click={() => selectUser(user.login)}>
+          {user.login}
+        </button>
+      {/each}
+	    {/if}
+    </div>
+
 
   {#if isModalOpen}
     <div class="modal">

@@ -234,6 +234,19 @@ export class ChatService {
         if (isUserInRoom) {
             throw new BadRequestException('User already in room');
         }
+		const isUserAlreadyInvited = await this.prisma.room.findFirst({
+			where: {
+				name: body.roomName,
+				invitedUsers: {
+					some: {
+						login: body.loginUserToExecute,
+					}
+				}
+			}
+		});
+		if (isUserAlreadyInvited) {
+			throw new BadRequestException('User already invited');
+		}
         const updatedRoom = await this.prisma.room.update({
             where: {
                 name: body.roomName,
@@ -258,7 +271,6 @@ export class ChatService {
                 },
             },
         });
-        delete updatedRoom.password;
         return { message: "User successfully invited" }
     }
     async kickUser(body: ChatDtoAdminOperation) {

@@ -1,9 +1,10 @@
 import { Body, OnModuleInit } from "@nestjs/common";
-import { MessageBody, SubscribeMessage, WebSocketGateway, WebSocketServer } from "@nestjs/websockets";
+import { ConnectedSocket, MessageBody, SubscribeMessage, WebSocketGateway, WebSocketServer } from "@nestjs/websockets";
 import { Server } from "socket.io";
 import { PrivateMessageDto, RoomMessageDto } from "../dto";
 import { PrismaService } from "src/prisma/prisma.service";
 import { ChatService } from "src/chat/chat.service";
+import { Socket } from "socket.io-client";
 
 @WebSocketGateway()
 export class Gateway implements OnModuleInit {
@@ -152,12 +153,16 @@ export class Gateway implements OnModuleInit {
     }
     @SubscribeMessage("joinRoom")
     handleJoinRoom(@MessageBody() body: {roomName: string})
-    {
+	{
+		if (!body.roomName)
+			return ;
 		this.server.socketsJoin(body.roomName);
-    }
+	}
     @SubscribeMessage("leaveRoom")
     handleLeaveRoom(@MessageBody() body: {roomName: string})
     {
+		if (!body.roomName)
+			return ;
         this.server.socketsLeave(body.roomName);
     }
 }
