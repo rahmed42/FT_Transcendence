@@ -53,9 +53,7 @@
 			scene: [GameSelector, Part1Scene, Part2Scene]
 		});
 
-		//Begin the game
-		game.scene.start('menu');
-
+		// check if invited to a game
 		checkInvite();
 	}
 
@@ -76,15 +74,11 @@
 			},
 			credentials: 'include',
 		});
-		console.log('in check invite');
 		if (response.ok) {
 			const data = await response.json();
-			console.log('type', data.gameTypeInvitation);
 			if (data.gameTypeInvitation === 'Original') {
-				console.log('Original Invitation');
 				game.scene.switch('menu', 'Part1');
 			} else if (data.gameTypeInvitation === 'Modern') {
-				console.log('Modern Invitation');
 				game.scene.switch('menu', 'Part2');
 			}
 		}
