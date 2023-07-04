@@ -156,7 +156,6 @@ export class Gateway implements OnModuleInit {
 	@SubscribeMessage("gameRequest")
 	handleGameRequest(@MessageBody() body: {sender : string, login: string; type: string})
 	{
-		console.log("game request received ", body)
 		this.server.emit('newGameRequest', {
 			sender: body.sender,
 			login: body.login,
