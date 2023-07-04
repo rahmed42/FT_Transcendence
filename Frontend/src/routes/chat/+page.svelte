@@ -160,7 +160,6 @@
     }
   });
   socket.on('roomListUpdate', (data : {userList : {login : string}[] , roomName : string }) => {
-	console.log("roomListUpdate : " + data.roomName + " " + data.userList);
 	if (data.roomName == selectedChannel)
 		userList.set(data.userList);
   });
@@ -811,8 +810,8 @@ async function muteSelectedUser(muteDuration: number) {
           {
             const newChannel = await response.json();
             channelList.update(channelList => [...channelList, { name: newChannel.room.name }]);
-            socket.emit('joinRoom', { roomName: joinChannelName});
-            console.log(newChannel.room.name);
+			let userl = await refreshUserList(token, newChannel.room.name)
+			socket.emit('joinRoom', { roomName: joinChannelName, userList : userl});
           }
           closeJoinModal();
         }
