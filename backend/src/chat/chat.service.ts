@@ -15,13 +15,13 @@ export class ChatService {
             },
         });
         if (roomExists) {
-            throw new BadRequestException('Room already exists');
+            return('Room already exists');
         }
         if (body.type != "public" && body.type != "private" && body.type != "protected") {
-            throw new BadRequestException('Invalid room type');
+            return('Invalid room type');
         }
         if (body.type == "protected" && !body.password) {
-            throw new BadRequestException('Password required for protected room');
+            return('Password required for protected room');
         }
         const user = await this.prisma.user.findFirst({
             where: {
@@ -29,7 +29,7 @@ export class ChatService {
             },
         });
         if (!user) {
-            throw new BadRequestException('User does not exist');
+            return('User does not exist');
         }
         if (!body.password) {
             body.password = '';
@@ -79,13 +79,13 @@ export class ChatService {
             }
         })
         if (!room) {
-            throw new BadRequestException('Room does not exist');
+            return('Room does not exist');
         }
         if (!user) {
-            throw new BadRequestException('User does not exist');
+            return('User does not exist');
         }
         if (room.type == "protected" && !body.password) {
-            throw new BadRequestException('Password required for protected room');
+            return('Password required for protected room');
         }
         // select invitedUsers from room where id = body.idRoom
         let invited = await this.prisma.room.findFirst({
@@ -99,12 +99,12 @@ export class ChatService {
             },
         });
         if (!invited && room.type == "private") {
-            throw new BadRequestException('User not invited to private room');
+            return('User not invited to private room');
         }
         if (room.type == "protected") {
             let pwMatches = await argon.verify(room.password, body.password);
             if (!pwMatches) {
-                throw new BadRequestException('Invalid password');
+                return('Invalid password');
             }
         }
         const userInRoom = await this.prisma.room.findFirst({
@@ -128,10 +128,10 @@ export class ChatService {
             },
         });
         if (userInRoom) {
-            throw new BadRequestException('User already in room');
+            return('User already in room');
         }
         if (isBan) {
-            throw new BadRequestException('User is banned from room');
+            return('User is banned from room');
         }
         await this.prisma.user.update({
             where: {
@@ -190,7 +190,7 @@ export class ChatService {
             }
         });
         if (!room) {
-            throw new BadRequestException('Room does not exist');
+            return('Room does not exist');
         }
         const admin = await this.prisma.user.findFirst({
             where: {
@@ -198,7 +198,7 @@ export class ChatService {
             }
         });
         if (!admin) {
-            throw new BadRequestException('User does not exist');
+            return('User does not exist');
         }
         const toInvite = await this.prisma.user.findFirst({
             where: {
@@ -206,7 +206,7 @@ export class ChatService {
             }
         });
         if (!toInvite) {
-            throw new BadRequestException('User to invite does not exist');
+            return('User to invite does not exist');
         }
         const isAdmin = await this.prisma.room.findFirst({
             where: {
@@ -219,7 +219,7 @@ export class ChatService {
             },
         });
         if (!isAdmin) {
-            throw new BadRequestException('User is not admin');
+            return('User is not admin');
         }
         const isUserInRoom = await this.prisma.room.findFirst({
             where: {
@@ -232,7 +232,7 @@ export class ChatService {
             },
         });
         if (isUserInRoom) {
-            throw new BadRequestException('User already in room');
+            return('User already in room');
         }
 		const isUserAlreadyInvited = await this.prisma.room.findFirst({
 			where: {
@@ -245,7 +245,7 @@ export class ChatService {
 			}
 		});
 		if (isUserAlreadyInvited) {
-			throw new BadRequestException('User already invited');
+			return('User already invited');
 		}
         const updatedRoom = await this.prisma.room.update({
             where: {
@@ -281,7 +281,7 @@ export class ChatService {
             },
         });
         if (!room) {
-            throw new BadRequestException('Room does not exist');
+            return('Room does not exist');
         }
         const admin = await this.prisma.user.findFirst({
             where: {
@@ -289,7 +289,7 @@ export class ChatService {
             },
         });
         if (!admin) {
-            throw new BadRequestException('User does not exist');
+            return('User does not exist');
         }
         const toKick = await this.prisma.user.findFirst({
             where: {
@@ -297,7 +297,7 @@ export class ChatService {
             },
         });
         if (!toKick) {
-            throw new BadRequestException('User to kick does not exist');
+            return('User to kick does not exist');
         }
         const isAdmin = await this.prisma.room.findFirst({
             where: {
@@ -310,7 +310,7 @@ export class ChatService {
             },
         });
         if (!isAdmin) {
-            throw new BadRequestException('User is not admin');
+            return('User is not admin');
         }
         const isUserInRoom = await this.prisma.room.findFirst({
             where: {
@@ -323,7 +323,7 @@ export class ChatService {
             },
         });
         if (!isUserInRoom) {
-            throw new BadRequestException('User not in room');
+            return('User not in room');
         }
         const isKickedUserOwner = await this.prisma.room.findFirst({
             where: {
@@ -332,7 +332,7 @@ export class ChatService {
             },
         });
         if (isKickedUserOwner) {
-            throw new BadRequestException('User is owner of room');
+            return('User is owner of room');
         }
 	const updatedRoom = await this.prisma.room.update({
 		where: {
@@ -371,7 +371,7 @@ export class ChatService {
             }
         });
         if (!room) {
-            throw new BadRequestException('Room does not exist');
+            return('Room does not exist');
         }
         const user = await this.prisma.user.findFirst({
             where: {
@@ -379,7 +379,7 @@ export class ChatService {
             },
         });
         if (!user) {
-            throw new BadRequestException('User does not exist');
+            return('User does not exist');
         }
         const isUserInRoom = await this.prisma.room.findFirst({
             where: {
@@ -392,7 +392,7 @@ export class ChatService {
             },
         });
         if (!isUserInRoom) {
-            throw new BadRequestException('User not in room');
+            return('User not in room');
         }
         //select roominfo with users administrators message and mutedusers but without password and token in user table
         const roomInfo = await this.prisma.room.findFirst({
@@ -457,7 +457,7 @@ export class ChatService {
         });
         if (!user)
         {
-            throw new BadRequestException('User does not exist');
+            return('User does not exist');
         }
         const roomsOfUser = await this.prisma.user.findFirst({
             where: {
@@ -482,7 +482,7 @@ export class ChatService {
             },
         });
         if (!admin) {
-            throw new BadRequestException('User does not exist');
+            return('User does not exist');
         }
         const toBan = await this.prisma.user.findFirst({
             where: {
@@ -490,10 +490,10 @@ export class ChatService {
             },
         });
 		if (admin.id == toBan.id) {
-			throw new BadRequestException('You cannot ban yourself');
+			return('You cannot ban yourself');
 		}
         if (!toBan) {
-            throw new BadRequestException('User to ban does not exist');
+            return('User to ban does not exist');
         }
         const room = await this.prisma.room.findFirst({
             where: {
@@ -501,7 +501,7 @@ export class ChatService {
             },
         });
         if (!room) {
-            throw new BadRequestException('Room does not exist');
+            return('Room does not exist');
         }
         const isAdmin = await this.prisma.room.findFirst({
             where: {
@@ -514,7 +514,7 @@ export class ChatService {
             },
         });
         if (!isAdmin) {
-            throw new BadRequestException('User is not admin');
+            return('User is not admin');
         }
         const isUserInRoom = await this.prisma.room.findFirst({
             where: {
@@ -527,7 +527,7 @@ export class ChatService {
             },
         });
         if (!isUserInRoom) {
-            throw new BadRequestException('User not in room');
+            return('User not in room');
         }
         const isBanned = await this.prisma.room.findFirst({
             where: {
@@ -540,7 +540,7 @@ export class ChatService {
             },
         });
         if (isBanned) {
-            throw new BadRequestException('User already banned');
+            return('User already banned');
         }
         const isBannedUserOwner = await this.prisma.room.findFirst({
             where: {
@@ -549,7 +549,7 @@ export class ChatService {
             },
         });
         if (isBannedUserOwner) {
-            throw new BadRequestException('User is owner of room');
+            return('User is owner of room');
         }
         await this.prisma.room.update({
             where: {
@@ -593,7 +593,7 @@ export class ChatService {
             },
         });
         if (!user) {
-            throw new BadRequestException('User does not exist');
+            return('User does not exist');
         }
         const room = await this.prisma.room.findFirst({
             where: {
@@ -601,7 +601,7 @@ export class ChatService {
             },
         });
         if (!room) {
-            throw new BadRequestException('Room does not exist');
+            return('Room does not exist');
         }
         const isUserInRoom = await this.prisma.room.findFirst({
             where: {
@@ -614,7 +614,7 @@ export class ChatService {
             },
         });
         if (!isUserInRoom) {
-            throw new BadRequestException('User not in room');
+            return('User not in room');
         }
         const isUserOwner = await this.prisma.room.findFirst({
             where: {
@@ -741,10 +741,10 @@ export class ChatService {
             },
         });
         if (!user) {
-            throw new BadRequestException('User does not exist');
+            return('User does not exist');
         }
         if (!admin) {
-            throw new BadRequestException('Admin does not exist');
+            return('Admin does not exist');
         }
         const room = await this.prisma.room.findFirst({
             where: {
@@ -752,7 +752,7 @@ export class ChatService {
             },
         });
         if (!room) {
-            throw new BadRequestException('Room does not exist');
+            return('Room does not exist');
         }
         const isUserInRoom = await this.prisma.room.findFirst({
             where: {
@@ -765,7 +765,7 @@ export class ChatService {
             },
         });
         if (!isUserInRoom) {
-            throw new BadRequestException('User not in room');
+            return('User not in room');
         }
         const isAdminAdmin = await this.prisma.room.findFirst({
             where: {
@@ -778,7 +778,7 @@ export class ChatService {
             },
         });
         if (!isAdminAdmin) {
-            throw new BadRequestException('User is not admin');
+            return('User is not admin');
         }
         const isUserAdmin = await this.prisma.room.findFirst({
             where: {
@@ -791,7 +791,7 @@ export class ChatService {
             },
         });
         if (isUserAdmin) {
-            throw new BadRequestException('User is already admin');
+            return('User is already admin');
         }
         await this.prisma.room.update({
             where: {
@@ -844,10 +844,10 @@ export class ChatService {
             },
         });
         if (!user) {
-            throw new BadRequestException('User does not exist');
+            return('User does not exist');
         }
         if (!admin) {
-            throw new BadRequestException('Admin does not exist');
+            return('Admin does not exist');
         }
         const room = await this.prisma.room.findFirst({
             where: {
@@ -855,7 +855,7 @@ export class ChatService {
             },
         });
         if (!room) {
-            throw new BadRequestException('Room does not exist');
+            return('Room does not exist');
         }
         const isUserInRoom = await this.prisma.room.findFirst({
             where: {
@@ -868,7 +868,7 @@ export class ChatService {
             },
         });
         if (!isUserInRoom) {
-            throw new BadRequestException('User not in room');
+            return('User not in room');
         }
         const isAdminAdmin = await this.prisma.room.findFirst({
             where: {
@@ -881,7 +881,7 @@ export class ChatService {
             },
         });
         if (!isAdminAdmin) {
-            throw new BadRequestException('User is not admin');
+            return('User is not admin');
         }
         const isUserAdmin = await this.prisma.room.findFirst({
             where: {
@@ -902,10 +902,10 @@ export class ChatService {
             },
         });
         if (isAdminOwner) {
-            throw new BadRequestException('User is owner');
+            return('User is owner');
         }
         if (!isUserAdmin) {
-            throw new BadRequestException('User is not admin');
+            return('User is not admin');
         }
         await this.prisma.room.update({
             where: {
@@ -946,10 +946,10 @@ export class ChatService {
             },
         });
         if (!user) {
-            throw new BadRequestException('User does not exist');
+            return('User does not exist');
         }
         if (!owner) {
-            throw new BadRequestException('Owner does not exist');
+            return('Owner does not exist');
         }
         const room = await this.prisma.room.findFirst({
             where: {
@@ -957,7 +957,7 @@ export class ChatService {
             },
         });
         if (!room) {
-            throw new BadRequestException('Room does not exist');
+            return('Room does not exist');
         }
         const isUserInRoom = await this.prisma.room.findFirst({
             where: {
@@ -970,7 +970,7 @@ export class ChatService {
             },
         });
         if (!isUserInRoom) {
-            throw new BadRequestException('User not in room');
+            return('User not in room');
         }
         const isOwnerOwner = await this.prisma.room.findFirst({
             where: {
@@ -979,7 +979,7 @@ export class ChatService {
             },
         });
         if (!isOwnerOwner) {
-            throw new BadRequestException('User is not owner');
+            return('User is not owner');
         }
         const isUserOwner = await this.prisma.room.findFirst({
             where: {
@@ -988,7 +988,7 @@ export class ChatService {
             },
         });
         if (isUserOwner) {
-            throw new BadRequestException('User is already owner');
+            return('User is already owner');
         }
         await this.prisma.room.update({
             where: {
@@ -1052,10 +1052,10 @@ export class ChatService {
             },
         });
         if (!user) {
-            throw new BadRequestException('User does not exist');
+            return('User does not exist');
         }
         if (!admin) {
-            throw new BadRequestException('User who remove invite does not exist');
+            return('User who remove invite does not exist');
         }
         const room = await this.prisma.room.findFirst({
             where: {
@@ -1063,7 +1063,7 @@ export class ChatService {
             },
         });
         if (!room) {
-            throw new BadRequestException('Room does not exist');
+            return('Room does not exist');
         }
         const isUserInRoom = await this.prisma.room.findFirst({
             where: {
@@ -1076,7 +1076,7 @@ export class ChatService {
             },
         });
         if (isUserInRoom) {
-            throw new BadRequestException('User has already accepted invitation in room');
+            return('User has already accepted invitation in room');
         }
         const isUserInvited = await this.prisma.room.findFirst({
             where: {
@@ -1089,7 +1089,7 @@ export class ChatService {
             },
         });
         if (!isUserInvited) {
-            throw new BadRequestException('User is not invited in room');
+            return('User is not invited in room');
         }
         if (body.idAdmin == user.id)
         {
@@ -1121,7 +1121,7 @@ export class ChatService {
         }
         else
         {
-            throw new BadRequestException('Only user can remove his own invite');
+            return('Only user can remove his own invite');
         }
     }
     async unbanUser(body: ChatDtoAdminOperation)
@@ -1137,10 +1137,10 @@ export class ChatService {
             },
         });
         if (!user) {
-            throw new BadRequestException('User does not exist');
+            return('User does not exist');
         }
         if (!admin) {
-            throw new BadRequestException('User who unban does not exist');
+            return('User who unban does not exist');
         }
         const room = await this.prisma.room.findFirst({
             where: {
@@ -1148,7 +1148,7 @@ export class ChatService {
             },
         });
         if (!room) {
-            throw new BadRequestException('Room does not exist');
+            return('Room does not exist');
         }
         const isUserInRoom = await this.prisma.room.findFirst({
             where: {
@@ -1161,7 +1161,7 @@ export class ChatService {
             },
         });
         if (isUserInRoom) {
-            throw new BadRequestException('User is in room');
+            return('User is in room');
         }
         const isUserBanned = await this.prisma.room.findFirst({
             where: {
@@ -1174,7 +1174,7 @@ export class ChatService {
             },
         });
         if (!isUserBanned) {
-            throw new BadRequestException('User is not banned in room');
+            return('User is not banned in room');
         }
         const isAdminAdmin = await this.prisma.room.findFirst({
             where: {
@@ -1187,7 +1187,7 @@ export class ChatService {
             },
         });
         if (!isAdminAdmin) {
-            throw new BadRequestException('User is not admin');
+            return('User is not admin');
         }
         await this.prisma.room.update({
             where: {
@@ -1225,7 +1225,7 @@ export class ChatService {
         });
         if (!user)
         {
-            throw new BadRequestException('User does not exist');
+            return('User does not exist');
         }
         const user2 = await this.prisma.user.findFirst({
             where: {
@@ -1234,7 +1234,7 @@ export class ChatService {
         });
         if (!user2 || !user2.id)
         {
-            throw new BadRequestException('User who try to send message does not exist');
+            return('User who try to send message does not exist');
         }
 		const hasBlocked = await this.prisma.user.findFirst({
 			where: {
@@ -1258,11 +1258,11 @@ export class ChatService {
 		});
 		if (hasBlocked)
 		{
-			throw new BadRequestException('User has blocked you');
+			return('User has blocked you');
 		}
 		if (isBlocked)
 		{
-			throw new BadRequestException('User is blocked');
+			return('User is blocked');
 		}
         const privateRoom = await this.prisma.privateRoom.create({
             data : {
@@ -1370,7 +1370,7 @@ export class ChatService {
 		});
 		if (!user)
 		{
-			throw new BadRequestException('User does not exist');
+			return('User does not exist');
 		}
 		const room = await this.prisma.room.findFirst({
 			where: {
@@ -1379,7 +1379,7 @@ export class ChatService {
 		});
 		if (!room)
 		{
-			throw new BadRequestException('Room does not exist');
+			return('Room does not exist');
 		}
 		const isUserInRoom = await this.prisma.room.findFirst({
 			where: {
@@ -1393,7 +1393,7 @@ export class ChatService {
 		});
 		if (!isUserInRoom)
 		{
-			throw new BadRequestException('User is not in room');
+			return('User is not in room');
 		}
 		const isUserBanned = await this.prisma.room.findFirst({
 			where: {
@@ -1407,7 +1407,7 @@ export class ChatService {
 		});
 		if (isUserBanned)
 		{
-			throw new BadRequestException('User is banned in room');
+			return('User is banned in room');
 		}
 		const message = await this.prisma.message.create({
 			data: {
@@ -1449,7 +1449,7 @@ export class ChatService {
         });
         if (!user)
         {
-            throw new BadRequestException('User does not exist');
+            return('User does not exist');
         }
         const privateRooms = await this.prisma.privateRoom.findMany({
             where: {
@@ -1477,7 +1477,7 @@ export class ChatService {
     async getPrivateRoomInfo(body: ChatDtoGetRoom)
     {
         if (!body.roomName)
-            throw new BadRequestException('Room name is required');
+            return('Room name is required');
 
 		const user = await this.prisma.user.findFirst({
 			where: {
@@ -1491,7 +1491,7 @@ export class ChatService {
 		});
 		if (!user || !user2)
 		{
-			throw new BadRequestException('User does not exist');
+			return('User does not exist');
 		}
 		const privateRoom = await this.prisma.privateRoom.findFirst({
 			where : {
@@ -1528,7 +1528,7 @@ export class ChatService {
 			},
 		});
         if (!privateRoom)
-            throw new BadRequestException('Room does not exist');
+            return('Room does not exist');
         return privateRoom;
     }
 	async blockUser(body: ChatDtoBlockUser)
@@ -1539,16 +1539,16 @@ export class ChatService {
 			},
 		});
 		if (!user)
-			throw new BadRequestException('User does not exist');
+			return('User does not exist');
 		const userToBlock = await this.prisma.user.findFirst({
 			where: {
 				login: body.loginUserToBlock,
 			},
 		});
 		if (!userToBlock)
-			throw new BadRequestException('User to block does not exist');
+			return('User to block does not exist');
 		if (user.id == userToBlock.id)
-			throw new BadRequestException('You cannot block yourself');
+			return('You cannot block yourself');
 		const isAlreadyBlocked = await this.prisma.user.findFirst({
 			where: {
 				id: body.idUser,
@@ -1560,7 +1560,7 @@ export class ChatService {
 			},
 		});
 		if (isAlreadyBlocked)
-			throw new BadRequestException('User is already blocked');
+			return('User is already blocked');
 		await this.prisma.user.update({
 			where: {
 				id: body.idUser,
@@ -1595,16 +1595,16 @@ export class ChatService {
 			},
 		});
 		if (!user)
-			throw new BadRequestException('User does not exist');
+			return('User does not exist');
 		const userToUnblock = await this.prisma.user.findFirst({
 			where: {
 				login: body.loginUserToBlock,
 			},
 		});
 		if (!userToUnblock)
-			throw new BadRequestException('User to unblock does not exist');
+			return('User to unblock does not exist');
 		if (user.id == userToUnblock.id)
-			throw new BadRequestException('You cannot unblock yourself');
+			return('You cannot unblock yourself');
 		const isBlocked = await this.prisma.user.findFirst({
 			where: {
 				id: body.idUser,
@@ -1616,7 +1616,7 @@ export class ChatService {
 			},
 		});
 		if (!isBlocked)
-			throw new BadRequestException('User is not blocked');
+			return('User is not blocked');
 		await this.prisma.user.update({
 			where: {
 				id: body.idUser,
@@ -1651,7 +1651,7 @@ export class ChatService {
 			},
 		});
 		if (!user)
-			throw new BadRequestException('User does not exist');
+			return('User does not exist');
 		const userToMute = await this.prisma.user.findFirst({
 			where: {
 				login: body.loginUserToExecute,
@@ -1663,11 +1663,11 @@ export class ChatService {
 			},
 		});
 		if (!room)
-			throw new BadRequestException('Room does not exist');
+			return('Room does not exist');
 		if (!userToMute)
-			throw new BadRequestException('User to mute does not exist');
+			return('User to mute does not exist');
 		if (user.id == userToMute.id)
-			throw new BadRequestException('You cannot mute yourself');
+			return('You cannot mute yourself');
 		const isAlreadyMuted = await this.prisma.user.findFirst({
 			where: {
 				login: body.loginUserToExecute,
@@ -1679,7 +1679,7 @@ export class ChatService {
 			},
 		});
 		if (isAlreadyMuted)
-			throw new BadRequestException('User is already muted');
+			return('User is already muted');
 		const isUserAdmin = await this.prisma.user.findFirst({
 			where: {
 				id: body.idAdmin,
@@ -1691,11 +1691,11 @@ export class ChatService {
 			},
 		});
 		if (!isUserAdmin)
-			throw new BadRequestException('You are not admin of this room');
+			return('You are not admin of this room');
 		if (room.ownerId == userToMute.id)
-			throw new BadRequestException('You cannot mute owner of the room');
+			return('You cannot mute owner of the room');
 		if (!body.muteDuration || body.muteDuration <= 0)
-			throw new BadRequestException('Mute duration must be positive');
+			return('Mute duration must be positive');
 		const minutesToAdd = body.muteDuration; // Get the number of minutes to add from the request body
 		const date = new Date(); // Create a new Date object representing the current date and time
 		date.setMinutes(date.getMinutes() + minutesToAdd); // Add the specified number of minutes to the date object
@@ -1734,7 +1734,7 @@ export class ChatService {
 			},
 		});
 		if (!user)
-			throw new BadRequestException('User does not exist');
+			return('User does not exist');
 		const userToUnmute = await this.prisma.user.findFirst({
 			where: {
 				login: body.loginUserToExecute,
@@ -1751,11 +1751,11 @@ export class ChatService {
 			},
 		});
 		if (!isUserAdmin)
-			throw new BadRequestException('You are not admin of this room');
+			return('You are not admin of this room');
 		if (!userToUnmute)
-			throw new BadRequestException('User to unmute does not exist');
+			return('User to unmute does not exist');
 		if (user.id == userToUnmute.id)
-			throw new BadRequestException('You cannot unmute yourself');
+			return('You cannot unmute yourself');
 		const isMuted = await this.prisma.user.findFirst({
 			where: {
 				login: body.loginUserToExecute,
@@ -1767,7 +1767,7 @@ export class ChatService {
 			},
 		});
 		if (!isMuted)
-			throw new BadRequestException('User is not muted');
+			return('User is not muted');
 		await this.prisma.user.update({
 			where: {
 				login: body.loginUserToExecute,
@@ -1791,14 +1791,14 @@ export class ChatService {
 			},
 		});
 		if (!user)
-			throw new BadRequestException('User does not exist');
+			return('User does not exist');
 		const room = await this.prisma.room.findFirst({
 			where: {
 				name: body.roomName,
 			},
 		});
 		if (!room)
-			throw new BadRequestException('Room does not exist');
+			return('Room does not exist');
 		const isUserAdmin = await this.prisma.user.findFirst({
 			where: {
 				id: body.idUser,
@@ -1810,13 +1810,13 @@ export class ChatService {
 			},
 		});
 		if (!isUserAdmin)
-			throw new BadRequestException('You are not admin of this room');
+			return('You are not admin of this room');
 		if (room.type == "public")
-			throw new BadRequestException('You cannot change password of public room');
+			return('You cannot change password of public room');
 		if (room.type == "private")
-			throw new BadRequestException('You cannot change password of private room');
+			return('You cannot change password of private room');
 		if (body.password == null || body.password == '')
-			throw new BadRequestException('Password cannot be empty');
+			return('Password cannot be empty');
 		const hash = await argon.hash(body.password);
 		await this.prisma.room.update({
 			where: {
@@ -1838,14 +1838,14 @@ export class ChatService {
 			},
 		});
 		if (!user)
-			throw new BadRequestException('User does not exist');
+			return('User does not exist');
 		const room = await this.prisma.room.findFirst({
 			where: {
 				name: body.roomName,
 			},
 		});
 		if (!room)
-			throw new BadRequestException('Room does not exist');
+			return('Room does not exist');
 		const isUserAdmin = await this.prisma.user.findFirst({
 			where: {
 				id: body.idUser,
@@ -1857,15 +1857,15 @@ export class ChatService {
 			},
 		});
 		if (!isUserAdmin)
-			throw new BadRequestException('You are not admin of this room');
+			return('You are not admin of this room');
 		if (body.type == "public" || body.type == "private")
 		{
 			body.password = '';
 		}
 		if (room.type == body.type)
-			throw new BadRequestException('Room is already ' + body.type);
+			return('Room is already ' + body.type);
 		else if (body.type == "protected" && (body.password == null || body.password == ''))
-			throw new BadRequestException('Password cannot be empty');
+			return('Password cannot be empty');
 		const hash = await argon.hash(body.password);
 		await this.prisma.room.update({
 			where: {
