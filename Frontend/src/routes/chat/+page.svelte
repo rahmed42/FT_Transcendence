@@ -570,6 +570,7 @@ async function banSelectedUser() {
 
 	async function unmuteUser() {
 		try {
+			let login = selectedUserparam;
 			const response = await fetch("http://" + serverIP + ":3333/chat/unmuteUser", {
 				method: 'POST',
 				headers: {
@@ -587,7 +588,7 @@ async function banSelectedUser() {
 				alert(data.message);
 			} else {
 				muteList.update((currentMutes) => {
-					return currentMutes.filter((mute) => mute.login != selectedUserparam);
+					return currentMutes.filter((mute) => mute.login != login);
 				});
 			}
 		} catch (err) {
@@ -631,6 +632,7 @@ async function banSelectedUser() {
 
 	async function unbanUser() {
 		try {
+			let login = selectedUserparam;
 			const response = await fetch("http://" + serverIP + ":3333/chat/unbanUser", {
 				method: 'POST',
 				headers: {
@@ -649,7 +651,7 @@ async function banSelectedUser() {
 			} else {
 				const data = await response.json();
 				banList.update((currentBanList) => {
-					return currentBanList.filter((user) => user.login !== selectedUserparam);
+					return currentBanList.filter((user) => user.login !== login);
 				});
 			}
 		} catch (err) {
@@ -1258,7 +1260,6 @@ async function leaveRoom()
       const newProfile = await response.json();
       socket.emit('leaveRoom', { roomName: selectedChannel, userList : users });
       channelList.update(channelList => channelList.filter(channel => channel.name !== selectedChannel));
-      adminList.update(adminList => adminList.filter(admin => admin.login !== login));
       refreshList();
     }
   }
