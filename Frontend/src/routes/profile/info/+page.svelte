@@ -16,22 +16,24 @@
 		const date = new Date(isoDateString);
 		return `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
 	}
-	let myCookie : any = ''
+	let myCookie : string | undefined = '';
 	onMount(async () => {
-        function getCookie(name: string) {
-            const value = `; ${document.cookie}`;
-            const parts = value.split(`; ${name}=`);
-            if (parts.length === 2) {
-                return parts.pop()?.split(';').shift();
-            }
+		function getCookie(name: string) {
+			const value = `; ${document.cookie}`;
+			const parts = value.split(`; ${name}=`);
+			if (parts.length === 2) {
+				return parts.pop()?.split(';').shift();
+			}
+		}
 		myCookie = getCookie('jwt')
 		if (!myCookie)
 			goto('/')
-        }
+
 
         const friend_username = new URLSearchParams(window.location.search).get('login');
 
 		async function getUserInfo() {
+			console.log(myCookie)
 			const response = await fetch(
 				'http://' + serverIP + ':3333/profil/friends?login=' + friend_username,
 				{
@@ -49,13 +51,27 @@
 				friend.set(data);
 			}
 			const statsResponse = await fetch(
-				'http://' + serverIP + ':3333/social/stats/' + friend_username
+				'http://' + serverIP + ':3333/social/stats/' + friend_username, {
+					method: 'GET',
+					headers: {
+						'Content-Type': 'application/json',
+						Authorization: 'Bearer ' + myCookie
+					},
+					credentials: 'include'
+				}
 			);
 			if (statsResponse.ok) {
 				stats = await statsResponse.json();
 			}
 			const matchHistoryResponse = await fetch(
-				'http://' + serverIP + ':3333/social/match-history/' + friend_username
+				'http://' + serverIP + ':3333/social/match-history/' + friend_username, {
+					method: 'GET',
+					headers: {
+						'Content-Type': 'application/json',
+						Authorization: 'Bearer ' + myCookie
+					},
+					credentials: 'include'
+				}
 			);
 			if (matchHistoryResponse.ok) {
 				matchHistory = await matchHistoryResponse.json();
