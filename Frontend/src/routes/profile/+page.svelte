@@ -292,7 +292,7 @@
 		flex-direction: column;
 		align-items: center;
 		width: 66%;
-		height: 40px;
+		height: 50px;
 		border: 2px solid #000000;
 		border-radius: 18px;
 		margin-top: 30px;

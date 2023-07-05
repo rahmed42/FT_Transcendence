@@ -17,10 +17,8 @@
 		// you can use particlesContainer to call all the Container class
 		// (from the core library) methods like play, pause, refresh, start, stop
 		// the tsParticles instance is stored in the particlesContainer object
-		if (window.location.pathname === '/game')
-			particlesContainer.stop();
-		else
-			particlesContainer.start();
+		if (window.location.pathname === '/game') particlesContainer.stop();
+		else particlesContainer.start();
 	};
 
 	let particlesInit = async (main: any) => {
@@ -32,21 +30,20 @@
 
 	// To stop particles on game/chat page
 	beforeUpdate(() => {
-		if (!particlesContainer)
-			return;
-		if (window.location.pathname === '/game' || window.location.pathname === '/chat')
-			particlesContainer.stop();
-		else
+		if (!particlesContainer) return;
+		if (window.location.pathname === '/home' || window.location.pathname === '/')
 			particlesContainer.start();
+		else
+			particlesContainer.stop();
 	});
 </script>
 
-<!-- <Particles
+<Particles
 	id="tsparticles"
 	options={particlesConfig2}
 	on:particlesLoaded={onParticlesLoaded}
 	{particlesInit}
-/> -->
+/>
 
 <div>
 	<Header />
