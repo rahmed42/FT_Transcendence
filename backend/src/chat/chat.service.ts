@@ -1264,6 +1264,19 @@ export class ChatService {
 		{
 			return('User is blocked');
 		}
+		const privateRoomAlreadyExist = await this.prisma.privateRoom.findFirst({
+			where: {
+				users: {
+					every: {
+						id: {
+							in: [body.idUser, user2.id],
+						},
+					},
+				},
+			},
+		});
+		if (privateRoomAlreadyExist)
+			return('Private room already exist');
         const privateRoom = await this.prisma.privateRoom.create({
             data : {
                 id: uniqueId,
