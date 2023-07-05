@@ -168,8 +168,32 @@
 	if (data.login == login)
 	{
 		socket.emit("leaveRoom", {roomName : data.roomName, userList : data.userList});
+		channelList.update((channelList) => {
+			return channelList.filter((channel) => channel.name !== data.roomName);
+		});
+		if (selectedChannel == data.roomName)
+			selectedChannel = "";
+			refreshList();
 	}
   });
+
+  socket.on("unmuted", (data : { roomName : string, login : string}) => {
+	if (data.roomName == selectedChannel)
+	{
+		muteList.update((muteList) => {
+			return muteList.filter((user) => user.login !== data.login);
+		});
+	}
+  })
+
+  socket.on("muted", (data : { roomName : string, login : string}) => {
+	if (data.roomName == selectedChannel)
+	{
+		muteList.update((muteList) => {
+			return [...muteList, {login : data.login}];
+		})
+	}
+  })
 
   async function getUserinfo() {
     try {
@@ -371,7 +395,7 @@ function refreshList() {
   {
     try
     {
-      const response = await fetch("http://' + serverIP + ':3333/chat/changePassword", {
+      const response = await fetch("http://" + serverIP + ":3333/chat/changePassword", {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -403,7 +427,7 @@ async function grantUserAdmin()
 {
   try
   {
-    const response = await fetch("http://' + serverIP + ':3333/chat/giveAdmin", {
+    const response = await fetch("http://" + serverIP + ":3333/chat/giveAdmin", {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -435,7 +459,8 @@ async function grantUserAdmin()
 
 	async function expulSelectedUser() {
 		try {
-			const response = await fetch("http://' + serverIP + ':3333/chat/kickUser", {
+			let login = selectedUserparam;
+			const response = await fetch("http://" + serverIP + ":3333/chat/kickUser", {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
@@ -453,8 +478,9 @@ async function grantUserAdmin()
     if (!response.ok) {
       throw new Error(data.message);
     } else {
-      	userList.update(currentUsers => currentUsers.filter(user => user.login !== selectedUserparam));
-		socket.emit('eventLeave', {roomName : selectedChannel, login : selectedUserparam, userList : get(userList)})
+		let userL = get(userList);
+		userL = userL.filter((user) => user.login != login);
+		socket.emit('eventLeave', {roomName : selectedChannel, login : login, userList : userL})
 		alert('User successfully kicked out of the channel.');
     }
 
@@ -469,7 +495,8 @@ async function grantUserAdmin()
 async function banSelectedUser() {
   try
   {
-    const response = await fetch("http://' + serverIP + ':3333/chat/banUser", {
+	let login = selectedUserparam
+    const response = await fetch("http://" + serverIP + ":3333/chat/banUser", {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -483,14 +510,16 @@ async function banSelectedUser() {
     });
     if (!response.ok) {
       const data = await response.json();
-      throw new Error(data.message);
+      alert(data.message);
     }
     else
     {
       const data = await response.json();
-      throw new Error(data.message);
-      //need to get the newlist of userban, to update the list
-    }
+	  let userL = get(userList);
+	  userL = userL.filter((user) => user.login != login);
+	  socket.emit("eventLeave", {roomName : selectedChannel, login : login, userList : userL})
+	  banList.update((banList) => [...banList, {login : login}]);
+	}
   }
   catch (err) {
     if (err instanceof Error)
@@ -500,7 +529,7 @@ async function banSelectedUser() {
 
 	async function unmuteUser() {
 		try {
-			const response = await fetch("http://' + serverIP + ':3333/chat/unmuteUser", {
+			const response = await fetch("http://" + serverIP + ":3333/chat/unmuteUser", {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
@@ -516,14 +545,10 @@ async function banSelectedUser() {
 				const data = await response.json();
 				throw new Error(data.message);
 			} else {
-				const newMuteList = await response.json();
-				alert(newMuteList.message);
-				console.log('old mute list : ', muteList);
-				muteList.update((currentMuteList) => {
-					return currentMuteList.filter((user) => user.login !== selectedUserparam);
+				muteList.update((currentMutes) => {
+					return currentMutes.filter((mute) => mute.login != selectedUserparam);
 				});
 			}
-			console.log('new mute list : ', muteList);
 		} catch (err) {
 			if (err instanceof Error) alert(err.message);
 		}
@@ -531,7 +556,7 @@ async function banSelectedUser() {
 
 	async function revokeAdmin() {
 		try {
-			const response = await fetch("http://' + serverIP + ':3333/chat/removeAdmin", {
+			const response = await fetch("http://" + serverIP + ":3333/chat/removeAdmin", {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
@@ -565,7 +590,7 @@ async function banSelectedUser() {
 
 	async function unbanUser() {
 		try {
-			const response = await fetch("http://' + serverIP + ':3333/chat/unbanUser", {
+			const response = await fetch("http://" + serverIP + ":3333/chat/unbanUser", {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
@@ -579,10 +604,12 @@ async function banSelectedUser() {
 			});
 			if (!response.ok) {
 				const data = await response.json();
-				throw new Error(data.message);
+				alert(data.message);
 			} else {
 				const data = await response.json();
-				throw new Error(data.message);
+				banList.update((currentBanList) => {
+					return currentBanList.filter((user) => user.login !== selectedUserparam);
+				});
 			}
 		} catch (err) {
 			if (err instanceof Error) {
@@ -594,7 +621,7 @@ async function banSelectedUser() {
 async function changeChannelType() {
   try
   {
-    const response = await fetch("http://' + serverIP + ':3333/chat/changeRoomType", {
+    const response = await fetch("http://" + serverIP + ":3333/chat/changeRoomType", {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -626,7 +653,8 @@ async function changeChannelType() {
 async function muteSelectedUser(muteDuration: number) {
   try
   {
-    const response = await fetch("http://' + serverIP + ':3333/chat/muteUser", {
+	let chan = selectedChannel
+    const response = await fetch("http://" + serverIP + ":3333/chat/muteUser", {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -646,8 +674,8 @@ async function muteSelectedUser(muteDuration: number) {
     else
     {
       const newMuteList = await response.json();
-      throw new Error(newMuteList.message);
       muteList.set(newMuteList.mutedUsers.mutedUsers.login);
+	  socket.emit("eventMute", {roomName : chan, login : newMuteList.mutedUsers.mutedUsers.login})
     }
     muteDuration = 0;
   }
@@ -880,10 +908,23 @@ async function muteSelectedUser(muteDuration: number) {
       return;
     }
     if (selectedChannel !== '') {
-      let roomName = selectedChannel;
-      socket.emit('newMessage', { roomName: roomName, content: messageInput, idSender: userID, type: "room" });
-      messages = [...messages, { username: login, content: messageInput, user: false}];
-      messageInput = '';
+		let roomName = selectedChannel;
+		socket.emit('newMessage', { roomName: roomName, content: messageInput, idSender: userID, type: "room" });
+		let muted = get(muteList)
+		if (muted)
+		{
+			for (let i = 0; i < muted.length; i++)
+			{
+				if (muted[i].login === login)
+				{
+					messageInput = '';
+					alert("You are muted in this channel");
+					return;
+				}
+			}
+		}
+		messages = [...messages, { username: login, content: messageInput, user: false}];
+		messageInput = '';
     }
     else if (selectedPrivateChannel !== '') {
       let loginToSend = selectedPrivateChannel;
