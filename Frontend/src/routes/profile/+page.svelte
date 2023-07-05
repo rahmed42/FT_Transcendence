@@ -4,7 +4,6 @@
 	import { onMount } from 'svelte';
 	import winIcon from '../../lib/images/icons8-reward-80.png';
 	import lossIcon from '../../lib/images/loss-icon.png';
-	// import ladderIcon from '../../lib/images/icons8-rank-64.png';
 	import { goto } from '$app/navigation';
 	import bronzeIcon from '../../lib/images/bronze.png';
     import silverIcon from '../../lib/images/silver.png';
