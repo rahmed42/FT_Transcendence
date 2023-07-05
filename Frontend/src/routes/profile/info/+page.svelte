@@ -6,10 +6,14 @@
 	import lossIcon from '../../../lib/images/loss-icon.png';
 	import ladderIcon from '../../../lib/images/ladder-icon.png';
 	import { goto } from '$app/navigation';
+	import bronzeIcon from '../../../lib/images/bronze.png';
+    import silverIcon from '../../../lib/images/silver.png';
+    import goldIcon from '../../../lib/images/gold.png';
 
 	const friend = writable({}); // Local state for friend
 	let stats = null;
 	let matchHistory = [];
+	let ladderIcon = bronzeIcon;
 	const serverIP = import.meta.env.VITE_SERVER_IP;
 
 	function formatDate(isoDateString) {
@@ -62,6 +66,9 @@
 			);
 			if (statsResponse.ok) {
 				stats = await statsResponse.json();
+				const winLossRatio = stats.losses ? stats.wins / stats.losses : stats.wins;
+				stats.ladderLevel = calculateLadderLevel(winLossRatio);
+				ladderIcon = getladderIcon(stats.ladderLevel);
 			}
 			const matchHistoryResponse = await fetch(
 				'http://' + serverIP + ':3333/social/match-history/' + friend_username, {
@@ -79,6 +86,18 @@
 		}
 		getUserInfo();
 	});
+	function calculateLadderLevel(ratio: number) {
+        if (ratio > 4) return 'Gold';
+        if (ratio > 2) return 'Silver';
+        return 'Bronze';
+    }
+	function getladderIcon(level: string) {
+        switch(level) {
+            case 'Gold': return goldIcon;
+            case 'Silver': return silverIcon;
+            default: return bronzeIcon;
+        }
+    }
 </script>
 
 <svelte:head>
@@ -114,7 +133,7 @@
 				</div>
 				<div class="stat-item">
 					<img src={ladderIcon} alt="Ladder Icon" />
-					<h3>{stats.ladderLevel}</h3>
+					<h3>{stats ? stats.ladderLevel : 'Bronze'}</h3>
 					<p>Ladder Level</p>
 				</div>
 			{:else}
