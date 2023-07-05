@@ -320,6 +320,7 @@
     },
     credentials: 'include',
   });
+  
 
   if (response2.ok) {
     const data = await response2.json();
@@ -331,6 +332,12 @@
     alert(data.message);
   }
 });
+
+function handleKeyPress(event: KeyboardEvent) {
+		if (event.key === 'Enter') {
+			sendMessage();
+		}
+	}
 
 
 async function refreshUserList(myCookie : string, selectedChannel : string)
@@ -1245,7 +1252,7 @@ async function muteSelectedUser(muteDuration: number) {
     }
   } else {
     const data = await response.json();
-    throw Error(data.message);
+    alert(data.message);
   }
 }
 
@@ -1435,9 +1442,13 @@ async function leaveRoom()
 					<div class="selected-option">
 						<p>Unban User:</p>
 						<select name="selectedUser" bind:value={selectedUserparam}>
-							{#each $banList as bannedUsers}
-								<option value={bannedUsers.login}>{bannedUsers.login}</option>
-							{/each}
+							{#if $banList.length > 0}
+								{#each $banList as bannedUsers}
+									<option value={bannedUsers.login}>{bannedUsers.login}</option>
+								{/each}
+							{:else}
+								<option disabled selected>No banned users</option>
+							{/if}
 						</select>
 					</div>
 				{/if}
@@ -1605,6 +1616,7 @@ async function leaveRoom()
 					placeholder="Type here..."
 					id="test"
 					name="messageInput"
+					on:keydown={handleKeyPress}
 				/>
 				<button on:click={sendMessage}>Send</button>
 			</div>
