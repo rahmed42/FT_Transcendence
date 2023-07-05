@@ -958,6 +958,7 @@ async function muteSelectedUser(muteDuration: number) {
   if (!response.ok)
   {
     const data = await response.json();
+	console.log(data);
 	alert(data.message);
   }
   else if (response.ok)
@@ -1609,13 +1610,15 @@ async function leaveRoom()
 		</div>
 		<div class="user-list">
 			<h3 class="user-list-title">All User</h3>
-			<button class="user-button p-anim" on:click={() => openInvitationModal()}> Invitation </button>
-			{#each $userList as user}
-			{#if user.login !== login}
-				<button class="user-button p-anim" on:click={() => selectUser(user.login)}>
-					{user.login}
-				</button>
+			{#if selectedChannel}
+				<button class="user-button p-anim" on:click={() => openInvitationModal()}> Invitation </button>
 			{/if}
+			{#each $userList as user}
+				{#if user.login !== login}
+					<button class="user-button p-anim" on:click={() => selectUser(user.login)}>
+						{user.login}
+					</button>
+				{/if}
 			{/each}
 			{#if gameRequest.login !== 'undefined'}
 				<div id="gameRequest">
@@ -1706,7 +1709,12 @@ async function leaveRoom()
 					{#if privateMessageError !== ''}
 						<p class="error-message">{privateMessageError}</p>
 					{/if}
-					<button on:click={sendPrivateMessage}>Send Message</button>
+					{#if !recipientName || !messageContent}
+						<p class="error-message">Please enter a recipient and a message.</p>
+					{/if}
+					<button on:click={sendPrivateMessage}
+					disabled={!recipientName || !messageContent || privateMessageError !== ''}
+					>Send Message</button>
 					<button on:click={closePrivateMessageModal}>Cancel</button>
 				</div>
 			</div>

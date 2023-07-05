@@ -46,7 +46,7 @@
             const data = await response.json();
             if (data.valide)
             {
-                loginUser();
+                await loginUser();
                 window.location.href = '/home';
                 return;
             }
