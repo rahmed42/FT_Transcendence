@@ -193,4 +193,15 @@ export class Gateway implements OnModuleInit {
 			login: body.login,
 		})
 	}
+	@SubscribeMessage("eventLeave")
+	handleEventLeave(@MessageBody() body: {roomName : string, login: string, userList : {login: string}[]})
+	{
+		if (!body.roomName || !body.login)
+			return ;
+		this.server.emit("sayLeave", {
+			roomName : body.roomName,
+			login: body.login,
+			userList: body.userList,
+		})
+	}
 }

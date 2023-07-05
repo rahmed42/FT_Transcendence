@@ -164,6 +164,13 @@
 		userList.set(data.userList);
   });
 
+  socket.on("sayLeave", (data : {roomName : string, login : string , userList : {login : string}[]}) => {
+	if (data.login == login)
+	{
+		socket.emit("leaveRoom", {roomName : data.roomName, userList : data.userList});
+	}
+  });
+
   async function getUserinfo() {
     try {
       const response = await fetch('http://localhost:3333/profil/me', {
@@ -446,9 +453,9 @@ async function grantUserAdmin()
     if (!response.ok) {
       throw new Error(data.message);
     } else {
-      userList.update(currentUsers => currentUsers.filter(user => user.login !== selectedUserparam));
-      //need to use socket to kick the user
-      alert('User successfully kicked out of the channel.');
+      	userList.update(currentUsers => currentUsers.filter(user => user.login !== selectedUserparam));
+		socket.emit('eventLeave', {roomName : selectedChannel, login : selectedUserparam, userList : get(userList)})
+		alert('User successfully kicked out of the channel.');
     }
 
   } catch (err) {
