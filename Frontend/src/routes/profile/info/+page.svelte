@@ -133,7 +133,7 @@
 				<div class="stat-item">
 					<img src={ladderIcon} alt="Ladder Icon" />
 					<h3>{stats ? stats.ladderLevel : 'Bronze'}</h3>
-					<p>Ladder Level</p>
+					<p>Rank</p>
 				</div>
 			{:else}
 				<p>No stats available</p>
