@@ -86,7 +86,7 @@
 		getUserInfo();
 	});
 	function calculateLadderLevel(ratio: number) {
-        if (ratio > 4) return 'Gold';
+        if (ratio > 3) return 'Gold';
         if (ratio > 2) return 'Silver';
         return 'Bronze';
     }
