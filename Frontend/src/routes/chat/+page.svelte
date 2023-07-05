@@ -93,13 +93,13 @@
       }
     }
     myCookie = getCookie('jwt');
-    socket = io('http://localhost:3333', {
+    socket = io('http://' + serverIP + ':3333', {
       transports: ['websocket'],
       auth: {
         token: myCookie,
       },
     });
-    /*const resp = await fetch('http://localhost:3333/chat/blockedUsers', {
+    /*const resp = await fetch('http://' + serverIP + ':3333/chat/blockedUsers', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -173,7 +173,7 @@
 
   async function getUserinfo() {
     try {
-      const response = await fetch('http://localhost:3333/profil/me', {
+      const response = await fetch('http://' + serverIP + ':3333/profil/me', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -223,7 +223,7 @@
   }
 
   // Fetch all the private rooms
-  const response2 = await fetch('http://localhost:3333/chat/privateRooms', {
+  const response2 = await fetch('http://' + serverIP + ':3333/chat/privateRooms', {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -246,7 +246,7 @@
 
 async function refreshUserList(myCookie : string, selectedChannel : string)
   {
-	const reponse = await fetch('http://localhost:3333/chat/rooms/' + selectedChannel, {
+	const reponse = await fetch('http://' + serverIP + ':3333/chat/rooms/' + selectedChannel, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -371,7 +371,7 @@ function refreshList() {
   {
     try
     {
-      const response = await fetch("http://localhost:3333/chat/changePassword", {
+      const response = await fetch("http://' + serverIP + ':3333/chat/changePassword", {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -403,7 +403,7 @@ async function grantUserAdmin()
 {
   try
   {
-    const response = await fetch("http://localhost:3333/chat/giveAdmin", {
+    const response = await fetch("http://' + serverIP + ':3333/chat/giveAdmin", {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -469,7 +469,7 @@ async function grantUserAdmin()
 async function banSelectedUser() {
   try
   {
-    const response = await fetch("http://localhost:3333/chat/banUser", {
+    const response = await fetch("http://' + serverIP + ':3333/chat/banUser", {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -594,7 +594,7 @@ async function banSelectedUser() {
 async function changeChannelType() {
   try
   {
-    const response = await fetch("http://localhost:3333/chat/changeRoomType", {
+    const response = await fetch("http://' + serverIP + ':3333/chat/changeRoomType", {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -626,7 +626,7 @@ async function changeChannelType() {
 async function muteSelectedUser(muteDuration: number) {
   try
   {
-    const response = await fetch("http://localhost:3333/chat/muteUser", {
+    const response = await fetch("http://' + serverIP + ':3333/chat/muteUser", {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -713,7 +713,7 @@ async function muteSelectedUser(muteDuration: number) {
               return;
             }
           }
-          const response = await fetch('http://localhost:3333/chat/createRoom', {
+          const response = await fetch('http://' + serverIP + ':3333/chat/createRoom', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -793,7 +793,7 @@ async function muteSelectedUser(muteDuration: number) {
               }
             }
           }
-          const response = await fetch('http://localhost:3333/chat/joinRoom',
+          const response = await fetch('http://' + serverIP + ':3333/chat/joinRoom',
           {
             method: 'POST',
             headers:
@@ -839,7 +839,7 @@ async function muteSelectedUser(muteDuration: number) {
 	let contentMessage = messageContent;
   closePrivateMessageModal();
 	// await new Promise(r => setTimeout(r, 1000));
-  const response = await fetch('http://localhost:3333/chat/createPrivateRoom', {
+  const response = await fetch('http://' + serverIP + ':3333/chat/createPrivateRoom', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -985,7 +985,7 @@ async function muteSelectedUser(muteDuration: number) {
 
     async function getProfile() {
     try {
-      const response = await fetch('http://localhost:3333/chat/profile/' + selectedUserparam, {
+      const response = await fetch('http://' + serverIP + ':3333/chat/profile/' + selectedUserparam, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -1007,7 +1007,7 @@ async function muteSelectedUser(muteDuration: number) {
   }
   async function inviteUsr(inviteUser: string){
     try {
-      const response = await fetch('http://localhost:3333/chat/inviteUser/', {
+      const response = await fetch('http://' + serverIP + ':3333/chat/inviteUser/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1065,7 +1065,7 @@ async function muteSelectedUser(muteDuration: number) {
 	}
 
   async function unblockUser() {
-	const response = await fetch('http://localhost:3333/chat/unblockUser', {
+	const response = await fetch('http://' + serverIP + ':3333/chat/unblockUser', {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',
@@ -1089,7 +1089,7 @@ async function muteSelectedUser(muteDuration: number) {
 
   async function blockUser() {
 	try {
-      const response = await fetch('http://localhost:3333/chat/blockUser', {
+      const response = await fetch('http://' + serverIP + ':3333/chat/blockUser', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1125,7 +1125,7 @@ async function muteSelectedUser(muteDuration: number) {
     selectedChannel = '';
     selectedPrivateChannel = Channel;
 	console.log("selectedPrivateChannel : ", selectedPrivateChannel);
-  	const response = await fetch('http://localhost:3333/chat/privateRooms/' + selectedPrivateChannel, {
+  	const response = await fetch('http://' + serverIP + ':3333/chat/privateRooms/' + selectedPrivateChannel, {
 		method: 'GET',
 		headers: {
 		'Content-Type': 'application/json',
@@ -1175,7 +1175,7 @@ async function leaveRoom()
 	let userl = await refreshUserList(token, selectedChannel);
 	let users = userl.filter((user: any) => user.login !== login);
 	try {
-	    const response = await fetch('http://localhost:3333/chat/leaveRoom', {
+	    const response = await fetch('http://' + serverIP + ':3333/chat/leaveRoom', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -1861,31 +1861,7 @@ async function leaveRoom()
 		text-align: center;
 		font-weight: bold;
 	}
-	.greenButton {
-		background-color: #4caf50;
-		color: #fff;
-		font-size: 1rem;
-		padding: 0.5rem 1rem;
-		border: none;
-		border-radius: 15px;
-		cursor: pointer;
-	}
 
-	.greenButton:hover {
-		background-color: #3e8e41;
-	}
 
-	.redButton {
-		background-color: #f44336;
-		color: #fff;
-		font-size: 1rem;
-		padding: 0.5rem 1rem;
-		border: none;
-		border-radius: 15px;
-		cursor: pointer;
-	}
 
-	.redButton:hover {
-		background-color: #da190b;
-	}
 </style>

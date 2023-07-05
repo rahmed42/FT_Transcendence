@@ -226,7 +226,7 @@
 		</tr>
 	</table>
 	<br />
-	<button on:click={applySettings} class="apply-button">Save</button>
+	<button on:click={applySettings} class="button-styled">Save</button>
 	<div class="game-preview">
 		<!-- Image preview of the game -->
 		<img class="board" src={selectedBoard} alt="Game preview" />
@@ -247,23 +247,10 @@
 		font-size: 24px;
 	}
 
-	.apply-button {
-		/* font-family:"Comic Sans MS"; */
-		padding: 10px 10px;
-		background-color: #007fff;
-		color: white;
-		border-radius: 75px;
-		font-size: 24px;
-		cursor: pointer;
-		transition: background-color 0.2s ease;
+	button {
 		width: 200px;
-		/* center button */
 		margin-left: auto;
 		margin-right: auto;
-	}
-
-	.apply-button:hover {
-		background-color: #100050;
 	}
 
 	.game-preview {
