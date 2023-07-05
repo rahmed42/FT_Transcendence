@@ -121,11 +121,9 @@
         blockList.set([])
     }*/
   socket.on('connect', () => {
-    console.log('connected');
   });
 
   socket.on('disconnect', () => {
-    console.log('disconnected');
   });
 
   socket.on('newPrivateMessage', (data: {content: string, nameSender: string}) => {
@@ -213,7 +211,6 @@
 		});
 	socket.on('redirectGame', (data: {login: string, type: string}) =>
 	{
-		console.log(data)
 		if (data.login == login)
 			goto("/game")
 	});
@@ -233,10 +230,12 @@
 					return adminList.filter((user) => user.login !== data.login);
 				})
 				let ad = get(adminList)
-				console.log(ad)
 				if (ad.length == 0)
 					adminList.set([]);
 				isAdmin = false;
+				if (openAdminModal) {
+					closeSetupModal();
+				}
 			}
 		}
 	})
@@ -302,7 +301,6 @@
 
   if (response.ok) {
     const data = await response.json();
-    console.log(data.rooms);
     if (data && data.rooms) {
       channelList.set(data.rooms);
     }
@@ -354,7 +352,6 @@ async function refreshUserList(myCookie : string, selectedChannel : string)
             alert(data.message);
         } else {
             const newChannel = await reponse.json();
-			console.log(newChannel.users);
 			if (newChannel.users != null)
 				return (newChannel.users);
 			else
@@ -750,7 +747,6 @@ async function muteSelectedUser(muteDuration: number) {
     else
     {
       const newMuteList = await response.json();
-	  console.log(newMuteList)
       muteList.set(newMuteList.mutedUsers.mutedUsers);
 	  socket.emit("eventMute", {roomName : chan, login : newMuteList.mutedUsers.mutedUsers.login})
     }
@@ -866,7 +862,6 @@ async function muteSelectedUser(muteDuration: number) {
 		// Logique de sélection de l'utilisateur
 		loginUserToExecute = user;
 		isUserModalOpen = true;
-		console.log('Utilisateur sélectionné:', user);
 	}
 
 	function closeUserModal() {
@@ -958,7 +953,6 @@ async function muteSelectedUser(muteDuration: number) {
   if (!response.ok)
   {
     const data = await response.json();
-	console.log("Error : ", data)
 	alert(data.message);
   }
   else if (response.ok)
@@ -1016,8 +1010,6 @@ async function muteSelectedUser(muteDuration: number) {
 			unmuteUser();
 		} else if (selectedSection === 'changeChannelType') {
 			changeChannelType();
-		} else {
-			console.log('error');
 		}
 		closeSetupModal();
 	}
@@ -1051,7 +1043,6 @@ async function muteSelectedUser(muteDuration: number) {
             alert(data.message);
         } else if (response.ok) {
             const newChannel = await response.json();
-            console.log("New channel : ", newChannel);
             if (newChannel) {
                 socket.emit('joinRoom', { roomName: selectedChannel })
                 userList.set(newChannel.users);
@@ -1110,12 +1101,7 @@ async function muteSelectedUser(muteDuration: number) {
         alert(data.message);
       } else if (response.ok) {
         const newProfile = await response.json();
-        console.log('Contenu de newProfile:', newProfile);
-        //need socket to send invitation
-        invitationList.update(currentInvitations => [
-        ...currentInvitations,
-        { login: inviteUser }
-        ]);
+		closeInvitationModal();
         alert(newProfile.message);
       }
     }
@@ -1141,9 +1127,7 @@ async function muteSelectedUser(muteDuration: number) {
 			} else {
 				const data = await response.json();
 				gameRequest.login = data.loginGameInvitation;
-				console.log('gameRequest.login : ', gameRequest.login);
 				gameRequest.type = data.gameTypeInvitation;
-				console.log('gameRequest.type : ', gameRequest.type);
 			}
 		} catch (err) {
 			if (err instanceof Error) alert(err.message);
@@ -1191,8 +1175,6 @@ async function muteSelectedUser(muteDuration: number) {
         alert(data.message);
       } else if (response.ok) {
         const newProfile = await response.json();
-		console.log("newProfile : ", newProfile);
-		console.log("newProfile.blockedUsers : ", newProfile.blockedUsers);
         blockList.set(newProfile.blockedUsers);
         alert("User blocked");
       }
@@ -1210,7 +1192,6 @@ async function muteSelectedUser(muteDuration: number) {
     async function getPrivateChannel(Channel: string) {
     selectedChannel = '';
     selectedPrivateChannel = Channel;
-	console.log("selectedPrivateChannel : ", selectedPrivateChannel);
   	const response = await fetch('http://' + serverIP + ':3333/chat/privateRooms/' + selectedPrivateChannel, {
 		method: 'GET',
 		headers: {
