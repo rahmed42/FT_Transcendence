@@ -234,6 +234,26 @@
 			}
 		}
 	})
+	socket.on('ban', (data: {roomName : string, login: string, isBanned: boolean}) => {
+		if (data.roomName == selectedChannel && isAdmin)
+		{
+			if (data.isBanned)
+			{
+				banList.update((banList) => {
+					return [...banList, {login : data.login}];
+				})
+			}
+			else
+			{
+				banList.update((banList) => {
+					return banList.filter((user) => user.login !== data.login);
+				})
+				let bl = get(banList)
+				if (bl.length == 0)
+					banList.set([]);
+			}
+		}
+	})
   async function getUserinfo() {
     try {
       const response = await fetch('http://' + serverIP + ':3333/profil/me', {
