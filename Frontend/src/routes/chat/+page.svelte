@@ -93,6 +93,9 @@
       }
     }
     myCookie = getCookie('jwt');
+	if (!myCookie) {
+		goto('/');
+	}
     socket = io('http://' + serverIP + ':3333', {
       transports: ['websocket'],
       auth: {
@@ -118,24 +121,28 @@
         blockList.set([])
     }*/
   socket.on('connect', () => {
-    console.log('connected');
   });
 
   socket.on('disconnect', () => {
-    console.log('disconnected');
   });
 
   socket.on('newPrivateMessage', (data: {content: string, nameSender: string}) => {
-    console.log("Mutelist : ", muteList);
-    console.log("Blocklist : ", blockList);
-    console.log("Message");
-    if ((blockList) && !(data.nameSender === login) && data.nameSender === selectedPrivateChannel) {
-      if (muteList)
-      {
-        messages = [...messages, { username: data.nameSender, content: data.content, user: true }];
-      }
-    }
-  });
+		if (selectedPrivateChannel) {
+			if (data.nameSender == selectedPrivateChannel) {
+				messages = [...messages, { username: data.nameSender, content: data.content, user: true }];
+				return ;
+			}
+		}
+});
+
+	socket.on('newRoom', (data: {roomName: string, loginReceiver: string}) => {
+		if (data.loginReceiver == login)
+		{
+			privateList.update((privateList) => {
+				return [...privateList, {login: data.roomName}]
+			})
+		}
+	})
 
   socket.on('newRoomMessage', (data: { content: string, nameSender: string, roomName: string }) => {
 	let bl = get(blockList);
@@ -164,6 +171,94 @@
 		userList.set(data.userList);
   });
 
+  socket.on("sayLeave", (data : {roomName : string, login : string , userList : {login : string}[]}) => {
+	if (data.login == login)
+	{
+		socket.emit("leaveRoom", {roomName : data.roomName, userList : data.userList});
+		channelList.update((channelList) => {
+			return channelList.filter((channel) => channel.name !== data.roomName);
+		});
+		if (selectedChannel == data.roomName)
+			selectedChannel = "";
+			refreshList();
+	}
+  });
+
+  socket.on("unmuted", (data : { roomName : string, login : string}) => {
+	if (data.roomName == selectedChannel)
+	{
+		muteList.update((muteList) => {
+			return muteList.filter((user) => user.login !== data.login);
+		});
+	}
+  })
+
+  socket.on("muted", (data : { roomName : string, login : string}) => {
+	if (data.roomName == selectedChannel)
+	{
+		muteList.update((muteList) => {
+			return [...muteList, {login : data.login}];
+		})
+	}
+  })
+  socket.on('newGameRequest', (data:  {
+			sender: string,
+			login: string,
+			type: string,
+		 }) => {
+			if (data.login == login)
+				getGameRequest();
+		});
+	socket.on('redirectGame', (data: {login: string, type: string}) =>
+	{
+		if (data.login == login)
+			goto("/game")
+	});
+	socket.on('admin', (data: {roomName : string, login: string, isAdmin: boolean}) => {
+		if (data.login == login && data.roomName == selectedChannel)
+		{
+			if (data.isAdmin)
+			{
+				adminList.update((adminList) => {
+					return [...adminList, {login : data.login}];
+				})
+				isAdmin = true;
+			}
+			else
+			{
+				adminList.update((adminList) => {
+					return adminList.filter((user) => user.login !== data.login);
+				})
+				let ad = get(adminList)
+				if (ad.length == 0)
+					adminList.set([]);
+				isAdmin = false;
+				if (openAdminModal) {
+					closeSetupModal();
+				}
+			}
+		}
+	})
+	socket.on('ban', (data: {roomName : string, login: string, isBanned: boolean}) => {
+		if (data.roomName == selectedChannel && isAdmin)
+		{
+			if (data.isBanned)
+			{
+				banList.update((banList) => {
+					return [...banList, {login : data.login}];
+				})
+			}
+			else
+			{
+				banList.update((banList) => {
+					return banList.filter((user) => user.login !== data.login);
+				})
+				let bl = get(banList)
+				if (bl.length == 0)
+					banList.set([]);
+			}
+		}
+	})
   async function getUserinfo() {
     try {
       const response = await fetch('http://' + serverIP + ':3333/profil/me', {
@@ -206,13 +301,12 @@
 
   if (response.ok) {
     const data = await response.json();
-    console.log(data.rooms);
     if (data && data.rooms) {
       channelList.set(data.rooms);
     }
   } else {
     const data = await response.json();
-    throw new Error(data.message);
+    alert(data.message);
   }
 
   // Fetch all the private rooms
@@ -224,6 +318,7 @@
     },
     credentials: 'include',
   });
+  
 
   if (response2.ok) {
     const data = await response2.json();
@@ -232,9 +327,15 @@
     }
   } else {
     const data = await response2.json();
-    throw new Error(data.message);
+    alert(data.message);
   }
 });
+
+function handleKeyPress(event: KeyboardEvent) {
+		if (event.key === 'Enter') {
+			sendMessage();
+		}
+	}
 
 
 async function refreshUserList(myCookie : string, selectedChannel : string)
@@ -251,7 +352,6 @@ async function refreshUserList(myCookie : string, selectedChannel : string)
             alert(data.message);
         } else {
             const newChannel = await reponse.json();
-			console.log(newChannel.users);
 			if (newChannel.users != null)
 				return (newChannel.users);
 			else
@@ -307,7 +407,7 @@ function checkForEnter(event: KeyboardEvent) {
 			});
 			if (!response.ok) {
 				const data = await response.json();
-				throw new Error(data.message);
+				alert(data.message);
 			} else {
 				gameRequest.login = 'undefined';
 				gameRequest.type = 'undefined';
@@ -364,7 +464,7 @@ function refreshList() {
   {
     try
     {
-      const response = await fetch("http://' + serverIP + ':3333/chat/changePassword", {
+      const response = await fetch("http://" + serverIP + ":3333/chat/changePassword", {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -378,12 +478,12 @@ function refreshList() {
         });
         if (!response.ok) {
           const data = await response.json();
-          throw new Error(data.message);
+          alert(data.message);
         }
         else
         {
           const data = await response.json();
-          throw new Error(data.message);
+          alert(data.message);
         }
       }
       catch (err) {
@@ -396,7 +496,10 @@ async function grantUserAdmin()
 {
   try
   {
-    const response = await fetch("http://' + serverIP + ':3333/chat/giveAdmin", {
+	let channelName = selectedChannel;
+	let login = selectedUserparam;
+	let id = userID;
+    const response = await fetch("http://" + serverIP + ":3333/chat/giveAdmin", {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -410,14 +513,13 @@ async function grantUserAdmin()
     });
     if (!response.ok) {
       const data = await response.json();
-      throw new Error(data.message);
+      alert(data.message);
     }
     else
     {
-      const data = await response.json();
-      adminList.set(data.administrators);
-      //need to change the state of the other user (websocket)
-      throw new Error(data.message);
+		const data = await response.json();
+		adminList.set(data.administrator.administrators);
+		socket.emit('adminEvent', {roomName : channelName, login: login, id: id, isAdmin : true})
     }
   }
   catch (err) {
@@ -428,7 +530,8 @@ async function grantUserAdmin()
 
 	async function expulSelectedUser() {
 		try {
-			const response = await fetch("http://' + serverIP + ':3333/chat/kickUser", {
+			let login = selectedUserparam;
+			const response = await fetch("http://" + serverIP + ":3333/chat/kickUser", {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
@@ -444,11 +547,12 @@ async function grantUserAdmin()
 			const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.message);
+      alert(data.message);
     } else {
-      userList.update(currentUsers => currentUsers.filter(user => user.login !== selectedUserparam));
-      //need to use socket to kick the user
-      alert('User successfully kicked out of the channel.');
+		let userL = get(userList);
+		userL = userL.filter((user) => user.login != login);
+		socket.emit('eventLeave', {roomName : selectedChannel, login : login, userList : userL})
+		alert('User successfully kicked out of the channel.');
     }
 
   } catch (err) {
@@ -462,7 +566,8 @@ async function grantUserAdmin()
 async function banSelectedUser() {
   try
   {
-    const response = await fetch("http://' + serverIP + ':3333/chat/banUser", {
+	let login = selectedUserparam
+    const response = await fetch("http://" + serverIP + ":3333/chat/banUser", {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -476,14 +581,16 @@ async function banSelectedUser() {
     });
     if (!response.ok) {
       const data = await response.json();
-      throw new Error(data.message);
+      alert(data.message);
     }
     else
     {
       const data = await response.json();
-      throw new Error(data.message);
-      //need to get the newlist of userban, to update the list
-    }
+	  let userL = get(userList);
+	  userL = userL.filter((user) => user.login != login);
+	  socket.emit("eventLeave", {roomName : selectedChannel, login : login, userList : userL})
+	  banList.update((banList) => [...banList, {login : login}]);
+	}
   }
   catch (err) {
     if (err instanceof Error)
@@ -493,7 +600,8 @@ async function banSelectedUser() {
 
 	async function unmuteUser() {
 		try {
-			const response = await fetch("http://' + serverIP + ':3333/chat/unmuteUser", {
+			let login = selectedUserparam;
+			const response = await fetch("http://" + serverIP + ":3333/chat/unmuteUser", {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
@@ -507,16 +615,12 @@ async function banSelectedUser() {
 			});
 			if (!response.ok) {
 				const data = await response.json();
-				throw new Error(data.message);
+				alert(data.message);
 			} else {
-				const newMuteList = await response.json();
-				alert(newMuteList.message);
-				console.log('old mute list : ', muteList);
-				muteList.update((currentMuteList) => {
-					return currentMuteList.filter((user) => user.login !== selectedUserparam);
+				muteList.update((currentMutes) => {
+					return currentMutes.filter((mute) => mute.login != login);
 				});
 			}
-			console.log('new mute list : ', muteList);
 		} catch (err) {
 			if (err instanceof Error) alert(err.message);
 		}
@@ -524,7 +628,9 @@ async function banSelectedUser() {
 
 	async function revokeAdmin() {
 		try {
-			const response = await fetch("http://' + serverIP + ':3333/chat/removeAdmin", {
+			let channelName = selectedChannel;
+			let login = selectedUserparam;
+			const response = await fetch("http://" + serverIP + ":3333/chat/removeAdmin", {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
@@ -540,14 +646,12 @@ async function banSelectedUser() {
 			const data = await response.json();
 
 			if (!response.ok) {
-				throw new Error(data.message);
+				alert(data.message);
 			} else {
-				// Ici, la réponse est OK, donc nous devons mettre à jour le store
 				adminList.update((currentAdmins) => {
-					return currentAdmins.filter((admin) => admin.login !== selectedUserparam);
+					return currentAdmins.filter((admin) => admin.login !== login);
 				});
-
-				alert('Admin révoqué avec succès');
+				socket.emit('adminEvent', {roomName : channelName, login: login, isAdmin : false})
 			}
 		} catch (err) {
 			if (err instanceof Error) {
@@ -558,7 +662,8 @@ async function banSelectedUser() {
 
 	async function unbanUser() {
 		try {
-			const response = await fetch("http://' + serverIP + ':3333/chat/unbanUser", {
+			let login = selectedUserparam;
+			const response = await fetch("http://" + serverIP + ":3333/chat/unbanUser", {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
@@ -572,10 +677,12 @@ async function banSelectedUser() {
 			});
 			if (!response.ok) {
 				const data = await response.json();
-				throw new Error(data.message);
+				alert(data.message);
 			} else {
 				const data = await response.json();
-				throw new Error(data.message);
+				banList.update((currentBanList) => {
+					return currentBanList.filter((user) => user.login !== login);
+				});
 			}
 		} catch (err) {
 			if (err instanceof Error) {
@@ -587,7 +694,7 @@ async function banSelectedUser() {
 async function changeChannelType() {
   try
   {
-    const response = await fetch("http://' + serverIP + ':3333/chat/changeRoomType", {
+    const response = await fetch("http://" + serverIP + ":3333/chat/changeRoomType", {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -602,12 +709,12 @@ async function changeChannelType() {
     });
     if (!response.ok) {
       const data = await response.json();
-      throw new Error(data.message);
+      alert(data.message);
     }
     else
     {
       const data = await response.json();
-      throw new Error(data.message);
+      alert(data.message);
     }
   }
   catch (err) {
@@ -619,7 +726,8 @@ async function changeChannelType() {
 async function muteSelectedUser(muteDuration: number) {
   try
   {
-    const response = await fetch("http://' + serverIP + ':3333/chat/muteUser", {
+	let chan = selectedChannel
+    const response = await fetch("http://" + serverIP + ":3333/chat/muteUser", {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -634,13 +742,13 @@ async function muteSelectedUser(muteDuration: number) {
     });
     if (!response.ok) {
       const data = await response.json();
-      throw new Error(data.message);
+      alert(data.message);
     }
     else
     {
       const newMuteList = await response.json();
-      throw new Error(newMuteList.message);
-      muteList.set(newMuteList.mutedUsers.mutedUsers.login);
+      muteList.set(newMuteList.mutedUsers.mutedUsers);
+	  socket.emit("eventMute", {roomName : chan, login : newMuteList.mutedUsers.mutedUsers.login})
     }
     muteDuration = 0;
   }
@@ -721,7 +829,7 @@ async function muteSelectedUser(muteDuration: number) {
           });
           if (!response.ok) {
             const data = await response.json();
-            throw new Error(data.message);
+            alert(data.message);
           } else
           {
             const newChannel = await response.json();
@@ -754,7 +862,6 @@ async function muteSelectedUser(muteDuration: number) {
 		// Logique de sélection de l'utilisateur
 		loginUserToExecute = user;
 		isUserModalOpen = true;
-		console.log('Utilisateur sélectionné:', user);
 	}
 
 	function closeUserModal() {
@@ -804,7 +911,7 @@ async function muteSelectedUser(muteDuration: number) {
           {
             const data = await response.json();
             closeJoinModal();
-            throw new Error(data.message);
+            alert(data.message);
           }
           else if (response.ok)
           {
@@ -832,7 +939,7 @@ async function muteSelectedUser(muteDuration: number) {
 	let contentMessage = messageContent;
   closePrivateMessageModal();
 	// await new Promise(r => setTimeout(r, 1000));
-  const response = await fetch('http://' + serverIP + ':3333/chat/createPrivateRoom', {
+  const response = await fetch('http://localhost:3333/chat/createPrivateRoom', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -846,21 +953,18 @@ async function muteSelectedUser(muteDuration: number) {
   if (!response.ok)
   {
     const data = await response.json();
-	  console.log("Error : ", data)
-	  throw new Error(data.message);
+	alert(data.message);
   }
   else if (response.ok)
   {
     const newChannel = await response.json();
-    console.log("New channel : ", newChannel);
-    socket.emit('joinRoom', { roomName: newChannel.id });
+    socket.emit('joinRoom', { roomName: newChannel.id.id });
+	socket.emit('newPrivateRoom', {login: login, loginReceiver: loginToSend})
     socket.emit('newMessage', { idSender: userID, roomName : newChannel.id, loginReceiver: loginToSend, content: contentMessage, type: "private" });
-    privateId = newChannel.id;
-    messages = [...messages, { username: login, content: contentMessage, user: false }];
-	  privateList.update(privateList => [...privateList, { login: newChannel.users[0].login }]);
+    privateId = newChannel.id.id;
+	privateList.update(privateList => [...privateList, { login: newChannel.login}]);
     recipientName = '';
     messageContent = '';
-    alert(newChannel.message);
   }
 }
 
@@ -873,10 +977,10 @@ async function muteSelectedUser(muteDuration: number) {
       return;
     }
     if (selectedChannel !== '') {
-      let roomName = selectedChannel;
-      socket.emit('newMessage', { roomName: roomName, content: messageInput, idSender: userID, type: "room" });
-      messages = [...messages, { username: login, content: messageInput, user: false}];
-      messageInput = '';
+		let roomName = selectedChannel;
+		socket.emit('newMessage', { roomName: roomName, content: messageInput, idSender: userID, type: "room" });
+		messages = [...messages, { username: login, content: messageInput, user: false}];
+		messageInput = '';
     }
     else if (selectedPrivateChannel !== '') {
       let loginToSend = selectedPrivateChannel;
@@ -906,8 +1010,6 @@ async function muteSelectedUser(muteDuration: number) {
 			unmuteUser();
 		} else if (selectedSection === 'changeChannelType') {
 			changeChannelType();
-		} else {
-			console.log('error');
 		}
 		closeSetupModal();
 	}
@@ -938,10 +1040,9 @@ async function muteSelectedUser(muteDuration: number) {
 
         if (!response.ok) {
             const data = await response.json();
-            throw new Error(data.message);
+            alert(data.message);
         } else if (response.ok) {
             const newChannel = await response.json();
-            console.log("New channel : ", newChannel);
             if (newChannel) {
                 socket.emit('joinRoom', { roomName: selectedChannel })
                 userList.set(newChannel.users);
@@ -977,27 +1078,10 @@ async function muteSelectedUser(muteDuration: number) {
 }
 
     async function getProfile() {
-    try {
-      const response = await fetch('http://' + serverIP + ':3333/chat/profile/' + selectedUserparam, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: 'Bearer ' + token,
-        },
-      });
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.message);
-      } else if (response.ok) {
-        const newProfile = await response.json();
-        console.log('Contenu de newProfile:', newProfile);
-      }
-    }
-    catch (err) {
-      if (err instanceof Error)
-        alert(err.message);
-    }
+		let redir = '/profile/info/?login=' + loginUserToExecute;
+		goto(redir);
   }
+
   async function inviteUsr(inviteUser: string){
     try {
       const response = await fetch('http://' + serverIP + ':3333/chat/inviteUser/', {
@@ -1014,16 +1098,11 @@ async function muteSelectedUser(muteDuration: number) {
       });
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.message);
+        alert(data.message);
       } else if (response.ok) {
         const newProfile = await response.json();
-        console.log('Contenu de newProfile:', newProfile);
-        //need socket to send invitation
-        invitationList.update(currentInvitations => [
-        ...currentInvitations,
-        { login: inviteUser }
-        ]);
-        throw new Error(newProfile.message);
+		closeInvitationModal();
+        alert(newProfile.message);
       }
     }
     catch (err) {
@@ -1044,13 +1123,11 @@ async function muteSelectedUser(muteDuration: number) {
 			});
 			if (!response.ok) {
 				const data = await response.json();
-				throw new Error(data.message);
+				alert(data.message);
 			} else {
 				const data = await response.json();
 				gameRequest.login = data.loginGameInvitation;
-				console.log('gameRequest.login : ', gameRequest.login);
 				gameRequest.type = data.gameTypeInvitation;
-				console.log('gameRequest.type : ', gameRequest.type);
 			}
 		} catch (err) {
 			if (err instanceof Error) alert(err.message);
@@ -1098,8 +1175,6 @@ async function muteSelectedUser(muteDuration: number) {
         alert(data.message);
       } else if (response.ok) {
         const newProfile = await response.json();
-		console.log("newProfile : ", newProfile);
-		console.log("newProfile.blockedUsers : ", newProfile.blockedUsers);
         blockList.set(newProfile.blockedUsers);
         alert("User blocked");
       }
@@ -1117,7 +1192,6 @@ async function muteSelectedUser(muteDuration: number) {
     async function getPrivateChannel(Channel: string) {
     selectedChannel = '';
     selectedPrivateChannel = Channel;
-	console.log("selectedPrivateChannel : ", selectedPrivateChannel);
   	const response = await fetch('http://' + serverIP + ':3333/chat/privateRooms/' + selectedPrivateChannel, {
 		method: 'GET',
 		headers: {
@@ -1159,7 +1233,7 @@ async function muteSelectedUser(muteDuration: number) {
     }
   } else {
     const data = await response.json();
-    throw Error(data.message);
+    alert(data.message);
   }
 }
 
@@ -1186,7 +1260,6 @@ async function leaveRoom()
       const newProfile = await response.json();
       socket.emit('leaveRoom', { roomName: selectedChannel, userList : users });
       channelList.update(channelList => channelList.filter(channel => channel.name !== selectedChannel));
-      adminList.update(adminList => adminList.filter(admin => admin.login !== login));
       refreshList();
     }
   }
@@ -1202,366 +1275,218 @@ async function leaveRoom()
 	<title>Chat</title>
 	<meta name="description" content="Chat Page" />
 </svelte:head>
+{#if myCookie}
 
-{#if isInvitationModalOpen}
-  <div class="modal">
-    <div class="modal-content">
-      <h3>Invitation list</h3>
-      <input bind:value={inviteUser} id="inviteUser" type="Username ..." placeholder="Enter username" name = "inviteUser"/>
-      {#if inviteUser && selectedChannel}
-        <button on:click={ ()=> inviteUsr(inviteUser)}>Invite</button>
-      {:else}
-        <p class="error-message">Need to be in a channel and add a username to invite</p>
-      {/if}
-      <button on:click={closeInvitationModal}>Close</button>
-    </div>
-  </div>
-{/if}
-
-{#if isUserModalOpen}
+	{#if isInvitationModalOpen}
 	<div class="modal">
 		<div class="modal-content">
-			<h3>User Options</h3>
-			<div>
-				<button on:click={getProfile}>Profile</button>
-				<button on:click={blockUser}>Block</button>
-				<button on:click={unblockUser}>Unblock</button>
-				<button on:click={closeUserModal}>Close</button>
-			</div>
-			<div>
-				<button on:click={createGameRequest}>Invite Game</button>
-				<input
-					type="radio"
-					value="Original"
-					id="Original"
-					name="gameType"
-					bind:group={joinGameType}
-					checked
-				/>
-				<label for="Original">Original</label>
-				<input type="radio" value="Modern" id="Modern" name="gameType" bind:group={joinGameType} />
-				<label for="Modern">Modern</label>
-			</div>
-		</div>
-	</div>
-{/if}
-
-{#if openAdminModal}
-	<div class="modal">
-		<div class="modal-content">
-			<h3>Setup</h3>
-
-      {#if selectedSection === 'changeChannelType'}
-      <div class="selected-option">
-        <p>Change Type:</p>
-        <label>
-          <input type="radio" value="public" id="public" name="channelType" bind:group={newChannelType} /> Public
-        </label>
-        <label>
-          <input type="radio" value="private" id="private" name="channelType" bind:group={newChannelType} /> Private
-        </label>
-        <label>
-          <input type="radio" value="protected" id="protected" name="channelType" bind:group={newChannelType} /> Protected
-        </label>
-
-        {#if newChannelType === 'protected'}
-          <input bind:value={newPassword} type="password" id="channelPassword" placeholder="Password" name = NewPassword />
-        {/if}
-      </div>
-    {/if}
-
-			{#if selectedSection === 'changePassword'}
-				<div class="selected-option">
-					<p>Change Password:</p>
-					<input
-						bind:value={newPassword}
-						id="newPassword"
-						type="password"
-						placeholder="New Password"
-						name="newPassword"
-					/>
-				</div>
-			{/if}
-
-			{#if selectedSection === 'grantAdmin'}
-				<div class="selected-option">
-					<p>Give Admin:</p>
-					<select name="selectedUser" bind:value={selectedUserparam}>
-						{#each $userList as user}
-							<option value={user.login}>{user.login}</option>
-						{/each}
-					</select>
-				</div>
-			{/if}
-
-			{#if selectedSection === 'revokeAdmin'}
-				<div class="selected-option">
-					<p>Revoke Admin:</p>
-					<select name="selectedUser" bind:value={selectedUserparam}>
-						{#each $adminList as admin}
-							<option value={admin.login}>{admin.login}</option>
-						{/each}
-					</select>
-				</div>
-			{/if}
-
-			{#if selectedSection === 'expulUser'}
-				<div class="selected-option">
-					<p>Kick User:</p>
-					<select name="selectedUser" bind:value={selectedUserparam}>
-						{#each $userList as user}
-							<option value={user.login}>{user.login}</option>
-						{/each}
-					</select>
-				</div>
-			{/if}
-
-			{#if selectedSection === 'banUser'}
-				<div class="selected-option">
-					<p>Ban User:</p>
-					<select name="selectedUser" bind:value={selectedUserparam}>
-						{#each $userList as user}
-							<option value={user.login}>{user.login}</option>
-						{/each}
-					</select>
-				</div>
-			{/if}
-
-			{#if selectedSection === 'muteUser'}
-				<div class="selected-option">
-					<p>Mute User:</p>
-					<select name="selectedUser" bind:value={selectedUserparam}>
-						{#each $userList as user}
-							<option value={user.login}>{user.login}</option>
-						{/each}
-					</select>
-					<input
-						bind:value={muteDuration}
-						type="number"
-						name="duration"
-						placeholder="Mute Duration (minutes)"
-						min="1"
-					/>
-				</div>
-			{/if}
-
-			{#if selectedSection === 'unbanUser'}
-				<div class="selected-option">
-					<p>Unban User:</p>
-					<select name="selectedUser" bind:value={selectedUserparam}>
-						{#each $banList as bannedUsers}
-							<option value={bannedUsers.login}>{bannedUsers.login}</option>
-						{/each}
-					</select>
-				</div>
-			{/if}
-
-			{#if selectedSection === 'unmuteUser'}
-				<div class="selected-option">
-					<p>Unmute User:</p>
-					<select name="selectedUser" bind:value={selectedUserparam}>
-						{#if $muteList.length > 0}
-							{#each $muteList as mutedUsers}
-								<option value={mutedUsers.login}>{mutedUsers.login}</option>
-							{/each}
-						{:else}
-							<option disabled selected>No muted users</option>
-						{/if}
-					</select>
-				</div>
-			{/if}
-
-			<div class="section-select">
-				<label for="sectionSelect">Select Section:</label>
-				<select bind:value={selectedSection} id="sectionSelect">
-					<option value="changeChannelType">Change Type</option>
-					<option value="changePassword">Change Password</option>
-					<option value="grantAdmin">Give Admin</option>
-					<option value="revokeAdmin">Revoke Admin</option>
-					<option value="expulUser">Kick User</option>
-					<option value="banUser">Ban User</option>
-					<option value="muteUser">Mute User</option>
-					<option value="unbanUser">Unban User</option>
-					<option value="unmuteUser">Unmute User</option>
-				</select>
-			</div>
-
-			<div class="modal-actions">
-				<button on:click={() => confirmSelection()}>Confirm</button>
-				<button on:click={() => closeSetupModal()}>Cancel</button>
-			</div>
-		</div>
-	</div>
-{/if}
-
-{#if isJoinModalOpen}
-	<div class="modal">
-		<div class="modal-content">
-			<h3>Join a channel</h3>
-			<input
-				bind:value={joinChannelName}
-				type="text"
-				placeholder="Channel Name"
-				name="joinChannelName"
-				id="joinChannelName1"
-			/>
-			{#if isJoinInvalidName}
-				<p class="error-message">Invalid channel name. Please enter a valid name.</p>
-			{/if}
-			{#if isJoinInvalidType}
-				<p class="error-message">Please select a channel type.</p>
-			{/if}
-			<div class="channel-type">
-				<span>Channel Type:</span>
-				<label>
-					<input
-						type="radio"
-						value="public"
-						bind:group={joinChannelType}
-						name="radio_public"
-						id="radio_pub"
-					/> Public/Private
-				</label>
-				<label>
-					<input
-						type="radio"
-						value="protected"
-						bind:group={joinChannelType}
-						name="radio_protected"
-						id="radio_protect"
-					/> Protected
-				</label>
-			</div>
-			{#if joinChannelType === 'protected'}
-				<input
-					bind:value={joinChannelPassword}
-					type="password"
-					placeholder="Password"
-					name="joinChannelPassword"
-				/>
-				{#if isJoinInvalidPassword}
-					<p class="error-message">Please enter a password for the protected channel.</p>
-				{/if}
-			{/if}
-			<button on:click={joinChannel}>Join</button>
-			<button on:click={closeJoinModal}>Cancel</button>
-		</div>
-	</div>
-{/if}
-<div class="container">
-	<div class="sidebar">
-		<div class="chat-area">
-			{#if selectedChannel != '' || selectedPrivateChannel != ''}
-				{#if selectedChannel}
-					<div class="channel-header">
-						<h2>{selectedChannel}</h2>
-						{#if isAdmin}
-							<button on:click={setup} class="button-admin">Setup</button>
-						{/if}
-					</div>
-				{:else}
-					<div class="channel-header">
-						<h2>{selectedPrivateChannel} (private)</h2>
-					</div>
-				{/if}
-			{:else}
-				<div class="channel-header">
-					<h2>Chat</h2>
-				</div>
-			{/if}
-		</div>
-		<button class="create-channel p-anim" on:click={() => openModal()}> Create a channel </button>
-		<button class="create-channel p-anim" on:click={() => openJoinModal()}> Join Channel </button>
-		<button class="create-channel p-anim" on:click={() => openPrivateMessageModal()}>
-			Private Message
-		</button>
-		{#if selectedChannel}
-			<button class="create-channel p-anim" on:click={() => leaveRoom()}> Leave Channel </button>
+		<h3>Invitation list</h3>
+		<input bind:value={inviteUser} id="inviteUser" type="Username ..." placeholder="Enter username" name = "inviteUser"/>
+		{#if inviteUser && selectedChannel}
+			<button on:click={ ()=> inviteUsr(inviteUser)}>Invite</button>
+		{:else}
+			<p class="error-message">Need to be in a channel and add a username to invite</p>
 		{/if}
-		{#if channelList !== null}
-			{#each $channelList as channel}
-				<button class="channel-button p-anim" on:click={() => getChannel(channel.name)}>
-					{channel.name}
-				</button>
-			{/each}
-		{/if}
-		{#if privateList !== null}
-			{#each $privateList as privateChannel}
-				<button
-					class="channel-private-button p-anim-private"
-					on:click={() => getPrivateChannel(privateChannel.login)}
-				>
-					{privateChannel.login}
-				</button>
-			{/each}
-		{/if}
-	</div>
-	<div class="chat-area" style="max-height: 800px">
-		<div class="messages">
-			{#each messages as message}
-				{#if message.user}
-					<div class="message-container-user">
-						<p class="message-utilisateur"><strong> {message.username} </strong></p>
-						<p class="message-utilisateur">{message.content}</p>
-					</div>
-				{:else}
-					<div class="message-container-other">
-						<p class="message-autre-utilisateur"><strong> {message.username} </strong></p>
-						<p class="message-autre-utilisateur">{message.content}</p>
-					</div>
-				{/if}
-			{/each}
-		</div>
-		<div class="input-area">
-			<input
-				bind:value={messageInput}
-				type="text"
-				placeholder="Type here..."
-				id="test"
-				name="messageInput"
-			/>
-			<button on:click={sendMessage}>Send</button>
+		<button on:click={closeInvitationModal}>Close</button>
 		</div>
 	</div>
-	<div class="user-list">
-		<h3 class="user-list-title">User List</h3>
-		<button class="user-button p-anim" on:click={() => openInvitationModal()}> Invitation </button>
-		{#each $userList as user}
-		{#if user.login !== login}
-			<button class="user-button p-anim" on:click={() => selectUser(user.login)}>
-				{user.login}
-			</button>
-		{/if}
-		{/each}
-		{#if gameRequest.login !== 'undefined'}
-			<div id="gameRequest">
-				<p id="gameRequestPopup">
-					{gameRequest.login} <br /> Invited you to play <br />
-					{gameRequest.type} game.
-				</p>
-				<div id="gameRequestButtons">
-					<button class="greenButton" on:click={() => acceptGameRequest()}>Accept </button>
-					<button class="redButton" on:click={() => deleteGameRequest()}>Decline </button>
-				</div>
-			</div>
-		{/if}
-	</div>
+	{/if}
 
-
-	{#if isModalOpen}
+	{#if isUserModalOpen}
 		<div class="modal">
 			<div class="modal-content">
-				<h3>Create a new channel</h3>
+				<h3>User Options</h3>
+				<div>
+					<button on:click={getProfile}>Profile</button>
+					<button on:click={blockUser}>Block</button>
+					<button on:click={unblockUser}>Unblock</button>
+					<button on:click={closeUserModal}>Close</button>
+				</div>
+				<div>
+					<button on:click={createGameRequest}>Invite Game</button>
+					<input
+						type="radio"
+						value="Original"
+						id="Original"
+						name="gameType"
+						bind:group={joinGameType}
+						checked
+					/>
+					<label for="Original">Original</label>
+					<input type="radio" value="Modern" id="Modern" name="gameType" bind:group={joinGameType} />
+					<label for="Modern">Modern</label>
+				</div>
+			</div>
+		</div>
+	{/if}
+
+	{#if openAdminModal}
+		<div class="modal">
+			<div class="modal-content">
+				<h3>Setup</h3>
+
+		{#if selectedSection === 'changeChannelType'}
+		<div class="selected-option">
+			<p>Change Type:</p>
+			<label>
+			<input type="radio" value="public" id="public" name="channelType" bind:group={newChannelType} /> Public
+			</label>
+			<label>
+			<input type="radio" value="private" id="private" name="channelType" bind:group={newChannelType} /> Private
+			</label>
+			<label>
+			<input type="radio" value="protected" id="protected" name="channelType" bind:group={newChannelType} /> Protected
+			</label>
+
+			{#if newChannelType === 'protected'}
+			<input bind:value={newPassword} type="password" id="channelPassword" placeholder="Password" name = NewPassword />
+			{/if}
+		</div>
+		{/if}
+
+				{#if selectedSection === 'changePassword'}
+					<div class="selected-option">
+						<p>Change Password:</p>
+						<input
+							bind:value={newPassword}
+							id="newPassword"
+							type="password"
+							placeholder="New Password"
+							name="newPassword"
+						/>
+					</div>
+				{/if}
+
+				{#if selectedSection === 'grantAdmin'}
+					<div class="selected-option">
+						<p>Give Admin:</p>
+						<select name="selectedUser" bind:value={selectedUserparam}>
+							{#each $userList as user}
+								<option value={user.login}>{user.login}</option>
+							{/each}
+						</select>
+					</div>
+				{/if}
+
+				{#if selectedSection === 'revokeAdmin'}
+					<div class="selected-option">
+						<p>Revoke Admin:</p>
+						<select name="selectedUser" bind:value={selectedUserparam}>
+							{#each $adminList as admin}
+								<option value={admin.login}>{admin.login}</option>
+							{/each}
+						</select>
+					</div>
+				{/if}
+
+				{#if selectedSection === 'expulUser'}
+					<div class="selected-option">
+						<p>Kick User:</p>
+						<select name="selectedUser" bind:value={selectedUserparam}>
+							{#each $userList as user}
+								<option value={user.login}>{user.login}</option>
+							{/each}
+						</select>
+					</div>
+				{/if}
+
+				{#if selectedSection === 'banUser'}
+					<div class="selected-option">
+						<p>Ban User:</p>
+						<select name="selectedUser" bind:value={selectedUserparam}>
+							{#each $userList as user}
+								<option value={user.login}>{user.login}</option>
+							{/each}
+						</select>
+					</div>
+				{/if}
+
+				{#if selectedSection === 'muteUser'}
+					<div class="selected-option">
+						<p>Mute User:</p>
+						<select name="selectedUser" bind:value={selectedUserparam}>
+							{#each $userList as user}
+								<option value={user.login}>{user.login}</option>
+							{/each}
+						</select>
+						<input
+							bind:value={muteDuration}
+							type="number"
+							name="duration"
+							placeholder="Mute Duration (minutes)"
+							min="1"
+						/>
+					</div>
+				{/if}
+
+				{#if selectedSection === 'unbanUser'}
+					<div class="selected-option">
+						<p>Unban User:</p>
+						<select name="selectedUser" bind:value={selectedUserparam}>
+							{#if $banList.length > 0}
+								{#each $banList as bannedUsers}
+									<option value={bannedUsers.login}>{bannedUsers.login}</option>
+								{/each}
+							{:else}
+								<option disabled selected>No banned users</option>
+							{/if}
+						</select>
+					</div>
+				{/if}
+
+				{#if selectedSection === 'unmuteUser'}
+					<div class="selected-option">
+						<p>Unmute User:</p>
+						<select name="selectedUser" bind:value={selectedUserparam}>
+							{#if $muteList.length > 0}
+								{#each $muteList as mutedUsers}
+									<option value={mutedUsers.login}>{mutedUsers.login}</option>
+								{/each}
+							{:else}
+								<option disabled selected>No muted users</option>
+							{/if}
+						</select>
+					</div>
+				{/if}
+
+				<div class="section-select">
+					<label for="sectionSelect">Select Section:</label>
+					<select bind:value={selectedSection} id="sectionSelect">
+						<option value="changeChannelType">Change Type</option>
+						<option value="changePassword">Change Password</option>
+						<option value="grantAdmin">Give Admin</option>
+						<option value="revokeAdmin">Revoke Admin</option>
+						<option value="expulUser">Kick User</option>
+						<option value="banUser">Ban User</option>
+						<option value="muteUser">Mute User</option>
+						<option value="unbanUser">Unban User</option>
+						<option value="unmuteUser">Unmute User</option>
+					</select>
+				</div>
+
+				<div class="modal-actions">
+					<button on:click={() => confirmSelection()}>Confirm</button>
+					<button on:click={() => closeSetupModal()}>Cancel</button>
+				</div>
+			</div>
+		</div>
+	{/if}
+
+	{#if isJoinModalOpen}
+		<div class="modal">
+			<div class="modal-content">
+				<h3>Join a channel</h3>
 				<input
-					bind:value={newChannelName}
+					bind:value={joinChannelName}
 					type="text"
 					placeholder="Channel Name"
-					name="newChannelName"
+					name="joinChannelName"
+					id="joinChannelName1"
 				/>
-				{#if isInvalidName}
+				{#if isJoinInvalidName}
 					<p class="error-message">Invalid channel name. Please enter a valid name.</p>
 				{/if}
-				{#if isInvalidType}
+				{#if isJoinInvalidType}
 					<p class="error-message">Please select a channel type.</p>
 				{/if}
 				<div class="channel-type">
@@ -1570,65 +1495,219 @@ async function leaveRoom()
 						<input
 							type="radio"
 							value="public"
-							bind:group={newChannelType}
-							id="newChannelTypePublic"
-						/> Public
-					</label>
-					<label>
-						<input
-							type="radio"
-							value="private"
-							bind:group={newChannelType}
-							id="newChannelTypePrivate"
-						/> Private
+							bind:group={joinChannelType}
+							name="radio_public"
+							id="radio_pub"
+						/> Public/Private
 					</label>
 					<label>
 						<input
 							type="radio"
 							value="protected"
-							bind:group={newChannelType}
-							id="newChannelTypeProtected"
+							bind:group={joinChannelType}
+							name="radio_protected"
+							id="radio_protect"
 						/> Protected
 					</label>
 				</div>
-				{#if newChannelType === 'protected'}
+				{#if joinChannelType === 'protected'}
 					<input
-						bind:value={newChannelPassword}
+						bind:value={joinChannelPassword}
 						type="password"
 						placeholder="Password"
-						name="newChannelPassword"
+						name="joinChannelPassword"
 					/>
-					{#if isInvalidPassword}
+					{#if isJoinInvalidPassword}
 						<p class="error-message">Please enter a password for the protected channel.</p>
 					{/if}
 				{/if}
-				<button on:click={createChannel}>Create</button>
-				<button on:click={closeModal}>Cancel</button>
+				<button on:click={joinChannel}>Join</button>
+				<button on:click={closeJoinModal}>Cancel</button>
 			</div>
 		</div>
 	{/if}
-
-	{#if isPrivateMessageModalOpen}
-		<div class="modal">
-			<div class="modal-content">
-				<h3>Send Private Message</h3>
-				<input
-					bind:value={recipientName}
-					type="text"
-					placeholder="Recipient Name"
-					name="recipientName"
-				/>
-				<textarea bind:value={messageContent} placeholder="Message" name="messageContent" />
-				{#if privateMessageError !== ''}
-					<p class="error-message">{privateMessageError}</p>
+	<div class="container">
+		<div class="sidebar">
+			<div class="chat-area">
+				{#if selectedChannel != '' || selectedPrivateChannel != ''}
+					{#if selectedChannel}
+						<div class="channel-header">
+							<h2>{selectedChannel}</h2>
+							{#if isAdmin}
+								<button on:click={setup} class="button-admin">Setup</button>
+							{/if}
+						</div>
+					{:else}
+						<div class="channel-header">
+							<h2>{selectedPrivateChannel} (private)</h2>
+						</div>
+					{/if}
+				{:else}
+					<div class="channel-header">
+						<h2>Chat</h2>
+					</div>
 				{/if}
-				<button on:click={sendPrivateMessage}>Send Message</button>
-				<button on:click={closePrivateMessageModal}>Cancel</button>
+			</div>
+			<button class="create-channel p-anim" on:click={() => openModal()}> Create a channel </button>
+			<button class="create-channel p-anim" on:click={() => openJoinModal()}> Join Channel </button>
+			<button class="create-channel p-anim" on:click={() => openPrivateMessageModal()}>
+				Private Message
+			</button>
+			{#if selectedChannel}
+				<button class="create-channel p-anim" on:click={() => leaveRoom()}> Leave Channel </button>
+			{/if}
+			{#if channelList !== null}
+				{#each $channelList as channel}
+					<button class="channel-button p-anim" on:click={() => getChannel(channel.name)}>
+						{channel.name}
+					</button>
+				{/each}
+			{/if}
+			{#if privateList !== null}
+				{#each $privateList as privateChannel}
+					<button
+						class="channel-private-button p-anim-private"
+						on:click={() => getPrivateChannel(privateChannel.login)}
+					>
+						{privateChannel.login}
+					</button>
+				{/each}
+			{/if}
+		</div>
+		<div class="chat-area" style="max-height: 800px">
+			<div class="messages">
+				{#each messages as message}
+					{#if message.user}
+						<div class="message-container-user">
+							<p class="message-utilisateur"><strong> {message.username} </strong></p>
+							<p class="message-utilisateur">{message.content}</p>
+						</div>
+					{:else}
+						<div class="message-container-other">
+							<p class="message-autre-utilisateur"><strong> {message.username} </strong></p>
+							<p class="message-autre-utilisateur">{message.content}</p>
+						</div>
+					{/if}
+				{/each}
+			</div>
+			<div class="input-area">
+				<input
+					bind:value={messageInput}
+					type="text"
+					placeholder="Type here..."
+					id="test"
+					name="messageInput"
+					on:keydown={handleKeyPress}
+				/>
+				<button on:click={sendMessage}>Send</button>
 			</div>
 		</div>
-	{/if}
-</div>
+		<div class="user-list">
+			<h3 class="user-list-title">All User</h3>
+			<button class="user-button p-anim" on:click={() => openInvitationModal()}> Invitation </button>
+			{#each $userList as user}
+			{#if user.login !== login}
+				<button class="user-button p-anim" on:click={() => selectUser(user.login)}>
+					{user.login}
+				</button>
+			{/if}
+			{/each}
+			{#if gameRequest.login !== 'undefined'}
+				<div id="gameRequest">
+					<p id="gameRequestPopup">
+						{gameRequest.login} <br /> Invited you to play <br />
+						{gameRequest.type} game.
+					</p>
+					<div id="gameRequestButtons">
+						<button class="greenButton" on:click={() => acceptGameRequest()}>Accept </button>
+						<button class="redButton" on:click={() => deleteGameRequest()}>Decline </button>
+					</div>
+				</div>
+			{/if}
+		</div>
 
+
+		{#if isModalOpen}
+			<div class="modal">
+				<div class="modal-content">
+					<h3>Create a new channel</h3>
+					<input
+						bind:value={newChannelName}
+						type="text"
+						placeholder="Channel Name"
+						name="newChannelName"
+					/>
+					{#if isInvalidName}
+						<p class="error-message">Invalid channel name. Please enter a valid name.</p>
+					{/if}
+					{#if isInvalidType}
+						<p class="error-message">Please select a channel type.</p>
+					{/if}
+					<div class="channel-type">
+						<span>Channel Type:</span>
+						<label>
+							<input
+								type="radio"
+								value="public"
+								bind:group={newChannelType}
+								id="newChannelTypePublic"
+							/> Public
+						</label>
+						<label>
+							<input
+								type="radio"
+								value="private"
+								bind:group={newChannelType}
+								id="newChannelTypePrivate"
+							/> Private
+						</label>
+						<label>
+							<input
+								type="radio"
+								value="protected"
+								bind:group={newChannelType}
+								id="newChannelTypeProtected"
+							/> Protected
+						</label>
+					</div>
+					{#if newChannelType === 'protected'}
+						<input
+							bind:value={newChannelPassword}
+							type="password"
+							placeholder="Password"
+							name="newChannelPassword"
+						/>
+						{#if isInvalidPassword}
+							<p class="error-message">Please enter a password for the protected channel.</p>
+						{/if}
+					{/if}
+					<button on:click={createChannel}>Create</button>
+					<button on:click={closeModal}>Cancel</button>
+				</div>
+			</div>
+		{/if}
+
+		{#if isPrivateMessageModalOpen}
+			<div class="modal">
+				<div class="modal-content">
+					<h3>Send Private Message</h3>
+					<input
+						bind:value={recipientName}
+						type="text"
+						placeholder="Recipient Name"
+						name="recipientName"
+					/>
+					<textarea bind:value={messageContent} placeholder="Message" name="messageContent" />
+					{#if privateMessageError !== ''}
+						<p class="error-message">{privateMessageError}</p>
+					{/if}
+					<button on:click={sendPrivateMessage}>Send Message</button>
+					<button on:click={closePrivateMessageModal}>Cancel</button>
+				</div>
+			</div>
+		{/if}
+	</div>
+{/if}
 <style>
   .container {
     display: flex;

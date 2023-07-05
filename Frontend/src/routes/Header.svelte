@@ -133,6 +133,7 @@
 			method: 'POST',
 			credentials: 'include'
 		});
+		window.location.href = '/';
 	}
 
 	async function getUserInfo() {

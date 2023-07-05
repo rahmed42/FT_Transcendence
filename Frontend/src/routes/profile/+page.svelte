@@ -5,6 +5,7 @@
 	import winIcon from '../../lib/images/icons8-reward-80.png';
 	import lossIcon from '../../lib/images/loss-icon.png';
 	import ladderIcon from '../../lib/images/icons8-rank-64.png';
+	import { goto } from '$app/navigation';
 
 	let myUser = get(user);
 	let checked = myUser.two_fa;
@@ -44,6 +45,8 @@
 			}
 		}
 		myCookie = getCookie('jwt');
+		if (!myCookie)
+			goto('/')
 		async function getUserInfo() {
 			const response = await fetch('http://' + serverIP + ':3333/profil/me', {
 				method: 'GET',
@@ -154,108 +157,109 @@
 	<meta name="description" content="User profile" />
 </svelte:head>
 
-<h1 class="title"><strong>{$user.login}'s profile</strong></h1>
+{#if myCookie}
+	<h1 class="title"><strong>{$user.login}'s profile</strong></h1>
 
-<div>
-	{#if myUser.avatar}
-		<img class="picture" id="avatar" src={myUser.avatar} alt="avatar" />
-	{:else}
-		<img class="picture" id="avatar" src={$user.large_pic} alt={`Picture of ${$user.login}`} />
-	{/if}
-</div>
-
-<div class="buttons">
-	<button class="button" on:click={() => fileInput.click()}>Upload Picture</button>
-	<button class="button" on:click={active_2_fa_auth}>
-		{#if !checked}
-			{active_message}
+	<div>
+		{#if myUser.avatar}
+			<img class="picture" id="avatar" src={myUser.avatar} alt="avatar" />
 		{:else}
-			{desactive_message}
+			<img class="picture" id="avatar" src={$user.large_pic} alt={`Picture of ${$user.login}`} />
 		{/if}
-	</button>
-	<button class="button" on:click={openModal}>Update Username</button>
-	<input
-		class="hidden"
-		id="file-to-upload"
-		type="file"
-		accept=".png,.jpg"
-		bind:files
-		bind:this={fileInput}
-		on:change={() => getBase64(files[0])}
-	/>
-</div>
+	</div>
 
-{#if modalOpen}
-	<div class="modal">
-		<div class="modal-content">
-			<input
-				class="username_input"
-				bind:value={username}
-				type="text"
-				placeholder="Enter your username"
-			/>
-			<button class="username_btn" on:click={() => update_username(username)}>OK</button>
-			<button class="username_btn" on:click={closeModal}>Cancel</button>
+	<div class="buttons">
+		<button class="button" on:click={() => fileInput.click()}>Upload Picture</button>
+		<button class="button" on:click={active_2_fa_auth}>
+			{#if !checked}
+				{active_message}
+			{:else}
+				{desactive_message}
+			{/if}
+		</button>
+		<button class="button" on:click={openModal}>Update Username</button>
+		<input
+			class="hidden"
+			id="file-to-upload"
+			type="file"
+			accept=".png,.jpg"
+			bind:files
+			bind:this={fileInput}
+			on:change={() => getBase64(files[0])}
+		/>
+	</div>
+
+	{#if modalOpen}
+		<div class="modal">
+			<div class="modal-content">
+				<input
+					class="username_input"
+					bind:value={username}
+					type="text"
+					placeholder="Enter your username"
+				/>
+				<button class="username_btn" on:click={() => update_username(username)}>OK</button>
+				<button class="username_btn" on:click={closeModal}>Cancel</button>
+			</div>
 		</div>
+	{/if}
+
+	<div class="profile-details">
+		<hr class="section-divider" />
+		<div class="stats-card">
+			{#if stats}
+				<div class="stat-item">
+					<img src={winIcon} alt="Wins Icon" />
+					<h3 class="user_stats">{stats.wins}</h3>
+					<p class="stats_string">Victory</p>
+				</div>
+				<div class="stat-item">
+					<img src={lossIcon} alt="Losses Icon" />
+					<h3 class="user_stats">{stats.losses}</h3>
+					<p class="stats_string">Losses</p>
+				</div>
+				<div class="stat-item">
+					<img src={ladderIcon} alt="Ladder Icon" />
+					<h3 class="user_stats">{stats.ladderLevel}</h3>
+					<p class="stats_string">Rank</p>
+				</div>
+			{:else}
+				<p>No stats available</p>
+			{/if}
+		</div>
+		<hr class="section-divider" />
+		{#if matchHistory.length > 0}
+			<table class="match-history-table">
+				<thead>
+					<tr>
+						<th>Game Type</th>
+						<th>Result</th>
+						<th>Score</th>
+						<th>Date</th>
+					</tr>
+				</thead>
+				<tbody>
+					{#each matchHistory as match (match.id)}
+						<tr>
+							<td>{match.gameType}</td>
+							<td>
+								{#if match.result === 'Victory'}
+									<p class="result_victory">Victory</p>
+								{:else}
+									<p class="result_defeat">Defeat</p>
+								{/if}
+							</td>
+							<td>
+								{myUser.login} | {match.myScore} - {match.opponentScore} | {match.opponentName}
+							</td>
+							<td>{formatDate(match.timestamp)}</td>
+						</tr>
+					{/each}
+				</tbody>
+			</table>
+		{/if}
 	</div>
 {/if}
-
-<div class="profile-details">
-	<hr class="section-divider" />
-	<div class="stats-card">
-		{#if stats}
-			<div class="stat-item">
-				<img src={winIcon} alt="Wins Icon" />
-				<h3 class="user_stats">{stats.wins}</h3>
-				<p class="stats_string">Victory</p>
-			</div>
-			<div class="stat-item">
-				<img src={lossIcon} alt="Losses Icon" />
-				<h3 class="user_stats">{stats.losses}</h3>
-				<p class="stats_string">Losses</p>
-			</div>
-			<div class="stat-item">
-				<img src={ladderIcon} alt="Ladder Icon" />
-				<h3 class="user_stats">{stats.ladderLevel}</h3>
-				<p class="stats_string">Rank</p>
-			</div>
-		{:else}
-			<p>No stats available</p>
-		{/if}
-	</div>
-	<hr class="section-divider" />
-	{#if matchHistory.length > 0}
-		<table class="match-history-table">
-			<thead>
-				<tr>
-					<th>Game Type</th>
-					<th>Result</th>
-					<th>Score</th>
-					<th>Date</th>
-				</tr>
-			</thead>
-			<tbody>
-				{#each matchHistory as match (match.id)}
-					<tr>
-						<td>{match.gameType}</td>
-						<td>
-							{#if match.result === 'Victory'}
-								<p class="result_victory">Victory</p>
-							{:else}
-								<p class="result_defeat">Defeat</p>
-							{/if}
-						</td>
-						<td>
-							{myUser.login} | {match.myScore} - {match.opponentScore} | {match.opponentName}
-						</td>
-						<td>{formatDate(match.timestamp)}</td>
-					</tr>
-				{/each}
-			</tbody>
-		</table>
-	{/if}
-</div>
-
 <style>
 	.title {
 		color: #eca45c;

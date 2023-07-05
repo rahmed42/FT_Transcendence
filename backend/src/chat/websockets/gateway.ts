@@ -62,22 +62,21 @@ export class Gateway implements OnModuleInit {
         })
         if (isUserMuted)
 		{
-			//  if date is passed, remove from mutedRooms
-			if (isUserMuted.timestampMuted.getDate() <= Date.now())
-			{
+			if (isUserMuted.timestampMuted.getTime() <= Date.now()) {
 				await this.prisma.user.update({
 					where : {
 						id: idSender,
 					},
 					data : {
 						mutedRooms : {
-							delete: {
+							disconnect: {
 								name: roomName,
 							}
 						},
 						timestampMuted: null,
 					}
 				});
+				this.server.emit('unmuted', {roomName: roomName, login: user.login});
 			}
 			else
 				return ;
@@ -191,6 +190,48 @@ export class Gateway implements OnModuleInit {
 	{
 		this.server.emit("friend-request", {
 			login: body.login,
+		})
+	}
+	@SubscribeMessage("eventLeave")
+	handleEventLeave(@MessageBody() body: {roomName : string, login: string, userList : {login: string}[]})
+	{
+		if (!body.roomName || !body.login)
+			return ;
+		this.server.emit("sayLeave", {
+			roomName : body.roomName,
+			login: body.login,
+			userList: body.userList,
+		})
+	}
+	@SubscribeMessage("eventMute")
+	handleEventMute(@MessageBody() body: {roomName : string, login: string})
+	{
+		if (!body.roomName || !body.login)
+			return ;
+		this.server.emit("muted", {
+			roomName : body.roomName,
+			login: body.login,
+		})
+	}
+	@SubscribeMessage("adminEvent")
+	handleAdminEvent(@MessageBody() body: {roomName : string, login: string, isAdmin : boolean})
+	{
+		if (!body.roomName || !body.login)
+			return ;
+		this.server.emit("admin", {
+			roomName : body.roomName,
+			login: body.login,
+			isAdmin: body.isAdmin,
+		})
+	}
+	@SubscribeMessage("newPrivateRoom")
+	handleNewPrivateRoom(@MessageBody() body: {login: string, loginReceiver: string})
+	{
+		if (!body.login || !body.loginReceiver)
+			return ;
+		this.server.emit("newRoom", {
+			roomName: body.login,
+			loginReceiver: body.loginReceiver,
 		})
 	}
 }

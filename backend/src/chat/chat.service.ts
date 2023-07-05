@@ -274,6 +274,7 @@ export class ChatService {
         return { message: "User successfully invited" }
     }
     async kickUser(body: ChatDtoAdminOperation) {
+		console.log(body);
         const room = await this.prisma.room.findFirst({
             where: {
                 name: body.roomName,
@@ -330,87 +331,38 @@ export class ChatService {
                 owner: toKick,
             },
         });
-        const isKickedUserAdmin = await this.prisma.room.findFirst({
-            where: {
-                name: body.roomName,
-                administrators: {
-                    some: {
-                        login: body.loginUserToExecute,
-                    },
-                },
-            },
-        });
-        const isKickedUserMuted = await this.prisma.room.findFirst({
-            where: {
-                name: body.roomName,
-                mutedUsers: {
-                    some: {
-                        login: body.loginUserToExecute,
-                    },
-                },
-            },
-        });
         if (isKickedUserOwner) {
             throw new BadRequestException('User is owner of room');
         }
-        const updatedRoom = await this.prisma.room.update({
-            where: {
-                name: body.roomName,
-            },
-            data: {
-                users: {
-                    disconnect: {
-                        login: body.loginUserToExecute,
-                    },
-                },
-                invitedUsers: {
-                    disconnect: {
-                        login: body.loginUserToExecute,
-                    },
-                },
-                administrators: isKickedUserAdmin ? {} : {
-                    disconnect: {
-                        login: body.loginUserToExecute,
-                    },
-                },
-                mutedUsers: isKickedUserMuted ? {} : {
-                    disconnect: {
-                        login: body.loginUserToExecute,
-                    },
-                },
-            },
-        });
-        const updatedUser = await this.prisma.user.update({
-            where: {
-                login: body.loginUserToExecute,
-            },
-            data: {
-                rooms: {
-                    disconnect: {
-                        name: body.roomName,
-                    },
-                },
-                invitedRooms: {
-                    disconnect: {
-                        name: body.roomName,
-                    },
-                },
-                administratedRooms: isKickedUserAdmin ? {} : {
-                    disconnect: {
-                        name: body.roomName,
-                    },
-                },
-                mutedRooms: isKickedUserMuted ? {} : {
-                    disconnect: {
-                        name: body.roomName,
-                    },
-                },
-            },
-        });
+	const updatedRoom = await this.prisma.room.update({
+		where: {
+			name: body.roomName,
+		},
+		data: {
+			users: {
+				disconnect: {
+					login: body.loginUserToExecute,
+				},
+			},
+			invitedUsers: {
+				disconnect: {
+					login: body.loginUserToExecute,
+				},
+			},
+			administrators : {
+				disconnect: {
+					login: body.loginUserToExecute,
+				},
+			},
+			mutedUsers: {
+				disconnect: {
+					login: body.loginUserToExecute,
+				},
+			},
+		},
+		});
         return { message: "User successfully kicked " }
     }
-
-
 
     async getRoomInfo(body: ChatDtoGetRoom) {
         const room = await this.prisma.room.findFirst({
@@ -537,6 +489,9 @@ export class ChatService {
                 login: body.loginUserToExecute,
             },
         });
+		if (admin.id == toBan.id) {
+			throw new BadRequestException('You cannot ban yourself');
+		}
         if (!toBan) {
             throw new BadRequestException('User to ban does not exist');
         }
@@ -596,32 +551,12 @@ export class ChatService {
         if (isBannedUserOwner) {
             throw new BadRequestException('User is owner of room');
         }
-        const isBannedUserAdmin = await this.prisma.room.findFirst({
-            where: {
-                name: body.roomName,
-                administrators: {
-                    some: {
-                        login: body.loginUserToExecute,
-                    },
-                },
-            },
-        });
-        const isBannedUserMuted = await this.prisma.room.findFirst({
-            where: {
-                name: body.roomName,
-                mutedUsers: {
-                    some: {
-                        login: body.loginUserToExecute,
-                    },
-                },
-            },
-        });
         await this.prisma.room.update({
             where: {
                 name: body.roomName,
             },
             data: {
-                mutedUsers: isBannedUserMuted ? {} : {
+                mutedUsers: {
                     disconnect: {
                         login: body.loginUserToExecute,
                     },
@@ -641,40 +576,13 @@ export class ChatService {
                         login : body.loginUserToExecute,
                     }
                 },
-                administrators: isBannedUserAdmin ? {} : {
+                administrators: {
                     disconnect: {
                         login: body.loginUserToExecute,
                     }
                 },
             },
         });
-        await this.prisma.user.update({
-            where: {
-                login: body.loginUserToExecute,
-            },
-            data: {
-                rooms: {
-                    disconnect: {
-                        name: body.roomName,
-                    },
-                },
-                administratedRooms: isBannedUserAdmin ? {} : {
-                    disconnect: {
-                        name: body.roomName,
-                    },
-                },
-                mutedRooms: isBannedUserMuted ? {} : {
-                    disconnect: {
-                        name: body.roomName,
-                    },
-                },
-                invitedRooms: {
-                    disconnect: {
-                        name: body.roomName,
-                    },
-                },
-            },
-        })
         return { message: "User successfully banned" }
     }
     async leaveRoom(body: ChatDtoJoinRoom)
@@ -795,36 +703,11 @@ export class ChatService {
                 }
             }
         }
-        const isUserAdmin = await this.prisma.room.findFirst({
-            where: {
-                name: body.roomName,
-                administrators: {
-                    some: {
-                        id: body.idUser,
-                    },
-                },
-            },
-        });
-        const isUserMuted = await this.prisma.room.findFirst({
-            where: {
-                name: body.roomName,
-                mutedUsers: {
-                    some : {
-                        id : body.idUser,
-                    },
-                },
-            },
-        });
         await this.prisma.room.update({
             where: {
                 name: body.roomName,
             },
             data : {
-                mutedUsers : isUserMuted ? {} : {
-                    disconnect : {
-                        id : body.idUser,
-                    },
-                },
                 users: {
                     disconnect: {
                         id: body.idUser,
@@ -835,36 +718,9 @@ export class ChatService {
                         id: body.idUser,
                     },
                 },
-                administrators: isUserAdmin ? {} : {
+                administrators: {
                     disconnect: {
                         id: body.idUser,
-                    },
-                },
-            },
-        });
-        await this.prisma.user.update({
-            where: {
-                id: body.idUser,
-            },
-            data: {
-                rooms: {
-                    disconnect: {
-                        name: body.roomName,
-                    },
-                },
-                administratedRooms: isUserAdmin ? {} : {
-                    disconnect: {
-                        name: body.roomName,
-                    },
-                },
-                mutedRooms: isUserMuted ? {} : {
-                    disconnect: {
-                        name: body.roomName,
-                    },
-                },
-                invitedRooms: {
-                    disconnect: {
-                        name: body.roomName,
                     },
                 },
             },
@@ -961,7 +817,19 @@ export class ChatService {
                 },
             },
         });
-        return { message: "User successfully given admin" }
+		const ret = await this.prisma.room.findFirst({
+			where : {
+				name : body.roomName,
+			},
+			select : {
+				administrators : {
+					select : {
+						login : true,
+					},
+				},
+			},
+		});
+        return { administrator:  ret}
     }
     async removeAdmin(body: ChatDtoAdminOperation)
     {
@@ -1119,16 +987,6 @@ export class ChatService {
                 ownerId: user.id,
             },
         });
-        const isUserAdmin = await this.prisma.room.findFirst({
-            where: {
-                name: body.roomName,
-                administrators: {
-                    some: {
-                        login: body.loginUserToExecute,
-                    },
-                },
-            },
-        });
         if (isUserOwner) {
             throw new BadRequestException('User is already owner');
         }
@@ -1138,12 +996,11 @@ export class ChatService {
             },
             data: {
                 ownerId: user.id,
-                administrators : (!isUserAdmin) ? {} : {
+                administrators : {
                     connect: {
                         login: body.loginUserToExecute,
                     },
                 }
-
             },
         });
         await this.prisma.user.update({
@@ -1156,7 +1013,7 @@ export class ChatService {
                         name: body.roomName,
                     },
                 },
-                administratedRooms : (!isUserAdmin) ? {} : {
+                administratedRooms : {
                     connect: {
                         name: body.roomName,
                     },
