@@ -1025,27 +1025,10 @@ async function muteSelectedUser(muteDuration: number) {
 }
 
     async function getProfile() {
-    try {
-      const response = await fetch('http://' + serverIP + ':3333/chat/profile/' + selectedUserparam, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: 'Bearer ' + token,
-        },
-      });
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.message);
-      } else if (response.ok) {
-        const newProfile = await response.json();
-        console.log('Contenu de newProfile:', newProfile);
-      }
-    }
-    catch (err) {
-      if (err instanceof Error)
-        alert(err.message);
-    }
+		let redir = '/profile/info/?login=' + loginUserToExecute;
+		goto(redir);
   }
+
   async function inviteUsr(inviteUser: string){
     try {
       const response = await fetch('http://' + serverIP + ':3333/chat/inviteUser/', {
