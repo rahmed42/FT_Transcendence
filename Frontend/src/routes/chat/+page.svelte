@@ -197,7 +197,43 @@
 		})
 	}
   })
-
+  socket.on('newGameRequest', (data:  {
+			sender: string,
+			login: string,
+			type: string,
+		 }) => {
+			if (data.login == login)
+				getGameRequest();
+		});
+	socket.on('redirectGame', (data: {login: string, type: string}) =>
+	{
+		console.log(data)
+		if (data.login == login)
+			goto("/game")
+	});
+	socket.on('admin', (data: {roomName : string, login: string, isAdmin: boolean}) => {
+		if (data.login == login && data.roomName == selectedChannel)
+		{
+			if (data.isAdmin)
+			{
+				adminList.update((adminList) => {
+					return [...adminList, {login : data.login}];
+				})
+				isAdmin = true;
+			}
+			else
+			{
+				adminList.update((adminList) => {
+					return adminList.filter((user) => user.login !== data.login);
+				})
+				let ad = get(adminList)
+				console.log(ad)
+				if (ad.length == 0)
+					adminList.set([]);
+				isAdmin = false;
+			}
+		}
+	})
   async function getUserinfo() {
     try {
       const response = await fetch('http://' + serverIP + ':3333/profil/me', {
@@ -246,7 +282,7 @@
     }
   } else {
     const data = await response.json();
-    throw new Error(data.message);
+    alert(data.message);
   }
 
   // Fetch all the private rooms
@@ -266,7 +302,7 @@
     }
   } else {
     const data = await response2.json();
-    throw new Error(data.message);
+    alert(data.message);
   }
 });
 
@@ -341,7 +377,7 @@ function checkForEnter(event: KeyboardEvent) {
 			});
 			if (!response.ok) {
 				const data = await response.json();
-				throw new Error(data.message);
+				alert(data.message);
 			} else {
 				gameRequest.login = 'undefined';
 				gameRequest.type = 'undefined';
@@ -412,12 +448,12 @@ function refreshList() {
         });
         if (!response.ok) {
           const data = await response.json();
-          throw new Error(data.message);
+          alert(data.message);
         }
         else
         {
           const data = await response.json();
-          throw new Error(data.message);
+          alert(data.message);
         }
       }
       catch (err) {
@@ -430,6 +466,9 @@ async function grantUserAdmin()
 {
   try
   {
+	let channelName = selectedChannel;
+	let login = selectedUserparam;
+	let id = userID;
     const response = await fetch("http://" + serverIP + ":3333/chat/giveAdmin", {
     method: 'POST',
     headers: {
@@ -444,14 +483,13 @@ async function grantUserAdmin()
     });
     if (!response.ok) {
       const data = await response.json();
-      throw new Error(data.message);
+      alert(data.message);
     }
     else
     {
-      const data = await response.json();
-      adminList.set(data.administrators);
-      //need to change the state of the other user (websocket)
-      throw new Error(data.message);
+		const data = await response.json();
+		adminList.set(data.administrator.administrators);
+		socket.emit('adminEvent', {roomName : channelName, login: login, id: id, isAdmin : true})
     }
   }
   catch (err) {
@@ -479,7 +517,7 @@ async function grantUserAdmin()
 			const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.message);
+      alert(data.message);
     } else {
 		let userL = get(userList);
 		userL = userL.filter((user) => user.login != login);
@@ -546,7 +584,7 @@ async function banSelectedUser() {
 			});
 			if (!response.ok) {
 				const data = await response.json();
-				throw new Error(data.message);
+				alert(data.message);
 			} else {
 				muteList.update((currentMutes) => {
 					return currentMutes.filter((mute) => mute.login != selectedUserparam);
@@ -559,6 +597,8 @@ async function banSelectedUser() {
 
 	async function revokeAdmin() {
 		try {
+			let channelName = selectedChannel;
+			let login = selectedUserparam;
 			const response = await fetch("http://" + serverIP + ":3333/chat/removeAdmin", {
 				method: 'POST',
 				headers: {
@@ -575,14 +615,12 @@ async function banSelectedUser() {
 			const data = await response.json();
 
 			if (!response.ok) {
-				throw new Error(data.message);
+				alert(data.message);
 			} else {
-				// Ici, la réponse est OK, donc nous devons mettre à jour le store
 				adminList.update((currentAdmins) => {
-					return currentAdmins.filter((admin) => admin.login !== selectedUserparam);
+					return currentAdmins.filter((admin) => admin.login !== login);
 				});
-
-				alert('Admin révoqué avec succès');
+				socket.emit('adminEvent', {roomName : channelName, login: login, isAdmin : false})
 			}
 		} catch (err) {
 			if (err instanceof Error) {
@@ -639,12 +677,12 @@ async function changeChannelType() {
     });
     if (!response.ok) {
       const data = await response.json();
-      throw new Error(data.message);
+      alert(data.message);
     }
     else
     {
       const data = await response.json();
-      throw new Error(data.message);
+      alert(data.message);
     }
   }
   catch (err) {
@@ -672,7 +710,7 @@ async function muteSelectedUser(muteDuration: number) {
     });
     if (!response.ok) {
       const data = await response.json();
-      throw new Error(data.message);
+      alert(data.message);
     }
     else
     {
@@ -759,7 +797,7 @@ async function muteSelectedUser(muteDuration: number) {
           });
           if (!response.ok) {
             const data = await response.json();
-            throw new Error(data.message);
+            alert(data.message);
           } else
           {
             const newChannel = await response.json();
@@ -842,7 +880,7 @@ async function muteSelectedUser(muteDuration: number) {
           {
             const data = await response.json();
             closeJoinModal();
-            throw new Error(data.message);
+            alert(data.message);
           }
           else if (response.ok)
           {
@@ -885,7 +923,7 @@ async function muteSelectedUser(muteDuration: number) {
   {
     const data = await response.json();
 	  console.log("Error : ", data)
-	  throw new Error(data.message);
+	  alert(data.message);
   }
   else if (response.ok)
   {
@@ -989,7 +1027,7 @@ async function muteSelectedUser(muteDuration: number) {
 
         if (!response.ok) {
             const data = await response.json();
-            throw new Error(data.message);
+            alert(data.message);
         } else if (response.ok) {
             const newChannel = await response.json();
             console.log("New channel : ", newChannel);
@@ -1048,7 +1086,7 @@ async function muteSelectedUser(muteDuration: number) {
       });
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.message);
+        alert(data.message);
       } else if (response.ok) {
         const newProfile = await response.json();
         console.log('Contenu de newProfile:', newProfile);
@@ -1057,7 +1095,7 @@ async function muteSelectedUser(muteDuration: number) {
         ...currentInvitations,
         { login: inviteUser }
         ]);
-        throw new Error(newProfile.message);
+        alert(newProfile.message);
       }
     }
     catch (err) {
@@ -1078,7 +1116,7 @@ async function muteSelectedUser(muteDuration: number) {
 			});
 			if (!response.ok) {
 				const data = await response.json();
-				throw new Error(data.message);
+				alert(data.message);
 			} else {
 				const data = await response.json();
 				gameRequest.login = data.loginGameInvitation;
@@ -1559,7 +1597,7 @@ async function leaveRoom()
 			</div>
 		</div>
 		<div class="user-list">
-			<h3 class="user-list-title">User List</h3>
+			<h3 class="user-list-title">All User</h3>
 			<button class="user-button p-anim" on:click={() => openInvitationModal()}> Invitation </button>
 			{#each $userList as user}
 			{#if user.login !== login}

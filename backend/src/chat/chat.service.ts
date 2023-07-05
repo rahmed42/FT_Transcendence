@@ -817,7 +817,19 @@ export class ChatService {
                 },
             },
         });
-        return { message: "User successfully given admin" }
+		const ret = await this.prisma.room.findFirst({
+			where : {
+				name : body.roomName,
+			},
+			select : {
+				administrators : {
+					select : {
+						login : true,
+					},
+				},
+			},
+		});
+        return { administrator:  ret}
     }
     async removeAdmin(body: ChatDtoAdminOperation)
     {

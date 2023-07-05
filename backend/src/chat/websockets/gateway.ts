@@ -213,4 +213,15 @@ export class Gateway implements OnModuleInit {
 			login: body.login,
 		})
 	}
+	@SubscribeMessage("adminEvent")
+	handleAdminEvent(@MessageBody() body: {roomName : string, login: string, isAdmin : boolean})
+	{
+		if (!body.roomName || !body.login)
+			return ;
+		this.server.emit("admin", {
+			roomName : body.roomName,
+			login: body.login,
+			isAdmin: body.isAdmin,
+		})
+	}
 }

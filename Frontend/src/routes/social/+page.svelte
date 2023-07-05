@@ -81,7 +81,7 @@ async function getFriendRequests(userLogin: string) {
         return result;
 
     } catch (error) {
-        throw new Error('Error: Failed to fetch friend requests');
+        alert('Error: Failed to fetch friend requests');
     }
 }
 
@@ -152,7 +152,7 @@ async function getFriendList(userLogin: string) {
         return result;
 
     } catch (error) {
-        throw new Error('Error: Failed to fetch friend list');
+        alert('Error: Failed to fetch friend list');
     }
 }
 
