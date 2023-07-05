@@ -27,15 +27,6 @@
 		return `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
 	}
 
-	function getCookie(name: string) {
-		const value = `; ${document.cookie}`;
-		const parts = value.split(`; ${name}=`);
-		if (parts.length === 2) {
-			return parts.pop()?.split(';').shift();
-		}
-	}
-
-
 	onMount(async () => {
 		function getCookie(name: string) {
 			const value = `; ${document.cookie}`;

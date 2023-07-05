@@ -5,6 +5,8 @@ import { user } from '../../stores/user';
 import io from 'socket.io-client';
 import { onMount } from 'svelte';
 import { goto } from '$app/navigation';
+import pendingIcon from '../../lib/images/pending.png';
+import friendsIcon from '../../lib/images/friends.png';
 
 const apiUrl = import.meta.env.VITE_API_URL;
 
@@ -25,8 +27,8 @@ onMount(async () => {
         }
     }
     myCookie = getCookie('jwt');
-	if (!myCookie)
-		goto('/')
+    if (!myCookie)
+        goto('/')
     socket = io('http://' + "localhost" + ':3333', {
         transports: ['websocket'],
         auth: {
@@ -244,65 +246,61 @@ async function sendFriendRequestModal() {
 </script>
 
 {#if myCookie}
-	<section class="actions">
-		<button class="btn" on:click={openFriendRequestModal}>Send a friend request</button>
-		{#if friendRequestModalOpen}
-		<div class="modal">
-			<div class="modal-content">
-				<input type="text" bind:value={requesteeLoginModal} placeholder="Friend's user login" />
-				<button on:click={sendFriendRequestModal}>Send friend request</button>
-				<button on:click={closeFriendRequestModal}>Cancel</button>
-			</div>
-		</div>
-		{/if}
+<section class="actions">
+    <button class="btn" on:click={openFriendRequestModal}>Send Request</button>
+    {#if friendRequestModalOpen}
+    <div class="modal">
+        <div class="modal-content">
+            <input type="text" bind:value={requesteeLoginModal} placeholder="Type in a friend's login" />
+            <button class="send-button" on:click={sendFriendRequestModal}>Send</button>
+            <button class="cancel-button" on:click={closeFriendRequestModal}>Cancel</button>
+        </div>
+    </div>
+    {/if}
 
-		{#if $notification.message} <!-- Display the notification message if it exists -->
-		<p class={$notification.error ? 'notification-error' : 'notification-success'}>{$notification.message}</p>
-		{/if}
-	</section>
+    {#if $notification.message} <!-- Display the notification message if it exists -->
+    <p class={$notification.error ? 'notification-error' : 'notification-success'}>{$notification.message}</p>
+    {/if}
+</section>
 
-	<section>
-		<div class="white-frame">
-			<h2 class="section-heading">Pending Friend Requests</h2>
-			<div class="friends-container">
-				{#each pendingRequests as request (request.id)}
-				<div class="friend-card">
-					<img src={request.requester.avatar ? request.requester.avatar : request.requester.small_pic} alt="{request.requester.login}'s picture" class="friend-image" />
-					<h3 class="friend-name">{request.requester.login}</h3>
-					<button class="accept-button" on:click={() => acceptFriendRequest(request.id)}>Accept</button>
-					<button class="reject-button" on:click={() => rejectFriendRequest(request.id)}>Reject</button>
-				</div>
-				{/each}
-			</div>
-		</div>
-	</section>
+<section>
+    <div class="white-frame">
+        <h2 class="section-heading"><img src="{pendingIcon}" alt="Pending Requests"/> Pending Requests</h2>
+        <div class="friends-container">
+            {#each pendingRequests as request (request.id)}
+            <div class="friend-card">
+                <img src={request.requester.avatar ? request.requester.avatar : request.requester.small_pic} alt="{request.requester.login}'s picture" class="friend-image" />
+                <h3 class="friend-name">{request.requester.login}</h3>
+                <button class="accept-button" on:click={() => acceptFriendRequest(request.id)}>Accept</button>
+                <button class="reject-button" on:click={() => rejectFriendRequest(request.id)}>Reject</button>
+            </div>
+            {/each}
+        </div>
+    </div>
+</section>
 
-	<section>
-		<div class="white-frame">
-			<h2 class="section-heading">Friends</h2>
-			<div class="friends-container">
-				{#each friends as friend (friend.id)}
-				<div class="friend-card">
-					<img src={friend.friend.avatar ? friend.friend.avatar : friend.friend.small_pic} alt="{friend.friend.login}'s picture" class="friend-image" />
-					<h3 class="friend-name">{friend.friend.login}</h3>
-					<p class="status">
-						<span class={`status-circle ${friend.friend.status}`}></span>
-						{friend.friend.status === 'login' ? 'Connected' : friend.friend.status === 'logout' ? 'Disconnected' : 'In Game'}
-					</p>
-					<a href={`/profile/info/?login=${friend.friend.login}`} class="friend-button">View Profile</a>
-					<button class="delete-button" on:click={() => deleteFriend(friend.id)}>Delete Friend</button>
-				</div>
-				{/each}
-			</div>
-		</div>
-	</section>
+<section>
+    <div class="white-frame">
+        <h2 class="section-heading"><img src="{friendsIcon}" alt="Friends"/> Friends</h2>
+        <div class="friends-container">
+            {#each friends as friend (friend.id)}
+            <div class="friend-card">
+                <img src={friend.friend.avatar ? friend.friend.avatar : friend.friend.small_pic} alt="{friend.friend.login}'s picture" class="friend-image" />
+                <h3 class="friend-name">{friend.friend.login}</h3>
+                <p class="status">
+                    <span class={`status-circle ${friend.friend.status}`}></span>
+                    {friend.friend.status === 'login' ? 'Connected' : friend.friend.status === 'logout' ? 'Disconnected' : 'In Game'}
+                </p>
+                <a href={`/profile/info/?login=${friend.friend.login}`} class="friend-button">View Profile</a>
+                <button class="delete-button" on:click={() => deleteFriend(friend.id)}>Delete Friend</button>
+            </div>
+            {/each}
+        </div>
+    </div>
+</section>
 {/if}
-<style>
-.section-heading {
-    font-weight: bold;
-    font-size: 20px;
-}
 
+<style>
 .modal {
     position: fixed;
     top: 0;
@@ -322,7 +320,6 @@ async function sendFriendRequestModal() {
 }
 
 .btn {
-    font-family: "Comic Sans MS";
     font-size: 1.2rem;
     color: #fff;
     background-color: #007fff;
@@ -331,11 +328,38 @@ async function sendFriendRequestModal() {
     transition: background-color 0.2s ease;
     cursor: pointer;
     margin-bottom: 10px;
-    width: 150px;
+    width: 190px;
 }
 
 .btn:hover {
     background-color: #0f6402;
+}
+
+/* Send and Cancel Buttons */
+.send-button {
+    background-color: rgba(0, 123, 255, 0.5);
+    color: white;
+    padding: 3px 10px;
+    margin: 0;
+    transition: background-color 0.3s ease;
+}
+
+.cancel-button {
+    background-color: rgba(255, 0, 25, 0.733);
+    color: white;
+    padding: 3px 10px;
+    margin: 0;
+    transition: background-color 0.3s ease;
+}
+
+.send-button:hover {
+    background-color: green;
+    /* Adjust color to your liking */
+}
+
+.cancel-button:hover {
+    background-color: darkred;
+    /* Adjust color to your liking */
 }
 
 /* Friend Cards */
@@ -366,7 +390,7 @@ async function sendFriendRequestModal() {
 .friend-button {
     width: 95px;
     margin-top: 5px;
-    padding: 2px 2px;
+    padding: 5px 2px;
     border: none;
     border-radius: 5px;
     color: #fff;
@@ -383,6 +407,7 @@ async function sendFriendRequestModal() {
 /* Delete Friend Button */
 .delete-button {
     width: 105px;
+    height: 30px;
     font-size: 1rem;
     margin-top: 5px;
     padding: 2px 2px;
@@ -519,12 +544,23 @@ button {
     border-radius: 10px;
     min-height: 50px;
     margin: 10px 0;
+    padding-top: 1px;
 }
 
 .section-heading {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-weight: bold;
+    font-size: 19px;
     text-align: left;
     padding-bottom: 10px;
     border-bottom: 1px solid #ddd;
+}
+
+.section-heading img {
+    width: 50px;
+    height: 50px;
 }
 
 .friend-card {
