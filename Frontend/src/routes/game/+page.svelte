@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
+	import { goto } from '$app/navigation';
 
 	const serverIP = import.meta.env.VITE_SERVER_IP;
 	let game: any | undefined = undefined;
@@ -16,6 +17,9 @@
 	}
 
 	myCookie = getCookie('jwt');
+	if (!myCookie) {
+		goto('/');
+	}
 		// SSR server side rendering
 		// https://vitejs.dev/guide/ssr.html
 		setTimeout(() => {
@@ -111,13 +115,13 @@
 	<title>Game</title>
 	<meta name="description" content="Game Page" />
 </svelte:head>
-
+{#if myCookie}
 <div class="center">
 	<div class="text-column">
 		<div class="game" id="game-container" />
 	</div>
 </div>
-
+{/if}
 <style>
 	.center {
 		display: flex;

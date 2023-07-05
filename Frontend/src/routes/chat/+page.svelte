@@ -93,6 +93,9 @@
       }
     }
     myCookie = getCookie('jwt');
+	if (!myCookie) {
+		goto('/');
+	}
     socket = io('http://' + serverIP + ':3333', {
       transports: ['websocket'],
       auth: {
@@ -1233,366 +1236,214 @@ async function leaveRoom()
 	<title>Chat</title>
 	<meta name="description" content="Chat Page" />
 </svelte:head>
+{#if myCookie}
 
-{#if isInvitationModalOpen}
-  <div class="modal">
-    <div class="modal-content">
-      <h3>Invitation list</h3>
-      <input bind:value={inviteUser} id="inviteUser" type="Username ..." placeholder="Enter username" name = "inviteUser"/>
-      {#if inviteUser && selectedChannel}
-        <button on:click={ ()=> inviteUsr(inviteUser)}>Invite</button>
-      {:else}
-        <p class="error-message">Need to be in a channel and add a username to invite</p>
-      {/if}
-      <button on:click={closeInvitationModal}>Close</button>
-    </div>
-  </div>
-{/if}
-
-{#if isUserModalOpen}
+	{#if isInvitationModalOpen}
 	<div class="modal">
 		<div class="modal-content">
-			<h3>User Options</h3>
-			<div>
-				<button on:click={getProfile}>Profile</button>
-				<button on:click={blockUser}>Block</button>
-				<button on:click={unblockUser}>Unblock</button>
-				<button on:click={closeUserModal}>Close</button>
-			</div>
-			<div>
-				<button on:click={createGameRequest}>Invite Game</button>
-				<input
-					type="radio"
-					value="Original"
-					id="Original"
-					name="gameType"
-					bind:group={joinGameType}
-					checked
-				/>
-				<label for="Original">Original</label>
-				<input type="radio" value="Modern" id="Modern" name="gameType" bind:group={joinGameType} />
-				<label for="Modern">Modern</label>
-			</div>
-		</div>
-	</div>
-{/if}
-
-{#if openAdminModal}
-	<div class="modal">
-		<div class="modal-content">
-			<h3>Setup</h3>
-
-      {#if selectedSection === 'changeChannelType'}
-      <div class="selected-option">
-        <p>Change Type:</p>
-        <label>
-          <input type="radio" value="public" id="public" name="channelType" bind:group={newChannelType} /> Public
-        </label>
-        <label>
-          <input type="radio" value="private" id="private" name="channelType" bind:group={newChannelType} /> Private
-        </label>
-        <label>
-          <input type="radio" value="protected" id="protected" name="channelType" bind:group={newChannelType} /> Protected
-        </label>
-
-        {#if newChannelType === 'protected'}
-          <input bind:value={newPassword} type="password" id="channelPassword" placeholder="Password" name = NewPassword />
-        {/if}
-      </div>
-    {/if}
-
-			{#if selectedSection === 'changePassword'}
-				<div class="selected-option">
-					<p>Change Password:</p>
-					<input
-						bind:value={newPassword}
-						id="newPassword"
-						type="password"
-						placeholder="New Password"
-						name="newPassword"
-					/>
-				</div>
-			{/if}
-
-			{#if selectedSection === 'grantAdmin'}
-				<div class="selected-option">
-					<p>Give Admin:</p>
-					<select name="selectedUser" bind:value={selectedUserparam}>
-						{#each $userList as user}
-							<option value={user.login}>{user.login}</option>
-						{/each}
-					</select>
-				</div>
-			{/if}
-
-			{#if selectedSection === 'revokeAdmin'}
-				<div class="selected-option">
-					<p>Revoke Admin:</p>
-					<select name="selectedUser" bind:value={selectedUserparam}>
-						{#each $adminList as admin}
-							<option value={admin.login}>{admin.login}</option>
-						{/each}
-					</select>
-				</div>
-			{/if}
-
-			{#if selectedSection === 'expulUser'}
-				<div class="selected-option">
-					<p>Kick User:</p>
-					<select name="selectedUser" bind:value={selectedUserparam}>
-						{#each $userList as user}
-							<option value={user.login}>{user.login}</option>
-						{/each}
-					</select>
-				</div>
-			{/if}
-
-			{#if selectedSection === 'banUser'}
-				<div class="selected-option">
-					<p>Ban User:</p>
-					<select name="selectedUser" bind:value={selectedUserparam}>
-						{#each $userList as user}
-							<option value={user.login}>{user.login}</option>
-						{/each}
-					</select>
-				</div>
-			{/if}
-
-			{#if selectedSection === 'muteUser'}
-				<div class="selected-option">
-					<p>Mute User:</p>
-					<select name="selectedUser" bind:value={selectedUserparam}>
-						{#each $userList as user}
-							<option value={user.login}>{user.login}</option>
-						{/each}
-					</select>
-					<input
-						bind:value={muteDuration}
-						type="number"
-						name="duration"
-						placeholder="Mute Duration (minutes)"
-						min="1"
-					/>
-				</div>
-			{/if}
-
-			{#if selectedSection === 'unbanUser'}
-				<div class="selected-option">
-					<p>Unban User:</p>
-					<select name="selectedUser" bind:value={selectedUserparam}>
-						{#each $banList as bannedUsers}
-							<option value={bannedUsers.login}>{bannedUsers.login}</option>
-						{/each}
-					</select>
-				</div>
-			{/if}
-
-			{#if selectedSection === 'unmuteUser'}
-				<div class="selected-option">
-					<p>Unmute User:</p>
-					<select name="selectedUser" bind:value={selectedUserparam}>
-						{#if $muteList.length > 0}
-							{#each $muteList as mutedUsers}
-								<option value={mutedUsers.login}>{mutedUsers.login}</option>
-							{/each}
-						{:else}
-							<option disabled selected>No muted users</option>
-						{/if}
-					</select>
-				</div>
-			{/if}
-
-			<div class="section-select">
-				<label for="sectionSelect">Select Section:</label>
-				<select bind:value={selectedSection} id="sectionSelect">
-					<option value="changeChannelType">Change Type</option>
-					<option value="changePassword">Change Password</option>
-					<option value="grantAdmin">Give Admin</option>
-					<option value="revokeAdmin">Revoke Admin</option>
-					<option value="expulUser">Kick User</option>
-					<option value="banUser">Ban User</option>
-					<option value="muteUser">Mute User</option>
-					<option value="unbanUser">Unban User</option>
-					<option value="unmuteUser">Unmute User</option>
-				</select>
-			</div>
-
-			<div class="modal-actions">
-				<button on:click={() => confirmSelection()}>Confirm</button>
-				<button on:click={() => closeSetupModal()}>Cancel</button>
-			</div>
-		</div>
-	</div>
-{/if}
-
-{#if isJoinModalOpen}
-	<div class="modal">
-		<div class="modal-content">
-			<h3>Join a channel</h3>
-			<input
-				bind:value={joinChannelName}
-				type="text"
-				placeholder="Channel Name"
-				name="joinChannelName"
-				id="joinChannelName1"
-			/>
-			{#if isJoinInvalidName}
-				<p class="error-message">Invalid channel name. Please enter a valid name.</p>
-			{/if}
-			{#if isJoinInvalidType}
-				<p class="error-message">Please select a channel type.</p>
-			{/if}
-			<div class="channel-type">
-				<span>Channel Type:</span>
-				<label>
-					<input
-						type="radio"
-						value="public"
-						bind:group={joinChannelType}
-						name="radio_public"
-						id="radio_pub"
-					/> Public/Private
-				</label>
-				<label>
-					<input
-						type="radio"
-						value="protected"
-						bind:group={joinChannelType}
-						name="radio_protected"
-						id="radio_protect"
-					/> Protected
-				</label>
-			</div>
-			{#if joinChannelType === 'protected'}
-				<input
-					bind:value={joinChannelPassword}
-					type="password"
-					placeholder="Password"
-					name="joinChannelPassword"
-				/>
-				{#if isJoinInvalidPassword}
-					<p class="error-message">Please enter a password for the protected channel.</p>
-				{/if}
-			{/if}
-			<button on:click={joinChannel}>Join</button>
-			<button on:click={closeJoinModal}>Cancel</button>
-		</div>
-	</div>
-{/if}
-<div class="container">
-	<div class="sidebar">
-		<div class="chat-area">
-			{#if selectedChannel != '' || selectedPrivateChannel != ''}
-				{#if selectedChannel}
-					<div class="channel-header">
-						<h2>{selectedChannel}</h2>
-						{#if isAdmin}
-							<button on:click={setup} class="button-admin">Setup</button>
-						{/if}
-					</div>
-				{:else}
-					<div class="channel-header">
-						<h2>{selectedPrivateChannel} (private)</h2>
-					</div>
-				{/if}
-			{:else}
-				<div class="channel-header">
-					<h2>Chat</h2>
-				</div>
-			{/if}
-		</div>
-		<button class="create-channel p-anim" on:click={() => openModal()}> Create a channel </button>
-		<button class="create-channel p-anim" on:click={() => openJoinModal()}> Join Channel </button>
-		<button class="create-channel p-anim" on:click={() => openPrivateMessageModal()}>
-			Private Message
-		</button>
-		{#if selectedChannel}
-			<button class="create-channel p-anim" on:click={() => leaveRoom()}> Leave Channel </button>
+		<h3>Invitation list</h3>
+		<input bind:value={inviteUser} id="inviteUser" type="Username ..." placeholder="Enter username" name = "inviteUser"/>
+		{#if inviteUser && selectedChannel}
+			<button on:click={ ()=> inviteUsr(inviteUser)}>Invite</button>
+		{:else}
+			<p class="error-message">Need to be in a channel and add a username to invite</p>
 		{/if}
-		{#if channelList !== null}
-			{#each $channelList as channel}
-				<button class="channel-button p-anim" on:click={() => getChannel(channel.name)}>
-					{channel.name}
-				</button>
-			{/each}
-		{/if}
-		{#if privateList !== null}
-			{#each $privateList as privateChannel}
-				<button
-					class="channel-private-button p-anim-private"
-					on:click={() => getPrivateChannel(privateChannel.login)}
-				>
-					{privateChannel.login}
-				</button>
-			{/each}
-		{/if}
-	</div>
-	<div class="chat-area" style="max-height: 800px">
-		<div class="messages">
-			{#each messages as message}
-				{#if message.user}
-					<div class="message-container-user">
-						<p class="message-utilisateur"><strong> {message.username} </strong></p>
-						<p class="message-utilisateur">{message.content}</p>
-					</div>
-				{:else}
-					<div class="message-container-other">
-						<p class="message-autre-utilisateur"><strong> {message.username} </strong></p>
-						<p class="message-autre-utilisateur">{message.content}</p>
-					</div>
-				{/if}
-			{/each}
-		</div>
-		<div class="input-area">
-			<input
-				bind:value={messageInput}
-				type="text"
-				placeholder="Type here..."
-				id="test"
-				name="messageInput"
-			/>
-			<button on:click={sendMessage}>Send</button>
+		<button on:click={closeInvitationModal}>Close</button>
 		</div>
 	</div>
-	<div class="user-list">
-		<h3 class="user-list-title">User List</h3>
-		<button class="user-button p-anim" on:click={() => openInvitationModal()}> Invitation </button>
-		{#each $userList as user}
-		{#if user.login !== login}
-			<button class="user-button p-anim" on:click={() => selectUser(user.login)}>
-				{user.login}
-			</button>
-		{/if}
-		{/each}
-		{#if gameRequest.login !== 'undefined'}
-			<div id="gameRequest">
-				<p id="gameRequestPopup">
-					{gameRequest.login} <br /> Invited you to play <br />
-					{gameRequest.type} game.
-				</p>
-				<div id="gameRequestButtons">
-					<button class="greenButton" on:click={() => acceptGameRequest()}>Accept </button>
-					<button class="redButton" on:click={() => deleteGameRequest()}>Decline </button>
-				</div>
-			</div>
-		{/if}
-	</div>
+	{/if}
 
-
-	{#if isModalOpen}
+	{#if isUserModalOpen}
 		<div class="modal">
 			<div class="modal-content">
-				<h3>Create a new channel</h3>
+				<h3>User Options</h3>
+				<div>
+					<button on:click={getProfile}>Profile</button>
+					<button on:click={blockUser}>Block</button>
+					<button on:click={unblockUser}>Unblock</button>
+					<button on:click={closeUserModal}>Close</button>
+				</div>
+				<div>
+					<button on:click={createGameRequest}>Invite Game</button>
+					<input
+						type="radio"
+						value="Original"
+						id="Original"
+						name="gameType"
+						bind:group={joinGameType}
+						checked
+					/>
+					<label for="Original">Original</label>
+					<input type="radio" value="Modern" id="Modern" name="gameType" bind:group={joinGameType} />
+					<label for="Modern">Modern</label>
+				</div>
+			</div>
+		</div>
+	{/if}
+
+	{#if openAdminModal}
+		<div class="modal">
+			<div class="modal-content">
+				<h3>Setup</h3>
+
+		{#if selectedSection === 'changeChannelType'}
+		<div class="selected-option">
+			<p>Change Type:</p>
+			<label>
+			<input type="radio" value="public" id="public" name="channelType" bind:group={newChannelType} /> Public
+			</label>
+			<label>
+			<input type="radio" value="private" id="private" name="channelType" bind:group={newChannelType} /> Private
+			</label>
+			<label>
+			<input type="radio" value="protected" id="protected" name="channelType" bind:group={newChannelType} /> Protected
+			</label>
+
+			{#if newChannelType === 'protected'}
+			<input bind:value={newPassword} type="password" id="channelPassword" placeholder="Password" name = NewPassword />
+			{/if}
+		</div>
+		{/if}
+
+				{#if selectedSection === 'changePassword'}
+					<div class="selected-option">
+						<p>Change Password:</p>
+						<input
+							bind:value={newPassword}
+							id="newPassword"
+							type="password"
+							placeholder="New Password"
+							name="newPassword"
+						/>
+					</div>
+				{/if}
+
+				{#if selectedSection === 'grantAdmin'}
+					<div class="selected-option">
+						<p>Give Admin:</p>
+						<select name="selectedUser" bind:value={selectedUserparam}>
+							{#each $userList as user}
+								<option value={user.login}>{user.login}</option>
+							{/each}
+						</select>
+					</div>
+				{/if}
+
+				{#if selectedSection === 'revokeAdmin'}
+					<div class="selected-option">
+						<p>Revoke Admin:</p>
+						<select name="selectedUser" bind:value={selectedUserparam}>
+							{#each $adminList as admin}
+								<option value={admin.login}>{admin.login}</option>
+							{/each}
+						</select>
+					</div>
+				{/if}
+
+				{#if selectedSection === 'expulUser'}
+					<div class="selected-option">
+						<p>Kick User:</p>
+						<select name="selectedUser" bind:value={selectedUserparam}>
+							{#each $userList as user}
+								<option value={user.login}>{user.login}</option>
+							{/each}
+						</select>
+					</div>
+				{/if}
+
+				{#if selectedSection === 'banUser'}
+					<div class="selected-option">
+						<p>Ban User:</p>
+						<select name="selectedUser" bind:value={selectedUserparam}>
+							{#each $userList as user}
+								<option value={user.login}>{user.login}</option>
+							{/each}
+						</select>
+					</div>
+				{/if}
+
+				{#if selectedSection === 'muteUser'}
+					<div class="selected-option">
+						<p>Mute User:</p>
+						<select name="selectedUser" bind:value={selectedUserparam}>
+							{#each $userList as user}
+								<option value={user.login}>{user.login}</option>
+							{/each}
+						</select>
+						<input
+							bind:value={muteDuration}
+							type="number"
+							name="duration"
+							placeholder="Mute Duration (minutes)"
+							min="1"
+						/>
+					</div>
+				{/if}
+
+				{#if selectedSection === 'unbanUser'}
+					<div class="selected-option">
+						<p>Unban User:</p>
+						<select name="selectedUser" bind:value={selectedUserparam}>
+							{#each $banList as bannedUsers}
+								<option value={bannedUsers.login}>{bannedUsers.login}</option>
+							{/each}
+						</select>
+					</div>
+				{/if}
+
+				{#if selectedSection === 'unmuteUser'}
+					<div class="selected-option">
+						<p>Unmute User:</p>
+						<select name="selectedUser" bind:value={selectedUserparam}>
+							{#if $muteList.length > 0}
+								{#each $muteList as mutedUsers}
+									<option value={mutedUsers.login}>{mutedUsers.login}</option>
+								{/each}
+							{:else}
+								<option disabled selected>No muted users</option>
+							{/if}
+						</select>
+					</div>
+				{/if}
+
+				<div class="section-select">
+					<label for="sectionSelect">Select Section:</label>
+					<select bind:value={selectedSection} id="sectionSelect">
+						<option value="changeChannelType">Change Type</option>
+						<option value="changePassword">Change Password</option>
+						<option value="grantAdmin">Give Admin</option>
+						<option value="revokeAdmin">Revoke Admin</option>
+						<option value="expulUser">Kick User</option>
+						<option value="banUser">Ban User</option>
+						<option value="muteUser">Mute User</option>
+						<option value="unbanUser">Unban User</option>
+						<option value="unmuteUser">Unmute User</option>
+					</select>
+				</div>
+
+				<div class="modal-actions">
+					<button on:click={() => confirmSelection()}>Confirm</button>
+					<button on:click={() => closeSetupModal()}>Cancel</button>
+				</div>
+			</div>
+		</div>
+	{/if}
+
+	{#if isJoinModalOpen}
+		<div class="modal">
+			<div class="modal-content">
+				<h3>Join a channel</h3>
 				<input
-					bind:value={newChannelName}
+					bind:value={joinChannelName}
 					type="text"
 					placeholder="Channel Name"
-					name="newChannelName"
+					name="joinChannelName"
+					id="joinChannelName1"
 				/>
-				{#if isInvalidName}
+				{#if isJoinInvalidName}
 					<p class="error-message">Invalid channel name. Please enter a valid name.</p>
 				{/if}
-				{#if isInvalidType}
+				{#if isJoinInvalidType}
 					<p class="error-message">Please select a channel type.</p>
 				{/if}
 				<div class="channel-type">
@@ -1601,65 +1452,218 @@ async function leaveRoom()
 						<input
 							type="radio"
 							value="public"
-							bind:group={newChannelType}
-							id="newChannelTypePublic"
-						/> Public
-					</label>
-					<label>
-						<input
-							type="radio"
-							value="private"
-							bind:group={newChannelType}
-							id="newChannelTypePrivate"
-						/> Private
+							bind:group={joinChannelType}
+							name="radio_public"
+							id="radio_pub"
+						/> Public/Private
 					</label>
 					<label>
 						<input
 							type="radio"
 							value="protected"
-							bind:group={newChannelType}
-							id="newChannelTypeProtected"
+							bind:group={joinChannelType}
+							name="radio_protected"
+							id="radio_protect"
 						/> Protected
 					</label>
 				</div>
-				{#if newChannelType === 'protected'}
+				{#if joinChannelType === 'protected'}
 					<input
-						bind:value={newChannelPassword}
+						bind:value={joinChannelPassword}
 						type="password"
 						placeholder="Password"
-						name="newChannelPassword"
+						name="joinChannelPassword"
 					/>
-					{#if isInvalidPassword}
+					{#if isJoinInvalidPassword}
 						<p class="error-message">Please enter a password for the protected channel.</p>
 					{/if}
 				{/if}
-				<button on:click={createChannel}>Create</button>
-				<button on:click={closeModal}>Cancel</button>
+				<button on:click={joinChannel}>Join</button>
+				<button on:click={closeJoinModal}>Cancel</button>
 			</div>
 		</div>
 	{/if}
-
-	{#if isPrivateMessageModalOpen}
-		<div class="modal">
-			<div class="modal-content">
-				<h3>Send Private Message</h3>
-				<input
-					bind:value={recipientName}
-					type="text"
-					placeholder="Recipient Name"
-					name="recipientName"
-				/>
-				<textarea bind:value={messageContent} placeholder="Message" name="messageContent" />
-				{#if privateMessageError !== ''}
-					<p class="error-message">{privateMessageError}</p>
+	<div class="container">
+		<div class="sidebar">
+			<div class="chat-area">
+				{#if selectedChannel != '' || selectedPrivateChannel != ''}
+					{#if selectedChannel}
+						<div class="channel-header">
+							<h2>{selectedChannel}</h2>
+							{#if isAdmin}
+								<button on:click={setup} class="button-admin">Setup</button>
+							{/if}
+						</div>
+					{:else}
+						<div class="channel-header">
+							<h2>{selectedPrivateChannel} (private)</h2>
+						</div>
+					{/if}
+				{:else}
+					<div class="channel-header">
+						<h2>Chat</h2>
+					</div>
 				{/if}
-				<button on:click={sendPrivateMessage}>Send Message</button>
-				<button on:click={closePrivateMessageModal}>Cancel</button>
+			</div>
+			<button class="create-channel p-anim" on:click={() => openModal()}> Create a channel </button>
+			<button class="create-channel p-anim" on:click={() => openJoinModal()}> Join Channel </button>
+			<button class="create-channel p-anim" on:click={() => openPrivateMessageModal()}>
+				Private Message
+			</button>
+			{#if selectedChannel}
+				<button class="create-channel p-anim" on:click={() => leaveRoom()}> Leave Channel </button>
+			{/if}
+			{#if channelList !== null}
+				{#each $channelList as channel}
+					<button class="channel-button p-anim" on:click={() => getChannel(channel.name)}>
+						{channel.name}
+					</button>
+				{/each}
+			{/if}
+			{#if privateList !== null}
+				{#each $privateList as privateChannel}
+					<button
+						class="channel-private-button p-anim-private"
+						on:click={() => getPrivateChannel(privateChannel.login)}
+					>
+						{privateChannel.login}
+					</button>
+				{/each}
+			{/if}
+		</div>
+		<div class="chat-area" style="max-height: 800px">
+			<div class="messages">
+				{#each messages as message}
+					{#if message.user}
+						<div class="message-container-user">
+							<p class="message-utilisateur"><strong> {message.username} </strong></p>
+							<p class="message-utilisateur">{message.content}</p>
+						</div>
+					{:else}
+						<div class="message-container-other">
+							<p class="message-autre-utilisateur"><strong> {message.username} </strong></p>
+							<p class="message-autre-utilisateur">{message.content}</p>
+						</div>
+					{/if}
+				{/each}
+			</div>
+			<div class="input-area">
+				<input
+					bind:value={messageInput}
+					type="text"
+					placeholder="Type here..."
+					id="test"
+					name="messageInput"
+				/>
+				<button on:click={sendMessage}>Send</button>
 			</div>
 		</div>
-	{/if}
-</div>
+		<div class="user-list">
+			<h3 class="user-list-title">User List</h3>
+			<button class="user-button p-anim" on:click={() => openInvitationModal()}> Invitation </button>
+			{#each $userList as user}
+			{#if user.login !== login}
+				<button class="user-button p-anim" on:click={() => selectUser(user.login)}>
+					{user.login}
+				</button>
+			{/if}
+			{/each}
+			{#if gameRequest.login !== 'undefined'}
+				<div id="gameRequest">
+					<p id="gameRequestPopup">
+						{gameRequest.login} <br /> Invited you to play <br />
+						{gameRequest.type} game.
+					</p>
+					<div id="gameRequestButtons">
+						<button class="greenButton" on:click={() => acceptGameRequest()}>Accept </button>
+						<button class="redButton" on:click={() => deleteGameRequest()}>Decline </button>
+					</div>
+				</div>
+			{/if}
+		</div>
 
+
+		{#if isModalOpen}
+			<div class="modal">
+				<div class="modal-content">
+					<h3>Create a new channel</h3>
+					<input
+						bind:value={newChannelName}
+						type="text"
+						placeholder="Channel Name"
+						name="newChannelName"
+					/>
+					{#if isInvalidName}
+						<p class="error-message">Invalid channel name. Please enter a valid name.</p>
+					{/if}
+					{#if isInvalidType}
+						<p class="error-message">Please select a channel type.</p>
+					{/if}
+					<div class="channel-type">
+						<span>Channel Type:</span>
+						<label>
+							<input
+								type="radio"
+								value="public"
+								bind:group={newChannelType}
+								id="newChannelTypePublic"
+							/> Public
+						</label>
+						<label>
+							<input
+								type="radio"
+								value="private"
+								bind:group={newChannelType}
+								id="newChannelTypePrivate"
+							/> Private
+						</label>
+						<label>
+							<input
+								type="radio"
+								value="protected"
+								bind:group={newChannelType}
+								id="newChannelTypeProtected"
+							/> Protected
+						</label>
+					</div>
+					{#if newChannelType === 'protected'}
+						<input
+							bind:value={newChannelPassword}
+							type="password"
+							placeholder="Password"
+							name="newChannelPassword"
+						/>
+						{#if isInvalidPassword}
+							<p class="error-message">Please enter a password for the protected channel.</p>
+						{/if}
+					{/if}
+					<button on:click={createChannel}>Create</button>
+					<button on:click={closeModal}>Cancel</button>
+				</div>
+			</div>
+		{/if}
+
+		{#if isPrivateMessageModalOpen}
+			<div class="modal">
+				<div class="modal-content">
+					<h3>Send Private Message</h3>
+					<input
+						bind:value={recipientName}
+						type="text"
+						placeholder="Recipient Name"
+						name="recipientName"
+					/>
+					<textarea bind:value={messageContent} placeholder="Message" name="messageContent" />
+					{#if privateMessageError !== ''}
+						<p class="error-message">{privateMessageError}</p>
+					{/if}
+					<button on:click={sendPrivateMessage}>Send Message</button>
+					<button on:click={closePrivateMessageModal}>Cancel</button>
+				</div>
+			</div>
+		{/if}
+	</div>
+{/if}
 <style>
   .container {
     display: flex;

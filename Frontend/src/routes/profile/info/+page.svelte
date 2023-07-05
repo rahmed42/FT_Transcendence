@@ -5,6 +5,7 @@
 	import winIcon from '../../../lib/images/win-icon.png';
 	import lossIcon from '../../../lib/images/loss-icon.png';
 	import ladderIcon from '../../../lib/images/ladder-icon.png';
+	import { goto } from '$app/navigation';
 
 	const friend = writable({}); // Local state for friend
 	let stats = null;
@@ -15,7 +16,7 @@
 		const date = new Date(isoDateString);
 		return `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
 	}
-
+	let myCookie : any = ''
 	onMount(async () => {
         function getCookie(name: string) {
             const value = `; ${document.cookie}`;
@@ -23,9 +24,10 @@
             if (parts.length === 2) {
                 return parts.pop()?.split(';').shift();
             }
+		myCookie = getCookie('jwt')
+		if (!myCookie)
+			goto('/')
         }
-
-        let myCookie = getCookie('jwt');
 
         const friend_username = new URLSearchParams(window.location.search).get('login');
 
@@ -68,68 +70,69 @@
 	<meta name="description" content="User profile" />
 </svelte:head>
 
-<div class="profile">
-	<a href={`/social`} class="button-styled">Back</a>
-	<h1 class="title">
-		<span class="username"><strong>{$friend.login}</strong></span>'s Profile Page
-	</h1>
+{#if myCookie}
+	<div class="profile">
+		<a href={`/social`} class="button-styled">Back</a>
+		<h1 class="title">
+			<span class="username"><strong>{$friend.login}</strong></span>'s Profile Page
+		</h1>
 
-	{#if $friend.avatar}
-		<img class="pp" id="avatar" src={$friend.avatar} alt="avatar" />
-	{:else}
-		<img class="pp" id="avatar" src={$friend.large_pic} alt={`Picture of ${$friend.login}`} />
-	{/if}
-	<hr class="section-divider" />
-	<h2 class="section-heading">Stats</h2>
-	<div class="stats-card">
-		{#if stats}
-			<div class="stat-item">
-				<img src={winIcon} alt="Wins Icon" />
-				<h3>{stats.wins}</h3>
-				<p>Wins</p>
-			</div>
-			<div class="stat-item">
-				<img src={lossIcon} alt="Losses Icon" />
-				<h3>{stats.losses}</h3>
-				<p>Losses</p>
-			</div>
-			<div class="stat-item">
-				<img src={ladderIcon} alt="Ladder Icon" />
-				<h3>{stats.ladderLevel}</h3>
-				<p>Ladder Level</p>
-			</div>
+		{#if $friend.avatar}
+			<img class="pp" id="avatar" src={$friend.avatar} alt="avatar" />
 		{:else}
-			<p>No stats available</p>
+			<img class="pp" id="avatar" src={$friend.large_pic} alt={`Picture of ${$friend.login}`} />
+		{/if}
+		<hr class="section-divider" />
+		<h2 class="section-heading">Stats</h2>
+		<div class="stats-card">
+			{#if stats}
+				<div class="stat-item">
+					<img src={winIcon} alt="Wins Icon" />
+					<h3>{stats.wins}</h3>
+					<p>Wins</p>
+				</div>
+				<div class="stat-item">
+					<img src={lossIcon} alt="Losses Icon" />
+					<h3>{stats.losses}</h3>
+					<p>Losses</p>
+				</div>
+				<div class="stat-item">
+					<img src={ladderIcon} alt="Ladder Icon" />
+					<h3>{stats.ladderLevel}</h3>
+					<p>Ladder Level</p>
+				</div>
+			{:else}
+				<p>No stats available</p>
+			{/if}
+		</div>
+		<hr class="section-divider" />
+		<h2 class="section-heading">Match History</h2>
+		{#if matchHistory.length > 0}
+			<table class="match-history-table">
+				<thead>
+					<tr>
+						<th>Game Type</th>
+						<th>Result</th>
+						<th>Score</th>
+						<th>Date</th>
+					</tr>
+				</thead>
+				<tbody>
+					{#each matchHistory as match (match.id)}
+						<tr>
+							<td>{match.gameType}</td>
+							<td>{match.result}</td>
+							<td>{match.myScore} - {match.opponentScore} (vs. {match.opponentName})</td>
+							<td>{formatDate(match.timestamp)}</td>
+						</tr>
+					{/each}
+				</tbody>
+			</table>
+		{:else}
+			<p>No match history available</p>
 		{/if}
 	</div>
-	<hr class="section-divider" />
-	<h2 class="section-heading">Match History</h2>
-	{#if matchHistory.length > 0}
-		<table class="match-history-table">
-			<thead>
-				<tr>
-					<th>Game Type</th>
-					<th>Result</th>
-					<th>Score</th>
-					<th>Date</th>
-				</tr>
-			</thead>
-			<tbody>
-				{#each matchHistory as match (match.id)}
-					<tr>
-						<td>{match.gameType}</td>
-						<td>{match.result}</td>
-						<td>{match.myScore} - {match.opponentScore} (vs. {match.opponentName})</td>
-						<td>{formatDate(match.timestamp)}</td>
-					</tr>
-				{/each}
-			</tbody>
-		</table>
-	{:else}
-		<p>No match history available</p>
-	{/if}
-</div>
-
+{/if}
 <style>
 	.section-divider {
 		border: 0;

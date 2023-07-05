@@ -1,5 +1,14 @@
 <script lang="ts">
 	import backgroundHome from '$lib/images/backgroundHome.png';
+	import { onMount } from 'svelte';
+	import { goto } from '$app/navigation';
+	let user = ''
+	onMount(async () => {
+		user = document.cookie.split(';').find(cookie => cookie.startsWith('jwt='));
+		if (!user) {
+			goto('/')
+		}
+	})
 </script>
 
 <svelte:head>
@@ -7,26 +16,27 @@
 	<meta name="description" content="Svelte pong app" />
 </svelte:head>
 
-<ul class="background">
-	<picture>
-		<img src={backgroundHome} alt="backgroundHome" />
-	</picture>
-	<footer>
-		<pre>
-    :::      ::::::::   :::::::::   ::::::::  ::::    :::  ::::::::
-   :+:      :+:    :+:  :+:    :+: :+:    :+: :+:+:   :+: :+:    :+:
-  +:+ +:+         +:+   +:+    +:+ +:+    +:+ :+:+:+  +:+ +:+
- +#+  +:+       +#+     +#++:++#+  +#+    +:+ +#+ +:+ +#+ :#:
-+#+#+#+#+#+   +#+       +#+        +#+    +#+ +#+  +#+#+# +#+   +#+#
-      #+#    #+#        #+#        #+#    #+# #+#   #+#+# #+#    #+#
-      ###   ##########  ###         ########  ###    ####  ########
-		</pre>
-		<center>
-			Made By <strong> ☁️ anggonza 🌟 ddupont 🌟 mmatthie 🌟 rahmed 🌟 tbrandt ☁️ </strong>
-		</center>
-	</footer>
-</ul>
-
+{#if user}
+	<ul class="background">
+		<picture>
+			<img src={backgroundHome} alt="backgroundHome" />
+		</picture>
+		<footer>
+			<pre>
+		:::      ::::::::   :::::::::   ::::::::  ::::    :::  ::::::::
+	:+:      :+:    :+:  :+:    :+: :+:    :+: :+:+:   :+: :+:    :+:
+	+:+ +:+         +:+   +:+    +:+ +:+    +:+ :+:+:+  +:+ +:+
+	+#+  +:+       +#+     +#++:++#+  +#+    +:+ +#+ +:+ +#+ :#:
+	+#+#+#+#+#+   +#+       +#+        +#+    +#+ +#+  +#+#+# +#+   +#+#
+		#+#    #+#        #+#        #+#    #+# #+#   #+#+# #+#    #+#
+		###   ##########  ###         ########  ###    ####  ########
+			</pre>
+			<center>
+				Made By <strong> ☁️ anggonza 🌟 ddupont 🌟 mmatthie 🌟 rahmed 🌟 tbrandt ☁️ </strong>
+			</center>
+		</footer>
+	</ul>
+{/if}
 <style>
 	img {
 		position: fixed;

@@ -4,6 +4,7 @@ import { notification } from '../../stores/notificationStore.js';
 import { user } from '../../stores/user';
 import io from 'socket.io-client';
 import { onMount } from 'svelte';
+import { goto } from '$app/navigation';
 
 const apiUrl = import.meta.env.VITE_API_URL;
 
@@ -24,6 +25,8 @@ onMount(async () => {
         }
     }
     myCookie = getCookie('jwt');
+	if (!myCookie)
+		goto('/')
     socket = io('http://' + "localhost" + ':3333', {
         transports: ['websocket'],
         auth: {
@@ -240,59 +243,60 @@ async function sendFriendRequestModal() {
 }
 </script>
 
-<section class="actions">
-    <button class="btn" on:click={openFriendRequestModal}>Send a friend request</button>
-    {#if friendRequestModalOpen}
-    <div class="modal">
-        <div class="modal-content">
-            <input type="text" bind:value={requesteeLoginModal} placeholder="Friend's user login" />
-            <button on:click={sendFriendRequestModal}>Send friend request</button>
-            <button on:click={closeFriendRequestModal}>Cancel</button>
-        </div>
-    </div>
-    {/if}
+{#if myCookie}
+	<section class="actions">
+		<button class="btn" on:click={openFriendRequestModal}>Send a friend request</button>
+		{#if friendRequestModalOpen}
+		<div class="modal">
+			<div class="modal-content">
+				<input type="text" bind:value={requesteeLoginModal} placeholder="Friend's user login" />
+				<button on:click={sendFriendRequestModal}>Send friend request</button>
+				<button on:click={closeFriendRequestModal}>Cancel</button>
+			</div>
+		</div>
+		{/if}
 
-    {#if $notification.message} <!-- Display the notification message if it exists -->
-    <p class={$notification.error ? 'notification-error' : 'notification-success'}>{$notification.message}</p>
-    {/if}
-</section>
+		{#if $notification.message} <!-- Display the notification message if it exists -->
+		<p class={$notification.error ? 'notification-error' : 'notification-success'}>{$notification.message}</p>
+		{/if}
+	</section>
 
-<section>
-    <div class="white-frame">
-        <h2 class="section-heading">Pending Friend Requests</h2>
-        <div class="friends-container">
-            {#each pendingRequests as request (request.id)}
-            <div class="friend-card">
-                <img src={request.requester.avatar ? request.requester.avatar : request.requester.small_pic} alt="{request.requester.login}'s picture" class="friend-image" />
-                <h3 class="friend-name">{request.requester.login}</h3>
-                <button class="accept-button" on:click={() => acceptFriendRequest(request.id)}>Accept</button>
-                <button class="reject-button" on:click={() => rejectFriendRequest(request.id)}>Reject</button>
-            </div>
-            {/each}
-        </div>
-    </div>
-</section>
+	<section>
+		<div class="white-frame">
+			<h2 class="section-heading">Pending Friend Requests</h2>
+			<div class="friends-container">
+				{#each pendingRequests as request (request.id)}
+				<div class="friend-card">
+					<img src={request.requester.avatar ? request.requester.avatar : request.requester.small_pic} alt="{request.requester.login}'s picture" class="friend-image" />
+					<h3 class="friend-name">{request.requester.login}</h3>
+					<button class="accept-button" on:click={() => acceptFriendRequest(request.id)}>Accept</button>
+					<button class="reject-button" on:click={() => rejectFriendRequest(request.id)}>Reject</button>
+				</div>
+				{/each}
+			</div>
+		</div>
+	</section>
 
-<section>
-    <div class="white-frame">
-        <h2 class="section-heading">Friends</h2>
-        <div class="friends-container">
-            {#each friends as friend (friend.id)}
-            <div class="friend-card">
-                <img src={friend.friend.avatar ? friend.friend.avatar : friend.friend.small_pic} alt="{friend.friend.login}'s picture" class="friend-image" />
-                <h3 class="friend-name">{friend.friend.login}</h3>
-                <p class="status">
-                    <span class={`status-circle ${friend.friend.status}`}></span>
-                    {friend.friend.status === 'login' ? 'Connected' : friend.friend.status === 'logout' ? 'Disconnected' : 'In Game'}
-                </p>
-                <a href={`/profile/info/?login=${friend.friend.login}`} class="friend-button">View Profile</a>
-                <button class="delete-button" on:click={() => deleteFriend(friend.id)}>Delete Friend</button>
-            </div>
-            {/each}
-        </div>
-    </div>
-</section>
-
+	<section>
+		<div class="white-frame">
+			<h2 class="section-heading">Friends</h2>
+			<div class="friends-container">
+				{#each friends as friend (friend.id)}
+				<div class="friend-card">
+					<img src={friend.friend.avatar ? friend.friend.avatar : friend.friend.small_pic} alt="{friend.friend.login}'s picture" class="friend-image" />
+					<h3 class="friend-name">{friend.friend.login}</h3>
+					<p class="status">
+						<span class={`status-circle ${friend.friend.status}`}></span>
+						{friend.friend.status === 'login' ? 'Connected' : friend.friend.status === 'logout' ? 'Disconnected' : 'In Game'}
+					</p>
+					<a href={`/profile/info/?login=${friend.friend.login}`} class="friend-button">View Profile</a>
+					<button class="delete-button" on:click={() => deleteFriend(friend.id)}>Delete Friend</button>
+				</div>
+				{/each}
+			</div>
+		</div>
+	</section>
+{/if}
 <style>
 .section-heading {
     font-weight: bold;

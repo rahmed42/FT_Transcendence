@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from "svelte";
-
+	import { goto } from '$app/navigation';
 	// Fetch DB / or get theses default values if not found
 	let selectedBoard: string = 'src/lib/assets/boards/boardDefault.png';
 	let selectedMyPaddle: string = 'src/lib/assets/paddles/defaultPaddle/defaultPaddleWhite.png';
@@ -20,6 +20,8 @@
 		}
 
 		myCookie = getCookie('jwt');
+		if (!myCookie)
+			goto('/')
 	});
 
 	async function applySettings() {
@@ -45,6 +47,7 @@
 	<meta name="description" content="Game CONFIG" />
 </svelte:head>
 
+{#if myCookie}
 <div class="text-column">
 	<h1>Game configuration</h1>
 	<table class="select-table">
@@ -235,7 +238,7 @@
 		<img class="ball" src={selectedBall} alt="Game preview" />
 	</div>
 </div>
-
+{/if}
 <style>
 	.text-column {
 		text-align: center;
