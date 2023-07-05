@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
@@ -43,7 +43,6 @@ export class SocialService {
     
       return { status: 'success', data: friendRequest };
     }
-  
 
     async getFriendRequests(userLogin: string): Promise<any> {
   
