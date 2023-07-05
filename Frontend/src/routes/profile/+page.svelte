@@ -4,7 +4,7 @@
 	import { onMount } from 'svelte';
 	import winIcon from '../../lib/images/icons8-reward-80.png';
 	import lossIcon from '../../lib/images/loss-icon.png';
-	import ladderIcon from '../../lib/images/icons8-rank-64.png';
+	// import ladderIcon from '../../lib/images/icons8-rank-64.png';
 	import { goto } from '$app/navigation';
 	import bronzeIcon from '../../lib/images/bronze.png';
     import silverIcon from '../../lib/images/silver.png';
@@ -19,8 +19,8 @@
 	let avatar: string;
 	let username: string;
 	let modalOpen: boolean;
-	let stats = null;
-	let matchHistory = [];
+	let stats: any = null;
+	let matchHistory: any = [];
 	let ladderIcon = bronzeIcon;
 
 	const serverIP = import.meta.env.VITE_SERVER_IP;
@@ -75,7 +75,7 @@
 		getUserInfo();
 	});
 	function calculateLadderLevel(ratio: number) {
-        if (ratio > 4) return 'Gold';
+        if (ratio > 3) return 'Gold';
         if (ratio > 2) return 'Silver';
         return 'Bronze';
     }
