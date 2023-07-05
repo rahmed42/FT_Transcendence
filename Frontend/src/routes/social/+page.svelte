@@ -255,7 +255,7 @@
 		<div class="modal">
 			<div class="modal-content">
 				<h3>Friend request</h3>
-				<input type="text" bind:value={requesteeLoginModal} placeholder="Friend's user login" />
+				<input type="text" name=text id=text_receiver bind:value={requesteeLoginModal} placeholder="Friend's user login" />
 				<br /> <br />
 				<button class="greenButton" on:click={sendFriendRequestModal}>Send</button>
 				<button class="redButton" on:click={closeFriendRequestModal}>Cancel</button>
