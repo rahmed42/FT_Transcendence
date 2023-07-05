@@ -33,7 +33,7 @@
         const friend_username = new URLSearchParams(window.location.search).get('login');
 
 		async function getUserInfo() {
-			console.log(myCookie)
+			// console.log(myCookie)
 			const response = await fetch(
 				'http://' + serverIP + ':3333/profil/friends?login=' + friend_username,
 				{

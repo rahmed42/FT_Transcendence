@@ -8,36 +8,34 @@
 
 	// Fonction afterUpdate - appelée après la mise à jour du composant
 	onMount(() => {
-	function getCookie(name: string) {
-		const value = `; ${document.cookie}`;
-		const parts = value.split(`; ${name}=`);
-		if (parts.length === 2) {
-			return parts.pop()?.split(';').shift();
+		function getCookie(name: string) {
+			const value = `; ${document.cookie}`;
+			const parts = value.split(`; ${name}=`);
+			if (parts.length === 2) {
+				return parts.pop()?.split(';').shift();
+			}
 		}
-	}
 
-	myCookie = getCookie('jwt');
-	if (!myCookie) {
-		goto('/');
-	}
+		myCookie = getCookie('jwt');
+		if (!myCookie) {
+			goto('/');
+		}
 		// SSR server side rendering
 		// https://vitejs.dev/guide/ssr.html
 		setTimeout(() => {
 			// SSR server side rendering
 			// https://vitejs.dev/guide/ssr.html
 			if (typeof window === 'undefined') return;
-
 			if (!game && window.location.pathname === '/game')
 				createPhaserGame();
+
+			// destroy the game when leaving the page when the game is loaded
+			setTimeout(() => {
+				if (typeof window === 'undefined') return;
+				if (game && window.location.pathname !== '/game')
+					game.destroy(true);
+			}, 1000);
 		}, 400);
-
-		// destroy the game when leaving the page when the game is loaded
-		setTimeout(() => {
-			if (typeof window === 'undefined') return;
-
-			if (game && window.location.pathname !== '/game')
-				game.destroy(true);
-		}, 1000);
 	});
 
 	async function createPhaserGame() {
@@ -88,9 +86,9 @@
 			method: 'GET',
 			headers: {
 				'Content-Type': 'application/json',
-				Authorization: 'Bearer ' + myCookie,
+				Authorization: 'Bearer ' + myCookie
 			},
-			credentials: 'include',
+			credentials: 'include'
 		});
 		if (response.ok) {
 			const data = await response.json();
@@ -104,7 +102,7 @@
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
-				Authorization: 'Bearer ' + myCookie,
+				Authorization: 'Bearer ' + myCookie
 			},
 			credentials: 'include'
 		});
@@ -116,12 +114,13 @@
 	<meta name="description" content="Game Page" />
 </svelte:head>
 {#if myCookie}
-<div class="center">
-	<div class="text-column">
-		<div class="game" id="game-container" />
+	<div class="center">
+		<div class="text-column">
+			<div class="game" id="game-container" />
+		</div>
 	</div>
-</div>
 {/if}
+
 <style>
 	.center {
 		display: flex;

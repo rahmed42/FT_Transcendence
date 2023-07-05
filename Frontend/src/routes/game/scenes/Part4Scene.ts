@@ -20,12 +20,25 @@ async function load_skins() {
 	skins = await getUpdatedSkins();
 }
 
+function getCookie(name: string) {
+	const value = `; ${document.cookie}`;
+	const parts = value.split(`; ${name}=`);
+	if (parts.length === 2) {
+		return parts.pop()?.split(';').shift();
+	}
+}
+
+let myCookie = getCookie('jwt');
+
 export class Part4Scene extends Phaser.Scene {
 	//room reference
 	room: Room;
 
 	// Players we will assign each player visual representation here by their `sessionId`
 	playerEntities: { [sessionId: string]: Phaser.Types.Physics.Arcade.ImageWithDynamicBody } = {};
+
+	// To stock if a delay is running to delete it
+	ballSpeedDelay: Phaser.Time.TimerEvent | null = null;
 
 	// get movement timer
 	lastMovementTimer: number;
@@ -103,7 +116,7 @@ export class Part4Scene extends Phaser.Scene {
 		this.activeScene = 'Part4Scene';
 
 		// Initialize the room
-		this.room = new Room("ModernInvited");
+		this.room = new Room("Private_Modern");
 
 		// Initialize the game state
 		this.myScore = 0;
@@ -171,8 +184,10 @@ export class Part4Scene extends Phaser.Scene {
 		this.activeScene = sceneName;
 	}
 
-	preload() {
+	async preload() {
 		//Loading style
+		if (skins === undefined)
+			await load_skins();
 		for (const skin of skins)
 			this.load.image(skin.name, skin.src);
 
@@ -181,7 +196,7 @@ export class Part4Scene extends Phaser.Scene {
 
 	async create() {
 		// Define camera size
-		this.cameras.main = this.cameras.add(0, 0, this.game.config.width as number, this.game.config.height as number, false, 'ModernInvited');
+		this.cameras.main = this.cameras.add(0, 0, this.game.config.width as number, this.game.config.height as number, false, 'Private_Modern');
 
 		//Get player name
 		if (currentUser && currentUser.login)
@@ -207,7 +222,7 @@ export class Part4Scene extends Phaser.Scene {
 		const client = new Client(BACKEND_URL);
 
 		try {
-			this.room = await client.joinOrCreate("ModernInvited", {});
+			this.room = await client.joinOrCreate("Private_Modern", {});
 			console.log("User : %s - Connected to game : %s", this.myName, this.room.name);
 
 			// connection successful!
@@ -663,6 +678,10 @@ export class Part4Scene extends Phaser.Scene {
 				let velocityX = Phaser.Math.Between(350, 550);
 				let velocityY = Phaser.Math.Between(200, 400);
 
+				// remove previous delay if any
+				if (this.ballSpeedDelay)
+					this.ballSpeedDelay.remove();
+
 				// random negative or positive
 				velocityX *= Math.random() < 0.5 ? 1 : -1;
 				velocityY *= Math.random() < 0.5 ? 1 : -1;
@@ -698,29 +717,40 @@ export class Part4Scene extends Phaser.Scene {
 			case 4:
 				// increase ball speed few seconds
 				if (this.gameHost && this.ball) {
-					let oldVelocityX = this.ball.body.velocity.x;
-					let oldVelocityY = this.ball.body.velocity.y;
 					this.ball.setVelocity(this.ball.body.velocity.x * 2, this.ball.body.velocity.y * 2);
-					this.time.delayedCall(3000, () => {
-						this.ball?.setVelocity(oldVelocityX, oldVelocityY);
+
+					// remove previous delay if any
+					if (this.ballSpeedDelay)
+						this.ballSpeedDelay.remove();
+
+					this.ballSpeedDelay = this.time.delayedCall(3000, () => {
+						this.ball?.setVelocity(this.ball.body.velocity.x / 2, this.ball.body.velocity.y / 2);
 					});
 				}
 				break;
 			case 5:
 				// decrease ball speed
 				if (this.gameHost && this.ball) {
-					let oldVelocityX = this.ball.body.velocity.x;
-					let oldVelocityY = this.ball.body.velocity.y;
 					this.ball.setVelocity(this.ball.body.velocity.x / 2, this.ball.body.velocity.y / 2);
-					this.time.delayedCall(3000, () => {
-						this.ball?.setVelocity(oldVelocityX, oldVelocityY);
+
+					// remove previous delay if any
+					if (this.ballSpeedDelay)
+						this.ballSpeedDelay.remove();
+
+					this.ballSpeedDelay = this.time.delayedCall(3000, () => {
+						this.ball?.setVelocity(this.ball.body.velocity.x * 2, this.ball.body.velocity.y * 2);
 					});
 				}
 				break;
 			case 6:
 				// set ball low visibility
 				this.ball?.setAlpha(0.25);
-				this.time.delayedCall(3000, () => {
+
+				// remove previous delay if any
+				if (this.ballSpeedDelay)
+					this.ballSpeedDelay.remove();
+
+				this.ballSpeedDelay = this.time.delayedCall(3000, () => {
 					this.ball?.setAlpha(1);
 				});
 				break;
@@ -822,6 +852,7 @@ export class Part4Scene extends Phaser.Scene {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
+				Authorization: 'Bearer ' + myCookie,
 			},
 			body: JSON.stringify({
 				currentUser,

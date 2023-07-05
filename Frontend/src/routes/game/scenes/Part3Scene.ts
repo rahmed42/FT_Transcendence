@@ -18,6 +18,16 @@ async function load_skins() {
 	skins = await getUpdatedSkins();
 }
 
+function getCookie(name: string) {
+	const value = `; ${document.cookie}`;
+	const parts = value.split(`; ${name}=`);
+	if (parts.length === 2) {
+		return parts.pop()?.split(';').shift();
+	}
+}
+
+let myCookie = getCookie('jwt');
+
 export class Part3Scene extends Phaser.Scene {
 	//room reference
 	room: Room | undefined;
@@ -83,7 +93,7 @@ export class Part3Scene extends Phaser.Scene {
 		this.activeScene = 'Part3Scene';
 
 		// Initialize the room
-		this.room = new Room("OriginalInvited");
+		this.room = new Room("Private_Original");
 
 		// Initialize the game state
 		this.myScore = 0;
@@ -145,15 +155,17 @@ export class Part3Scene extends Phaser.Scene {
 		this.activeScene = sceneName;
 	}
 
-	preload() {
+	async preload() {
 		//Loading style
+		if (skins === undefined)
+			await load_skins();
 		for (const skin of skins)
 			this.load.image(skin.name, skin.src);
 	}
 
 	async create() {
 		// Define camera size
-		this.cameras.main = this.cameras.add(0, 0, this.game.config.width as number, this.game.config.height as number, false, 'OriginalInvited');
+		this.cameras.main = this.cameras.add(0, 0, this.game.config.width as number, this.game.config.height as number, false, 'Private_Original');
 
 		//Get player name
 		if (currentUser && currentUser.login)
@@ -179,7 +191,7 @@ export class Part3Scene extends Phaser.Scene {
 		const client = new Client(BACKEND_URL);
 
 		try {
-			this.room = await client.joinOrCreate("OriginalInvited", {});
+			this.room = await client.joinOrCreate("Private_Original", {});
 			console.log("User : %s - Connected to game : %s", this.myName, this.room.name);
 
 			// connection successful!
@@ -576,6 +588,7 @@ export class Part3Scene extends Phaser.Scene {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
+				Authorization: 'Bearer ' + myCookie,
 			},
 			body: JSON.stringify({
 				currentUser,

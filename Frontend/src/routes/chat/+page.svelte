@@ -212,7 +212,9 @@
 	socket.on('redirectGame', (data: {login: string, type: string}) =>
 	{
 		if (data.login == login)
-			goto("/game")
+			setTimeout(() => {
+				goto("/game")
+			}, 100);
 	});
 	socket.on('admin', (data: {roomName : string, login: string, isAdmin: boolean}) => {
 		if (data.login == login && data.roomName == selectedChannel)
@@ -318,7 +320,7 @@
     },
     credentials: 'include',
   });
-  
+
 
   if (response2.ok) {
     const data = await response2.json();
@@ -419,13 +421,16 @@ function checkForEnter(event: KeyboardEvent) {
 
 	async function acceptGameRequest() {
 		try {
-			goto('/game');
-			socket.emit('acceptGameRequest', {
-				login : gameRequest.login,
-				type: gameRequest.type
-			});
-			gameRequest.login = 'undefined';
-			gameRequest.type = 'undefined';
+			//To avoid 2 players on same paddle for fast computers
+			setTimeout(() => {
+				goto('/game');
+				socket.emit('acceptGameRequest', {
+					login : gameRequest.login,
+					type: gameRequest.type
+				});
+				gameRequest.login = 'undefined';
+				gameRequest.type = 'undefined';
+			}, 500);
 		} catch (err) {
 			if (err instanceof Error) alert(err.message);
 		}
