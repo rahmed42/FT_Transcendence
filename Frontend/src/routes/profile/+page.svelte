@@ -6,6 +6,9 @@
 	import lossIcon from '../../lib/images/loss-icon.png';
 	import ladderIcon from '../../lib/images/icons8-rank-64.png';
 	import { goto } from '$app/navigation';
+	import bronzeIcon from '../../lib/images/bronze.png';
+    import silverIcon from '../../lib/images/silver.png';
+    import goldIcon from '../../lib/images/gold.png';
 
 	let myUser = get(user);
 	let checked = myUser.two_fa;
@@ -18,6 +21,7 @@
 	let modalOpen: boolean;
 	let stats = null;
 	let matchHistory = [];
+	let ladderIcon = bronzeIcon;
 
 	const serverIP = import.meta.env.VITE_SERVER_IP;
 	let myCookie: String | undefined = '';
@@ -57,6 +61,9 @@
 			const statsResponse = await fetch('http://' + serverIP + ':3333/social/stats/' + userLogin);
 			if (statsResponse.ok) {
 				stats = await statsResponse.json();
+				const winLossRatio = stats.losses ? stats.wins / stats.losses : stats.wins;
+				stats.ladderLevel = calculateLadderLevel(winLossRatio);
+				ladderIcon = getladderIcon(stats.ladderLevel);
 			}
 			const matchHistoryResponse = await fetch(
 				'http://' + serverIP + ':3333/social/match-history/' + userLogin
@@ -67,6 +74,18 @@
 		}
 		getUserInfo();
 	});
+	function calculateLadderLevel(ratio: number) {
+        if (ratio > 4) return 'Gold';
+        if (ratio > 2) return 'Silver';
+        return 'Bronze';
+    }
+    function getladderIcon(level: string) {
+        switch(level) {
+            case 'Gold': return goldIcon;
+            case 'Silver': return silverIcon;
+            default: return bronzeIcon;
+        }
+    }
 	async function active_2_fa_auth() {
 		if (checked) checked = false;
 		else checked = true;
