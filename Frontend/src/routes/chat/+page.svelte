@@ -129,16 +129,22 @@
   });
 
   socket.on('newPrivateMessage', (data: {content: string, nameSender: string}) => {
-    console.log("Mutelist : ", muteList);
-    console.log("Blocklist : ", blockList);
-    console.log("Message");
-    if ((blockList) && !(data.nameSender === login) && data.nameSender === selectedPrivateChannel) {
-      if (muteList)
-      {
-        messages = [...messages, { username: data.nameSender, content: data.content, user: true }];
-      }
-    }
-  });
+		if (selectedPrivateChannel) {
+			if (data.nameSender == selectedPrivateChannel) {
+				messages = [...messages, { username: data.nameSender, content: data.content, user: true }];
+				return ;
+			}
+		}
+});
+
+	socket.on('newRoom', (data: {roomName: string, loginReceiver: string}) => {
+		if (data.loginReceiver == login)
+		{
+			privateList.update((privateList) => {
+				return [...privateList, {login: data.roomName}]
+			})
+		}
+	})
 
   socket.on('newRoomMessage', (data: { content: string, nameSender: string, roomName: string }) => {
 	let bl = get(blockList);
@@ -737,7 +743,8 @@ async function muteSelectedUser(muteDuration: number) {
     else
     {
       const newMuteList = await response.json();
-      muteList.set(newMuteList.mutedUsers.mutedUsers.login);
+	  console.log(newMuteList)
+      muteList.set(newMuteList.mutedUsers.mutedUsers);
 	  socket.emit("eventMute", {roomName : chan, login : newMuteList.mutedUsers.mutedUsers.login})
     }
     muteDuration = 0;
@@ -930,7 +937,7 @@ async function muteSelectedUser(muteDuration: number) {
 	let contentMessage = messageContent;
   closePrivateMessageModal();
 	// await new Promise(r => setTimeout(r, 1000));
-  const response = await fetch('http://' + serverIP + ':3333/chat/createPrivateRoom', {
+  const response = await fetch('http://localhost:3333/chat/createPrivateRoom', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -944,21 +951,19 @@ async function muteSelectedUser(muteDuration: number) {
   if (!response.ok)
   {
     const data = await response.json();
-	  console.log("Error : ", data)
-	  alert(data.message);
+	console.log("Error : ", data)
+	alert(data.message);
   }
   else if (response.ok)
   {
     const newChannel = await response.json();
-    console.log("New channel : ", newChannel);
-    socket.emit('joinRoom', { roomName: newChannel.id });
+    socket.emit('joinRoom', { roomName: newChannel.id.id });
+	socket.emit('newPrivateRoom', {login: login, loginReceiver: loginToSend})
     socket.emit('newMessage', { idSender: userID, roomName : newChannel.id, loginReceiver: loginToSend, content: contentMessage, type: "private" });
-    privateId = newChannel.id;
-    messages = [...messages, { username: login, content: contentMessage, user: false }];
-	  privateList.update(privateList => [...privateList, { login: newChannel.users[0].login }]);
+    privateId = newChannel.id.id;
+	privateList.update(privateList => [...privateList, { login: newChannel.login}]);
     recipientName = '';
     messageContent = '';
-    alert(newChannel.message);
   }
 }
 
@@ -973,19 +978,6 @@ async function muteSelectedUser(muteDuration: number) {
     if (selectedChannel !== '') {
 		let roomName = selectedChannel;
 		socket.emit('newMessage', { roomName: roomName, content: messageInput, idSender: userID, type: "room" });
-		let muted = get(muteList)
-		if (muted)
-		{
-			for (let i = 0; i < muted.length; i++)
-			{
-				if (muted[i].login === login)
-				{
-					messageInput = '';
-					alert("You are muted in this channel");
-					return;
-				}
-			}
-		}
 		messages = [...messages, { username: login, content: messageInput, user: false}];
 		messageInput = '';
     }

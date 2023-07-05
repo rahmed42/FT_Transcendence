@@ -224,4 +224,14 @@ export class Gateway implements OnModuleInit {
 			isAdmin: body.isAdmin,
 		})
 	}
+	@SubscribeMessage("newPrivateRoom")
+	handleNewPrivateRoom(@MessageBody() body: {login: string, loginReceiver: string})
+	{
+		if (!body.login || !body.loginReceiver)
+			return ;
+		this.server.emit("newRoom", {
+			roomName: body.login,
+			loginReceiver: body.loginReceiver,
+		})
+	}
 }
