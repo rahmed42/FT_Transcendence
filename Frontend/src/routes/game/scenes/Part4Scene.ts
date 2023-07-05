@@ -369,16 +369,9 @@ export class Part4Scene extends Phaser.Scene {
 	}
 
 	createRemotePaddle(): void {
-		// let posY;
-		// if (this.pointer !== undefined && this.pointer.y !== null)
-		// 	posY = this.pointer.y;
-		// else
-		// 	posY = this.cameras.main.centerY;
-
 		// Display Paddle and set bounds
 		const paddle = {
 			'x': 20,
-			// 'pos': posY,
 		};
 		this.remotePaddle = this.physics.add.image(this.cameras.main.width - paddle.x, this.cameras.main.centerY, 'otherPaddleSkin');
 		this.remotePaddle.setOrigin(0.5, 0.5);
@@ -704,19 +697,23 @@ export class Part4Scene extends Phaser.Scene {
 				break;
 			case 4:
 				// increase ball speed few seconds
-				if (this.gameHost) {
-					this.ball?.setVelocity(this.ball.body.velocity.x * 2, this.ball.body.velocity.y * 2);
+				if (this.gameHost && this.ball) {
+					let oldVelocityX = this.ball.body.velocity.x;
+					let oldVelocityY = this.ball.body.velocity.y;
+					this.ball.setVelocity(this.ball.body.velocity.x * 2, this.ball.body.velocity.y * 2);
 					this.time.delayedCall(3000, () => {
-						this.ball?.setVelocity(this.ball.body.velocity.x / 2, this.ball.body.velocity.y / 2);
+						this.ball?.setVelocity(oldVelocityX, oldVelocityY);
 					});
 				}
 				break;
 			case 5:
 				// decrease ball speed
-				if (this.gameHost) {
-					this.ball?.setVelocity(this.ball.body.velocity.x / 2, this.ball.body.velocity.y / 2);
+				if (this.gameHost && this.ball) {
+					let oldVelocityX = this.ball.body.velocity.x;
+					let oldVelocityY = this.ball.body.velocity.y;
+					this.ball.setVelocity(this.ball.body.velocity.x / 2, this.ball.body.velocity.y / 2);
 					this.time.delayedCall(3000, () => {
-						this.ball?.setVelocity(this.ball.body.velocity.x * 2, this.ball.body.velocity.y * 2);
+						this.ball?.setVelocity(oldVelocityX, oldVelocityY);
 					});
 				}
 				break;
