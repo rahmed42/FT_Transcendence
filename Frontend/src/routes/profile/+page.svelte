@@ -118,10 +118,16 @@
 		modalOpen = false;
 		username = '';
 	}
+
 	async function update_username(username: string) {
-		if (username.length > 10) {
+		let value = username.trim();
+		if (value.length > 10) {
 			alert('Username should not exceed 10 characters');
-			return; // Exit the function if the limit is exceeded
+			return;
+		}
+		if (!value) {
+			alert('Username should not only contain whitespace');
+			return;
 		}
 		const response = await fetch('http://' + serverIP + ':3333/profil/username', {
 			method: 'POST',
@@ -131,7 +137,7 @@
 				Accept: 'application/json',
 				Authorization: 'Bearer ' + myCookie,
 			},
-			body: JSON.stringify({ data: username })
+			body: JSON.stringify({ data: value })
 		});
 		const contentType = response.headers.get('Content-Type');
 		if (contentType && contentType.includes('application/json')) {
