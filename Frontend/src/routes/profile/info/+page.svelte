@@ -31,8 +31,8 @@
 		myCookie = getCookie('jwt')
 		if (!myCookie)
 			goto('/')
-
-
+		else
+		{
         const friend_username = new URLSearchParams(window.location.search).get('login');
 
 		async function getUserInfo() {
@@ -83,6 +83,7 @@
 			}
 		}
 		getUserInfo();
+	}
 	});
 	function calculateLadderLevel(wins: number, losses: number) {
 		const winLossRatio = losses ? wins / losses : wins;

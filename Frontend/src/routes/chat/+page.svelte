@@ -1,6 +1,5 @@
 <script lang="ts">
-	import { user } from '../../stores/user';
-	import { onDestroy, onMount } from 'svelte';
+	import { onMount } from 'svelte';
 	import { get } from 'svelte/store';
 	import { writable } from 'svelte/store';
 	import io from 'socket.io-client';
@@ -31,11 +30,6 @@
 	//admin modal
 	let isUserModalOpen = false;
 	let openAdminModal = false;
-	let changePassword = false;
-	let banUser = false;
-	let muteUser = false;
-	let grantAdmin = false;
-	let expulUser = false;
 	let selectedUserparam = '';
 	let newPassword = '';
 	let muteDuration = 0;
@@ -76,7 +70,6 @@
 	let error: string = '';
 	let selectedChannel = '';
 	let selectedPrivateChannel = '';
-	let selectedUser = '';
 	let selectedSection = '';
 	let login: string = '';
 	let socket: any;
@@ -96,30 +89,15 @@
 		if (!myCookie) {
 			goto('/');
 		}
+		else
+		{
 		socket = io('http://' + serverIP + ':3333', {
 			transports: ['websocket'],
 			auth: {
 				token: myCookie
 			}
 		});
-		/*const resp = await fetch('http://' + serverIP + ':3333/chat/blockedUsers', {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: 'Bearer ' + myCookie,
-      },
-      credentials: 'include',
-    });
-    if (resp.ok)
-    {
-      const data = await resp.json();
-      if (data && data[0]) {
-        blockList.set(data.blockedUsers.blockedUsers);
-        console.log("Creating blockList : " + blockList);
-      }
-      else
-        blockList.set([])
-    }*/
+
 		socket.on('connect', () => {});
 
 		socket.on('disconnect', () => {});
@@ -254,13 +232,13 @@
 					},
 					credentials: 'include'
 				});
-					const data = await response.json();
-					if (data) {
-						userID = data.id;
-						login = data.login;
-						token = data.jwtToken;
-						blockList.set(data.blockedUsers);
-					}
+				const data = await response.json();
+				if (data) {
+					userID = data.id;
+					login = data.login;
+					token = data.jwtToken;
+					blockList.set(data.blockedUsers);
+				}
 			} catch (error) {
 				console.error('An error occurred while fetching user info:', error);
 			}
@@ -315,6 +293,7 @@
 			const data = await response2.json();
 			alert(data.message);
 		}
+	}
 	});
 
 	function handleKeyPress(event: KeyboardEvent) {
@@ -666,11 +645,6 @@
 
 	function closeSetupModal() {
 		openAdminModal = false;
-		changePassword = false;
-		banUser = false;
-		muteUser = false;
-		grantAdmin = false;
-		expulUser = false;
 		selectedUserparam = '';
 		newPassword = '';
 		selectedSection = '';
@@ -1545,7 +1519,7 @@
 					name="messageInput"
 					on:keydown={handleKeyPress}
 				/>
-				<img id="send-picture" src={send} alt="send-icon" on:click={sendMessage} />
+				<img id="send-picture" src={send} alt="send-icon" on:click={sendMessage} on:keydown />
 			</div>
 		</div>
 		<div class="user-list">

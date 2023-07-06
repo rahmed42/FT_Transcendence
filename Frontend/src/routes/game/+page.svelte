@@ -20,6 +20,8 @@
 		if (!myCookie) {
 			goto('/');
 		}
+		else
+		{
 		// SSR server side rendering
 		// https://vitejs.dev/guide/ssr.html
 		setTimeout(() => {
@@ -31,6 +33,7 @@
 				if (game && window.location.pathname !== '/game') game.destroy(true);
 			}, 250);
 		}, 400);
+		}
 	});
 
 	async function createPhaserGame() {

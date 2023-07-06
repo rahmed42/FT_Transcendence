@@ -41,6 +41,8 @@
 		myCookie = getCookie('jwt');
 		if (!myCookie)
 			goto('/')
+		else
+		{
 		async function getUserInfo() {
 			const response = await fetch('http://' + serverIP + ':3333/profil/me', {
 				method: 'GET',
@@ -71,6 +73,7 @@
 			}
 		}
 		getUserInfo();
+	}
 	});
 	function calculateLadderLevel(wins: number, losses: number) {
 		const winLossRatio = losses ? wins / losses : wins;
