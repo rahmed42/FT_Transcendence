@@ -6,7 +6,7 @@
 	import lossIcon from '../../../lib/images/loss-icon.png';
 	import { goto } from '$app/navigation';
 	import bronzeIcon from '../../../lib/images/bronze.png';
-    import silverIcon from '../../../lib/images/silver.png';a
+    import silverIcon from '../../../lib/images/silver.png';
     import goldIcon from '../../../lib/images/gold.png';
 
 	const friend = writable({}); // Local state for friend
