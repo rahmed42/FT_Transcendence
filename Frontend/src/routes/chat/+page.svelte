@@ -65,7 +65,7 @@
 	let joinChannelPassword = '';
 	let userID = 0;
 	let token = '';
-	let channelList = writable<{ name: string }[]>([]);
+	let channelList = writable<{ name: string, type: string }[]>([]);
 	let userList = writable<{ login: string }[]>([]);
 	let banList = writable<{ login: string }[]>([]);
 	let muteList = writable<{ login: string }[]>([]);
@@ -790,7 +790,7 @@
 						alert(data.message);
 					} else {
 						const newChannel = await response.json();
-						channelList.update((channelList) => [...channelList, { name: newChannel.room.name }]);
+						channelList.update((channelList) => [...channelList, { name: newChannel.room.name, type: newChannel.room.type }]);
 						socket.emit('joinRoom', newChannel.room.name);
 						closeModal();
 					}
@@ -860,7 +860,7 @@
 					alert(data.message);
 				} else if (response.ok) {
 					const newChannel = await response.json();
-					channelList.update((channelList) => [...channelList, { name: newChannel.room.name }]);
+					channelList.update((channelList) => [...channelList, { name: newChannel.room.name, type: newChannel.room.type }]);
 					let userl = await refreshUserList(token, newChannel.room.name);
 					socket.emit('joinRoom', { roomName: joinChannelName, userList: userl });
 				}
@@ -1537,10 +1537,6 @@
 							<h2>{selectedPrivateChannel} (private)</h2>
 						</div>
 					{/if}
-					<!-- {:else}
-					<div class="channel-header">
-						<h2>Chat</h2>
-					</div> -->
 				{/if}
 			</div>
 			<button id="leftButtons" class="btn-grad-grey" on:click={() => openModal()}>
@@ -1553,9 +1549,19 @@
 
 			{#if channelList !== null}
 				{#each $channelList as channel}
-					<button id="leftButtons" class="btn-grad-green" on:click={() => getChannel(channel.name)}>
-						{channel.name}
-					</button>
+					{#if channel.type === 'public'}
+						<button id="leftButtons" class="btn-grad-green" on:click={() => getChannel(channel.name)}>
+							{channel.name}
+						</button>
+					{:else if channel.type === 'protected'}
+						<button id="leftButtons" class="btn-grad-blue" on:click={() => getChannel(channel.name)}>
+							{channel.name}
+						</button>
+					{:else}
+						<button id="leftButtons" class="btn-grad-red" on:click={() => getChannel(channel.name)}>
+							{channel.name}
+						</button>
+					{/if}
 				{/each}
 			{/if}
 			<br />
