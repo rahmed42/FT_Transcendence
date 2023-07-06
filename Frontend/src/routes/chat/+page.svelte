@@ -67,7 +67,6 @@
 	let adminList = writable<{ login: string }[]>([]);
 	let privateList = writable<{ login: string }[]>([]);
 	let invitationList = writable<{ login: string }[]>([]);
-	let error: string = '';
 	let selectedChannel = '';
 	let selectedPrivateChannel = '';
 	let selectedSection = '';
@@ -75,7 +74,9 @@
 	let socket: any;
 	let myCookie: any;
 	let privateId: any;
-	let joinGameType = 'Original';
+	let joinGameType: string = 'Original';
+
+	let isHovered: { [key: string]: boolean } = {};
 
 	onMount(async () => {
 		function getCookie(name: string) {
@@ -88,210 +89,208 @@
 		myCookie = getCookie('jwt');
 		if (!myCookie) {
 			goto('/');
-		}
-		else
-		{
-		socket = io('http://' + serverIP + ':3333', {
-			transports: ['websocket'],
-			auth: {
-				token: myCookie
-			}
-		});
-
-		socket.on('connect', () => {});
-
-		socket.on('disconnect', () => {});
-
-		socket.on('newPrivateMessage', (data: { content: string; nameSender: string }) => {
-			if (selectedPrivateChannel) {
-				if (data.nameSender == selectedPrivateChannel) {
-					messages = [
-						...messages,
-						{ username: data.nameSender, content: data.content, user: true }
-					];
-					return;
+		} else {
+			socket = io('http://' + serverIP + ':3333', {
+				transports: ['websocket'],
+				auth: {
+					token: myCookie
 				}
-			}
-		});
+			});
 
-		socket.on('newRoom', (data: { roomName: string; loginReceiver: string }) => {
-			if (data.loginReceiver == login) {
-				privateList.update((privateList) => {
-					return [...privateList, { login: data.roomName }];
-				});
-			}
-		});
+			socket.on('connect', () => {});
 
-		socket.on(
-			'newRoomMessage',
-			(data: { content: string; nameSender: string; roomName: string }) => {
-				let bl = get(blockList);
-				if (bl) {
-					for (let i = 0; i < bl.length; i++) {
-						if (bl[i].login == data.nameSender) return;
+			socket.on('disconnect', () => {});
+
+			socket.on('newPrivateMessage', (data: { content: string; nameSender: string }) => {
+				if (selectedPrivateChannel) {
+					if (data.nameSender == selectedPrivateChannel) {
+						messages = [
+							...messages,
+							{ username: data.nameSender, content: data.content, user: true }
+						];
+						return;
 					}
 				}
-				if (selectedChannel) {
-					if (data.roomName === selectedChannel) {
-						if (data.nameSender === login) return;
-						else {
-							messages = [
-								...messages,
-								{ username: data.nameSender, content: data.content, user: true }
-							];
-							return;
+			});
+
+			socket.on('newRoom', (data: { roomName: string; loginReceiver: string }) => {
+				if (data.loginReceiver == login) {
+					privateList.update((privateList) => {
+						return [...privateList, { login: data.roomName }];
+					});
+				}
+			});
+
+			socket.on(
+				'newRoomMessage',
+				(data: { content: string; nameSender: string; roomName: string }) => {
+					let bl = get(blockList);
+					if (bl) {
+						for (let i = 0; i < bl.length; i++) {
+							if (bl[i].login == data.nameSender) return;
+						}
+					}
+					if (selectedChannel) {
+						if (data.roomName === selectedChannel) {
+							if (data.nameSender === login) return;
+							else {
+								messages = [
+									...messages,
+									{ username: data.nameSender, content: data.content, user: true }
+								];
+								return;
+							}
 						}
 					}
 				}
-			}
-		);
-		socket.on('roomListUpdate', (data: { userList: { login: string }[]; roomName: string }) => {
-			if (data.roomName == selectedChannel) userList.set(data.userList);
-		});
+			);
+			socket.on('roomListUpdate', (data: { userList: { login: string }[]; roomName: string }) => {
+				if (data.roomName == selectedChannel) userList.set(data.userList);
+			});
 
-		socket.on('sayLeave', (data: { roomName: string; login: string; userList: { login: string }[] }) => {
-				if (data.login == login) {
-					socket.emit('leaveRoom', { roomName: data.roomName, userList: data.userList });
-					channelList.update((channelList) => {
-						return channelList.filter((channel) => channel.name !== data.roomName);
-				});
-				if (selectedChannel == data.roomName) selectedChannel = '';
-					refreshList();
-				}
-			}
-		);
-
-		socket.on('unmuted', (data: { roomName: string; login: string }) => {
-			if (data.roomName == selectedChannel) {
-				muteList.update((muteList) => {
-					return muteList.filter((user) => user.login !== data.login);
-				});
-			}
-		});
-
-		socket.on('muted', (data: { roomName: string; login: string }) => {
-			if (data.roomName == selectedChannel) {
-				muteList.update((muteList) => {
-					return [...muteList, { login: data.login }];
-				});
-			}
-		});
-		socket.on('newGameRequest', (data: { sender: string; login: string; type: string }) => {
-			if (data.login == login) getGameRequest();
-		});
-		socket.on('redirectGame', (data: { login: string; type: string }) => {
-			if (data.login == login)
-				setTimeout(() => {
-					goto('/game');
-				}, 100);
-		});
-		socket.on('admin', (data: { roomName: string; login: string; isAdmin: boolean }) => {
-			if (data.login == login && data.roomName == selectedChannel) {
-				if (data.isAdmin) {
-					adminList.update((adminList) => {
-						return [...adminList, { login: data.login }];
-					});
-					isAdmin = true;
-				} else {
-					adminList.update((adminList) => {
-						return adminList.filter((user) => user.login !== data.login);
-					});
-					let ad = get(adminList);
-					if (ad.length == 0) adminList.set([]);
-					isAdmin = false;
-					if (openAdminModal) {
-						closeSetupModal();
+			socket.on(
+				'sayLeave',
+				(data: { roomName: string; login: string; userList: { login: string }[] }) => {
+					if (data.login == login) {
+						socket.emit('leaveRoom', { roomName: data.roomName, userList: data.userList });
+						channelList.update((channelList) => {
+							return channelList.filter((channel) => channel.name !== data.roomName);
+						});
+						if (selectedChannel == data.roomName) selectedChannel = '';
+						refreshList();
 					}
 				}
-			}
-		});
-		socket.on('ban', (data: { roomName: string; login: string; isBanned: boolean }) => {
-			if (data.roomName == selectedChannel && isAdmin) {
-				if (data.isBanned) {
-					banList.update((banList) => {
-						return [...banList, { login: data.login }];
+			);
+
+			socket.on('unmuted', (data: { roomName: string; login: string }) => {
+				if (data.roomName == selectedChannel) {
+					muteList.update((muteList) => {
+						return muteList.filter((user) => user.login !== data.login);
 					});
-				} else {
-					banList.update((banList) => {
-						return banList.filter((user) => user.login !== data.login);
+				}
+			});
+
+			socket.on('muted', (data: { roomName: string; login: string }) => {
+				if (data.roomName == selectedChannel) {
+					muteList.update((muteList) => {
+						return [...muteList, { login: data.login }];
 					});
-					let bl = get(banList);
-					if (bl.length == 0) banList.set([]);
+				}
+			});
+			socket.on('newGameRequest', (data: { sender: string; login: string; type: string }) => {
+				if (data.login == login) getGameRequest();
+			});
+			socket.on('redirectGame', (data: { login: string; type: string }) => {
+				if (data.login == login)
+					setTimeout(() => {
+						goto('/game');
+					}, 100);
+			});
+			socket.on('admin', (data: { roomName: string; login: string; isAdmin: boolean }) => {
+				if (data.login == login && data.roomName == selectedChannel) {
+					if (data.isAdmin) {
+						adminList.update((adminList) => {
+							return [...adminList, { login: data.login }];
+						});
+						isAdmin = true;
+					} else {
+						adminList.update((adminList) => {
+							return adminList.filter((user) => user.login !== data.login);
+						});
+						let ad = get(adminList);
+						if (ad.length == 0) adminList.set([]);
+						isAdmin = false;
+						if (openAdminModal) {
+							closeSetupModal();
+						}
+					}
+				}
+			});
+			socket.on('ban', (data: { roomName: string; login: string; isBanned: boolean }) => {
+				if (data.roomName == selectedChannel && isAdmin) {
+					if (data.isBanned) {
+						banList.update((banList) => {
+							return [...banList, { login: data.login }];
+						});
+					} else {
+						banList.update((banList) => {
+							return banList.filter((user) => user.login !== data.login);
+						});
+						let bl = get(banList);
+						if (bl.length == 0) banList.set([]);
+					}
+				}
+			});
+			async function getUserinfo() {
+				try {
+					const response = await fetch('http://' + serverIP + ':3333/profil/me', {
+						method: 'GET',
+						headers: {
+							'Content-Type': 'application/json',
+							Authorization: 'Bearer ' + myCookie
+						},
+						credentials: 'include'
+					});
+					const data = await response.json();
+					if (data) {
+						userID = data.id;
+						login = data.login;
+						token = data.jwtToken;
+						blockList.set(data.blockedUsers);
+					}
+				} catch (error) {
+					console.error('An error occurred while fetching user info:', error);
 				}
 			}
-		});
-		async function getUserinfo() {
-			try {
-				const response = await fetch('http://' + serverIP + ':3333/profil/me', {
-					method: 'GET',
-					headers: {
-						'Content-Type': 'application/json',
-						Authorization: 'Bearer ' + myCookie
-					},
-					credentials: 'include'
-				});
-				const data = await response.json();
-				if (data) {
-					userID = data.id;
-					login = data.login;
-					token = data.jwtToken;
-					blockList.set(data.blockedUsers);
-				}
-			} catch (error) {
-				console.error('An error occurred while fetching user info:', error);
-			}
-		}
 
-		// Wait for getUserinfo to complete before moving on
-		await getUserinfo();
+			// Wait for getUserinfo to complete before moving on
+			await getUserinfo();
 
-		// Fetch all the rooms
-		const response = await fetch('http://' + serverIP + ':3333/chat/rooms', {
-			method: 'GET',
-			headers: {
-				'Content-Type': 'application/json',
-				Authorization: 'Bearer ' + token
-			},
-			credentials: 'include'
-		});
+			// Fetch all the rooms
+			const response = await fetch('http://' + serverIP + ':3333/chat/rooms', {
+				method: 'GET',
+				headers: {
+					'Content-Type': 'application/json',
+					Authorization: 'Bearer ' + token
+				},
+				credentials: 'include'
+			});
 
-		const data = await response.json();
-		if (data && data.rooms) {
-			if (data.message)
-			{
-				alert(data.message);
-				return ;
-			}
-			channelList.set(data.rooms);
-		}
-		// Fetch all the private rooms
-		const response2 = await fetch('http://' + serverIP + ':3333/chat/privateRooms', {
-			method: 'GET',
-			headers: {
-				'Content-Type': 'application/json',
-				Authorization: 'Bearer ' + token
-			},
-			credentials: 'include'
-		});
-
-		if (response2.ok) {
-			const data = await response2.json();
-			if (data && data[0]) {
-				if (data.message)
-				{
+			const data = await response.json();
+			if (data && data.rooms) {
+				if (data.message) {
 					alert(data.message);
-					return ;
+					return;
 				}
-				privateList.update((currentPrivateList) => [
-					...currentPrivateList,
-					{ login: data[0].users[0].login }
-				]);
+				channelList.set(data.rooms);
 			}
-		} else {
-			const data = await response2.json();
-			alert(data.message);
+			// Fetch all the private rooms
+			const response2 = await fetch('http://' + serverIP + ':3333/chat/privateRooms', {
+				method: 'GET',
+				headers: {
+					'Content-Type': 'application/json',
+					Authorization: 'Bearer ' + token
+				},
+				credentials: 'include'
+			});
+
+			if (response2.ok) {
+				const data = await response2.json();
+				if (data && data[0]) {
+					if (data.message) {
+						alert(data.message);
+						return;
+					}
+					privateList.update((currentPrivateList) => [
+						...currentPrivateList,
+						{ login: data[0].users[0].login }
+					]);
+				}
+			} else {
+				const data = await response2.json();
+				alert(data.message);
+			}
 		}
-	}
 	});
 
 	function handleKeyPress(event: KeyboardEvent) {
@@ -556,7 +555,7 @@
 			adminList.update((currentAdmins) => {
 				return currentAdmins.filter((admin) => admin.login !== login);
 			});
-		socket.emit('adminEvent', { roomName: channelName, login: login, isAdmin: false });
+			socket.emit('adminEvent', { roomName: channelName, login: login, isAdmin: false });
 		} catch (err) {
 			if (err instanceof Error) {
 				alert(err.message);
@@ -606,8 +605,7 @@
 				})
 			});
 			const data = await response.json();
-			if (data.message)
-				alert(data.message);
+			if (data.message) alert(data.message);
 		} catch (err) {
 			if (err instanceof Error) alert(err.message);
 		}
@@ -629,12 +627,12 @@
 					muteDuration: muteDuration
 				})
 			});
-			const newMuteList = await response.json();
-			muteList.set(newMuteList.mutedUsers.mutedUsers);
-			socket.emit('eventMute', {
-				roomName: chan,
-				login: newMuteList.mutedUsers.mutedUsers.login
-			});
+				const newMuteList = await response.json();
+				muteList.set(newMuteList.mutedUsers.mutedUsers);
+				socket.emit('eventMute', {
+					roomName: chan,
+					login: newMuteList.mutedUsers.mutedUsers.login
+				});
 			muteDuration = 0;
 		} catch (err) {
 			if (err instanceof Error) alert(err.message);
@@ -705,20 +703,19 @@
 							password: newChannelPassword
 						})
 					});
-					const newChannel = await response.json();
-					if (newChannel.message)
-					{
+						const newChannel = await response.json();
+						if (newChannel.message) {
 						alert(newChannel.message);
-						return ;
+						return;
 					}
-					channelList.update((channelList) => [
-						...channelList,
-						{ name: newChannel.room.name, type: newChannel.room.type }
-					]);
-					socket.emit('joinRoom', newChannel.room.name);
-					closeModal();
+						channelList.update((channelList) => [
+							...channelList,
+							{ name: newChannel.room.name, type: newChannel.room.type }
+						]);
+						socket.emit('joinRoom', newChannel.room.name);
+						closeModal();
+					}
 				}
-			}
 		} catch (err) {
 			if (err instanceof Error) alert(err.message);
 		}
@@ -775,18 +772,17 @@
 						password: joinChannelPassword
 					})
 				});
-				const newChannel = await response.json();
-				if (newChannel.message)
-				{
+					const newChannel = await response.json();
+					if (newChannel.message) {
 					alert(newChannel.message);
-					return ;
+					return;
 				}
-				channelList.update((channelList) => [
-					...channelList,
-					{ name: newChannel.room.name, type: newChannel.room.type }
-				]);
-				let userl = await refreshUserList(token, newChannel.room.name);
-				socket.emit('joinRoom', { roomName: joinChannelName, userList: userl });
+					channelList.update((channelList) => [
+						...channelList,
+						{ name: newChannel.room.name, type: newChannel.room.type }
+					]);
+					let userl = await refreshUserList(token, newChannel.room.name);
+					socket.emit('joinRoom', { roomName: joinChannelName, userList: userl });
 				closeJoinModal();
 			} else {
 				isJoinInvalidName = true;
@@ -813,26 +809,25 @@
 				loginReceiver: loginToSend
 			})
 		});
-		const newChannel = await response.json();
-		if (newChannel.message)
-		{
+			const newChannel = await response.json();
+			if (newChannel.message) {
 			alert(newChannel.message);
-			return ;
+			return;
 		}
-		socket.emit('joinRoom', { roomName: newChannel.id.id });
-		socket.emit('newPrivateRoom', { login: login, loginReceiver: loginToSend });
-		socket.emit('newMessage', {
-			idSender: userID,
-			roomName: newChannel.id,
-			loginReceiver: loginToSend,
-			content: contentMessage,
-			type: 'private'
-		});
-		privateId = newChannel.id.id;
-		privateList.update((privateList) => [...privateList, { login: newChannel.login }]);
-		recipientName = '';
-		messageContent = '';
-	}
+			socket.emit('joinRoom', { roomName: newChannel.id.id });
+			socket.emit('newPrivateRoom', { login: login, loginReceiver: loginToSend });
+			socket.emit('newMessage', {
+				idSender: userID,
+				roomName: newChannel.id,
+				loginReceiver: loginToSend,
+				content: contentMessage,
+				type: 'private'
+			});
+			privateId = newChannel.id.id;
+			privateList.update((privateList) => [...privateList, { login: newChannel.login }]);
+			recipientName = '';
+			messageContent = '';
+		}
 
 	async function sendMessage() {
 		if (selectedChannel === '' && selectedPrivateChannel === '') {
@@ -912,38 +907,37 @@
 					Authorization: 'Bearer ' + token
 				}
 			});
-			const newChannel = await response.json();
-			if (newChannel) {
-				if (newChannel.message)
-				{
+				const newChannel = await response.json();
+				if (newChannel) {
+					if (newChannel.message) {
 					alert(newChannel.message);
-					return ;
+					return;
 				}
-				socket.emit('joinRoom', { roomName: selectedChannel });
-				userList.set(newChannel.users);
-				const messagesWithUsername = newChannel.messages.map((message: any) => {
-					return {
-						content: message.content,
-						user: !(message.senderLogin === login),
-						username: message.senderLogin
-					};
-				});
-				messages = messagesWithUsername;
-				banList.set(newChannel.bannedUsers);
-				muteList.set(newChannel.mutedUsers);
-				adminList.set(newChannel.administrators);
-				invitationList.set(newChannel.invitations);
-				blockList.set(newChannel.blockedUsers);
-				isAdmin = false;
-				if (newChannel.administrators) {
-					newChannel.administrators.forEach((admin: { id: number; login: string }) => {
-						if (admin.login === login && admin.id === userID) {
-							isAdmin = true;
-							return;
-						}
+					socket.emit('joinRoom', { roomName: selectedChannel });
+					userList.set(newChannel.users);
+					const messagesWithUsername = newChannel.messages.map((message: any) => {
+						return {
+							content: message.content,
+							user: !(message.senderLogin === login),
+							username: message.senderLogin
+						};
 					});
+					messages = messagesWithUsername;
+					banList.set(newChannel.bannedUsers);
+					muteList.set(newChannel.mutedUsers);
+					adminList.set(newChannel.administrators);
+					invitationList.set(newChannel.invitations);
+					blockList.set(newChannel.blockedUsers);
+					isAdmin = false;
+					if (newChannel.administrators) {
+						newChannel.administrators.forEach((admin: { id: number; login: string }) => {
+							if (admin.login === login && admin.id === userID) {
+								isAdmin = true;
+								return;
+							}
+						});
+					}
 				}
-			}
 		} catch (err) {
 			if (err instanceof Error) {
 				alert(err.message);
@@ -970,9 +964,9 @@
 					loginUserToExecute: inviteUser
 				})
 			});
-			const newProfile = await response.json();
-			closeInvitationModal();
-			alert(newProfile.message);
+				const newProfile = await response.json();
+				closeInvitationModal();
+				alert(newProfile.message);
 		} catch (err) {
 			if (err instanceof Error) alert(err.message);
 		}
@@ -1013,14 +1007,14 @@
 				loginUserToBlock: loginUserToExecute
 			})
 		});
-		const newProfile = await response.json();
-		if (newProfile.message) {
+			const newProfile = await response.json();
+			if (newProfile.message) {
 			alert(newProfile.message);
 			return;
 		}
-		blockList.set(newProfile.blockedUser.blockedUsers);
-		alert('User unblocked');
-	}
+			blockList.set(newProfile.blockedUser.blockedUsers);
+			alert('User unblocked');
+		}
 
 	async function blockUser() {
 		try {
@@ -1035,13 +1029,13 @@
 					loginUserToBlock: loginUserToExecute
 				})
 			});
-			const newProfile = await response.json();
-			if (newProfile.message) {
+				const newProfile = await response.json();
+				if (newProfile.message) {
 				alert(newProfile.message);
 				return;
 			}
-			blockList.set(newProfile.blockedUsers);
-			alert('User blocked');
+				blockList.set(newProfile.blockedUsers);
+				alert('User blocked');
 		} catch (err) {
 			if (err instanceof Error) alert(err.message);
 		}
@@ -1064,37 +1058,37 @@
 				}
 			}
 		);
-		const data = await response.json();
-		if (data && data.messages) {
-			if (data.message){
+			const data = await response.json();
+			if (data && data.messages) {
+				if (data.message) {
 				alert(data.message);
-				return ;
+				return;
 			}
-			privateId = data.id;
-			socket.emit('joinRoom', { roomName: privateId });
-			userList.set(data.users);
-			const messagesRecus = data.messages;
-			messages.length = 0;
-			for (const msg of messagesRecus) {
-				if (msg && msg.content && msg.sender && msg.sender.login) {
-					if (msg.sender.login == login) {
-						const message = {
-							content: msg.content,
-							username: msg.sender.login,
-							user: false
-						};
-						messages.push(message);
-					} else {
-						const message = {
-							content: msg.content,
-							username: msg.sender.login,
-							user: true
-						};
-						messages.push(message);
+				privateId = data.id;
+				socket.emit('joinRoom', { roomName: privateId });
+				userList.set(data.users);
+				const messagesRecus = data.messages;
+				messages.length = 0;
+				for (const msg of messagesRecus) {
+					if (msg && msg.content && msg.sender && msg.sender.login) {
+						if (msg.sender.login == login) {
+							const message = {
+								content: msg.content,
+								username: msg.sender.login,
+								user: false
+							};
+							messages.push(message);
+						} else {
+							const message = {
+								content: msg.content,
+								username: msg.sender.login,
+								user: true
+							};
+							messages.push(message);
+						}
 					}
 				}
 			}
-		}
 	}
 
 	async function leaveRoom() {
@@ -1112,19 +1106,23 @@
 					roomName: selectedChannel
 				})
 			});
-			const newProfile = await response.json();
-			if (newProfile.message) {
+				const newProfile = await response.json();
+				if (newProfile.message) {
 				alert(newProfile.message);
 				return;
 			}
-			socket.emit('leaveRoom', { roomName: selectedChannel, userList: users });
-			channelList.update((channelList) =>
-				channelList.filter((channel) => channel.name !== selectedChannel)
-			);
-			refreshList();
+				socket.emit('leaveRoom', { roomName: selectedChannel, userList: users });
+				channelList.update((channelList) =>
+					channelList.filter((channel) => channel.name !== selectedChannel)
+				);
+				refreshList();
 		} catch (err) {
 			if (err instanceof Error) alert(err.message);
 		}
+	}
+
+	function handleHover(channelName: string, value: boolean) {
+		isHovered = { ...isHovered, [channelName]: value };
 	}
 </script>
 
@@ -1452,10 +1450,55 @@
 			<br />
 
 			{#if channelList !== null}
-			{#each $channelList as channel}
-				<button
-					id="leftButtons"
-					style="
+				{#each $channelList as channel}
+					<button
+						on:mouseover={() => handleHover(channel.name, true)}
+						on:focus={() => handleHover(channel.name, true)}
+						on:mouseout={() => handleHover(channel.name, false)}
+						on:blur={() => handleHover(channel.name, false)}
+						style="
+							color: white;
+							margin: 10px;
+							padding: 5px 5px;
+							text-align: center;
+							transition: 0.5s;
+							background-size: 200% auto;
+							border-radius: 10px;
+							display: block;
+							cursor: pointer;
+							width: 140px;
+							height: 50px;
+							font-size: 1em;
+							font-weight: bold;
+							{channel.type === 'public'
+							? 'background-image: linear-gradient(to right, #00bf8f 0%, #001510 51%, #00bf8f 100%);'
+							: ''}
+							{channel.type === 'protected'
+							? 'background-image: linear-gradient(to right, #1A2980 0%, #26D0CE 51%, #1A2980 100%);'
+							: ''}
+							{channel.type === 'private'
+							? 'background-image: linear-gradient(to right, #ff0084 0%, #33001b 51%, #ff0084 100%);'
+							: ''}
+							{isHovered[channel.name] === true
+							? 'background-position: right center;'
+							: 'background-position: left center;'}
+							"
+						on:click={() => getChannel(channel.name)}
+					>
+						{channel.name}
+					</button>
+				{/each}
+			{/if}
+
+			<br />
+			{#if privateList !== null}
+				{#each $privateList as privateChannel}
+					<button
+						on:mouseover={() => handleHover(privateChannel.login, true)}
+						on:focus={() => handleHover(privateChannel.login, true)}
+						on:mouseout={() => handleHover(privateChannel.login, false)}
+						on:blur={() => handleHover(privateChannel.login, false)}
+						style="
 						color: white;
 						margin: 10px;
 						padding: 5px 5px;
@@ -1469,22 +1512,11 @@
 						height: 50px;
 						font-size: 1em;
 						font-weight: bold;
-						{(channel.type === 'public') ? 'background-image: linear-gradient(to right, #00bf8f 0%, #001510 51%, #00bf8f 100%);' : ''}
-						{(channel.type === 'protected') ? 'background-image: linear-gradient(to right, #1A2980 0%, #26D0CE 51%, #1A2980 100%);' : ''}
-						{(channel.type === 'private') ? 'background-image: linear-gradient(to right, #ff0084 0%, #33001b 51%, #ff0084 100%);' : ''}
-					"
-					on:click={() => getChannel(channel.name)}>
-					{channel.name}
-				</button>
-			{/each}
-		{/if}
-
-			<br />
-			{#if privateList !== null}
-				{#each $privateList as privateChannel}
-					<button
-						id="leftButtons"
-						class="btn-grad-blue"
+						background-image: linear-gradient(to right, #1A2980 0%, #26D0CE 51%, #1A2980 100%);
+						{isHovered[privateChannel.login] === true
+							? 'background-position: right center;'
+							: 'background-position: left center;'}
+						"
 						on:click={() => getPrivateChannel(privateChannel.login)}
 					>
 						{privateChannel.login}
