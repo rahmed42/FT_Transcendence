@@ -60,8 +60,7 @@
 			const statsResponse = await fetch('http://' + serverIP + ':3333/social/stats/' + userLogin);
 			if (statsResponse.ok) {
 				stats = await statsResponse.json();
-				const winLossRatio = stats.losses ? stats.wins / stats.losses : stats.wins;
-				stats.ladderLevel = calculateLadderLevel(winLossRatio);
+				stats.ladderLevel = calculateLadderLevel(stats.wins, stats.losses);
 				ladderIcon = getladderIcon(stats.ladderLevel);
 			}
 			const matchHistoryResponse = await fetch(
@@ -73,11 +72,14 @@
 		}
 		getUserInfo();
 	});
-	function calculateLadderLevel(ratio: number) {
-        if (ratio > 3) return 'Gold';
-        if (ratio > 2) return 'Silver';
-        return 'Bronze';
-    }
+	function calculateLadderLevel(wins: number, losses: number) {
+		const winLossRatio = losses ? wins / losses : wins;
+		if (wins > 10 && losses === 0) return 'Gold';
+		if (wins > 5 && losses === 0) return 'Silver';
+		if (winLossRatio > 3) return 'Gold';
+		if (winLossRatio > 2) return 'Silver';
+		return 'Bronze';
+	}
     function getladderIcon(level: string) {
         switch(level) {
             case 'Gold': return goldIcon;

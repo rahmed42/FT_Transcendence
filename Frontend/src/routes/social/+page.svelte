@@ -240,6 +240,19 @@
 	}
 
 	async function sendFriendRequestModal() {
+		if (!requesteeLoginModal) {
+			notification.set({
+				message: 'Please type in a user login',
+				error: true
+			});
+			setTimeout(() => {
+				notification.set({
+					message: '',
+					error: false
+				});
+			}, 5000);
+			return;
+		}
 		requesteeLogin = requesteeLoginModal;
 		await sendFriendRequest();
 		closeFriendRequestModal();
