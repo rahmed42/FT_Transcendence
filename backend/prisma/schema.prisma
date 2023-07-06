@@ -54,7 +54,6 @@ model Stats {
   userId      Int @unique
   wins        Int @default(0)
   losses      Int @default(0)
-  ladderLevel Int @default(0)
 }
 
 model MatchHistory {

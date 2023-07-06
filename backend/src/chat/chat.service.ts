@@ -271,7 +271,7 @@ export class ChatService {
                 },
             },
         });
-        return { message: "User successfully invited" }
+        return { success: "User successfully invited" }
     }
     async kickUser(body: ChatDtoAdminOperation) {
 		console.log(body);
@@ -361,7 +361,7 @@ export class ChatService {
 			},
 		},
 		});
-        return { message: "User successfully kicked " }
+        return { success: "User successfully kicked " }
     }
 
     async getRoomInfo(body: ChatDtoGetRoom) {
@@ -584,7 +584,7 @@ export class ChatService {
                 },
             },
         });
-        return { message: "User successfully banned" }
+        return { success: "User successfully banned" }
     }
     async leaveRoom(body: ChatDtoJoinRoom)
     {
@@ -700,7 +700,7 @@ export class ChatService {
                             name : body.roomName,
                         }
                     });
-					return { message : "Room deleted" };
+					return { success : "Room deleted" };
                 }
             }
         }
@@ -726,7 +726,7 @@ export class ChatService {
                 },
             },
         });
-        return { message: "User successfully left room" }
+        return { success: "User successfully left room" }
     }
 
     async giveAdmin(body: ChatDtoAdminOperation)
@@ -850,6 +850,8 @@ export class ChatService {
         if (!admin) {
             return({ message :  'Admin does not exist' });
         }
+		if (user.id == admin.id)
+			return({ message :  'Can\'t remove admin by yourself' });
         const room = await this.prisma.room.findFirst({
             where: {
                 name: body.roomName,
@@ -932,7 +934,7 @@ export class ChatService {
                 },
             },
         });
-        return { message: "User successfully removed admin" }
+        return { success: "User successfully removed admin" }
     }
     async giveOwner(body: ChatDtoAdminOperation)
     {
@@ -1038,7 +1040,7 @@ export class ChatService {
                 },
             },
         });
-        return { message: "User successfully given owner" }
+        return { success: "User successfully given owner" }
     }
     async removeInvite(body: ChatDtoAdminOperation)
     {
@@ -1118,7 +1120,7 @@ export class ChatService {
                     },
                 },
             });
-            return { message: "User successfully removed invite" }
+            return { success: "User successfully removed invite" }
         }
         else
         {
@@ -1214,7 +1216,7 @@ export class ChatService {
                 },
             },
         });
-        return { message: "User successfully unbanned" }
+        return { success: "User successfully unbanned" }
     }
     async createPrivateRoom(body: PrivateChatDtoCreateRoom)
     {
@@ -1237,6 +1239,8 @@ export class ChatService {
         {
             return({ message :  'User who try to send message does not exist' });
         }
+		if (user.id == user2.id)
+			return ({ message : "You can't talk to yourself"})
 		const hasBlocked = await this.prisma.user.findFirst({
 			where: {
 				id: user2.id,
@@ -1374,7 +1378,7 @@ export class ChatService {
                 },
             },
         });
-        return { message: "Message successfully added" }
+        return { success: "Message successfully added" }
     }
 
 	async addMessageToRoom(body: ChatDtoCreateMessage)
@@ -1452,7 +1456,7 @@ export class ChatService {
 				},
 			},
 		});
-		return { message: "Message successfully added" }
+		return { success: "Message successfully added" }
 
 	}
 
@@ -1740,7 +1744,7 @@ export class ChatService {
 				},
 			},
 		});
-		return { mutedUsers : mutedUsers, message: "User successfully muted" }
+		return { mutedUsers : mutedUsers, success: "User successfully muted" }
 	}
 	async unmuteUser(body: ChatDtoAdminOperation)
 	{
@@ -1797,7 +1801,7 @@ export class ChatService {
 				timestampMuted : null,
 			},
 		});
-		return { message: "User successfully unmuted" }
+		return { success: "User successfully unmuted" }
 	}
 	async changePassword(body: ChatDtoJoinRoom)
 	{
@@ -1842,7 +1846,7 @@ export class ChatService {
 				password: hash,
 			},
 		});
-		return { message: "Password successfully changed" }
+		return { success: "Password successfully changed" }
 
 
 	}
@@ -1879,7 +1883,7 @@ export class ChatService {
 			body.password = '';
 		}
 		if (room.type == body.type)
-			return('Room is already ' + body.type);
+			return({ message :'Room is already ' + body.type });
 		else if (body.type == "protected" && (body.password == null || body.password == ''))
 			return({ message :  'Password cannot be empty' });
 		const hash = await argon.hash(body.password);
@@ -1892,6 +1896,6 @@ export class ChatService {
 				password: hash,
 			},
 		});
-		return { message: "Room type successfully changed" }
+		return { success: "Room type successfully changed" }
 	}
 }

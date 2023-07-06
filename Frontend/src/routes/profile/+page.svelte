@@ -2,7 +2,7 @@
 	import { get } from 'svelte/store';
 	import { setUser, user } from '../../stores/user';
 	import { onMount } from 'svelte';
-	import winIcon from '../../lib/images/icons8-reward-80.png';
+	import winIcon from '../../lib/images/win-icon.png';
 	import lossIcon from '../../lib/images/loss-icon.png';
 	import { goto } from '$app/navigation';
 	import bronzeIcon from '../../lib/images/bronze.png';
