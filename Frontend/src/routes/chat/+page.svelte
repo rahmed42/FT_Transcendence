@@ -67,7 +67,6 @@
 	let adminList = writable<{ login: string }[]>([]);
 	let privateList = writable<{ login: string }[]>([]);
 	let invitationList = writable<{ login: string }[]>([]);
-	let error: string = '';
 	let selectedChannel = '';
 	let selectedPrivateChannel = '';
 	let selectedSection = '';
@@ -75,7 +74,9 @@
 	let socket: any;
 	let myCookie: any;
 	let privateId: any;
-	let joinGameType = 'Original';
+	let joinGameType: string = 'Original';
+
+	let isHovered: { [key: string]: boolean } = {};
 
 	onMount(async () => {
 		function getCookie(name: string) {
@@ -626,12 +627,12 @@
 					muteDuration: muteDuration
 				})
 			});
-			const newMuteList = await response.json();
-			muteList.set(newMuteList.mutedUsers.mutedUsers);
-			socket.emit('eventMute', {
-				roomName: chan,
-				login: newMuteList.mutedUsers.mutedUsers.login
-			});
+				const newMuteList = await response.json();
+				muteList.set(newMuteList.mutedUsers.mutedUsers);
+				socket.emit('eventMute', {
+					roomName: chan,
+					login: newMuteList.mutedUsers.mutedUsers.login
+				});
 			muteDuration = 0;
 		} catch (err) {
 			if (err instanceof Error) alert(err.message);
@@ -702,19 +703,19 @@
 							password: newChannelPassword
 						})
 					});
-					const newChannel = await response.json();
-					if (newChannel.message) {
+						const newChannel = await response.json();
+						if (newChannel.message) {
 						alert(newChannel.message);
 						return;
 					}
-					channelList.update((channelList) => [
-						...channelList,
-						{ name: newChannel.room.name, type: newChannel.room.type }
-					]);
-					socket.emit('joinRoom', newChannel.room.name);
-					closeModal();
+						channelList.update((channelList) => [
+							...channelList,
+							{ name: newChannel.room.name, type: newChannel.room.type }
+						]);
+						socket.emit('joinRoom', newChannel.room.name);
+						closeModal();
+					}
 				}
-			}
 		} catch (err) {
 			if (err instanceof Error) alert(err.message);
 		}
@@ -771,17 +772,17 @@
 						password: joinChannelPassword
 					})
 				});
-				const newChannel = await response.json();
-				if (newChannel.message) {
+					const newChannel = await response.json();
+					if (newChannel.message) {
 					alert(newChannel.message);
 					return;
 				}
-				channelList.update((channelList) => [
-					...channelList,
-					{ name: newChannel.room.name, type: newChannel.room.type }
-				]);
-				let userl = await refreshUserList(token, newChannel.room.name);
-				socket.emit('joinRoom', { roomName: joinChannelName, userList: userl });
+					channelList.update((channelList) => [
+						...channelList,
+						{ name: newChannel.room.name, type: newChannel.room.type }
+					]);
+					let userl = await refreshUserList(token, newChannel.room.name);
+					socket.emit('joinRoom', { roomName: joinChannelName, userList: userl });
 				closeJoinModal();
 			} else {
 				isJoinInvalidName = true;
@@ -808,25 +809,25 @@
 				loginReceiver: loginToSend
 			})
 		});
-		const newChannel = await response.json();
-		if (newChannel.message) {
+			const newChannel = await response.json();
+			if (newChannel.message) {
 			alert(newChannel.message);
 			return;
 		}
-		socket.emit('joinRoom', { roomName: newChannel.id.id });
-		socket.emit('newPrivateRoom', { login: login, loginReceiver: loginToSend });
-		socket.emit('newMessage', {
-			idSender: userID,
-			roomName: newChannel.id,
-			loginReceiver: loginToSend,
-			content: contentMessage,
-			type: 'private'
-		});
-		privateId = newChannel.id.id;
-		privateList.update((privateList) => [...privateList, { login: newChannel.login }]);
-		recipientName = '';
-		messageContent = '';
-	}
+			socket.emit('joinRoom', { roomName: newChannel.id.id });
+			socket.emit('newPrivateRoom', { login: login, loginReceiver: loginToSend });
+			socket.emit('newMessage', {
+				idSender: userID,
+				roomName: newChannel.id,
+				loginReceiver: loginToSend,
+				content: contentMessage,
+				type: 'private'
+			});
+			privateId = newChannel.id.id;
+			privateList.update((privateList) => [...privateList, { login: newChannel.login }]);
+			recipientName = '';
+			messageContent = '';
+		}
 
 	async function sendMessage() {
 		if (selectedChannel === '' && selectedPrivateChannel === '') {
@@ -906,37 +907,37 @@
 					Authorization: 'Bearer ' + token
 				}
 			});
-			const newChannel = await response.json();
-			if (newChannel) {
-				if (newChannel.message) {
+				const newChannel = await response.json();
+				if (newChannel) {
+					if (newChannel.message) {
 					alert(newChannel.message);
 					return;
 				}
-				socket.emit('joinRoom', { roomName: selectedChannel });
-				userList.set(newChannel.users);
-				const messagesWithUsername = newChannel.messages.map((message: any) => {
-					return {
-						content: message.content,
-						user: !(message.senderLogin === login),
-						username: message.senderLogin
-					};
-				});
-				messages = messagesWithUsername;
-				banList.set(newChannel.bannedUsers);
-				muteList.set(newChannel.mutedUsers);
-				adminList.set(newChannel.administrators);
-				invitationList.set(newChannel.invitations);
-				blockList.set(newChannel.blockedUsers);
-				isAdmin = false;
-				if (newChannel.administrators) {
-					newChannel.administrators.forEach((admin: { id: number; login: string }) => {
-						if (admin.login === login && admin.id === userID) {
-							isAdmin = true;
-							return;
-						}
+					socket.emit('joinRoom', { roomName: selectedChannel });
+					userList.set(newChannel.users);
+					const messagesWithUsername = newChannel.messages.map((message: any) => {
+						return {
+							content: message.content,
+							user: !(message.senderLogin === login),
+							username: message.senderLogin
+						};
 					});
+					messages = messagesWithUsername;
+					banList.set(newChannel.bannedUsers);
+					muteList.set(newChannel.mutedUsers);
+					adminList.set(newChannel.administrators);
+					invitationList.set(newChannel.invitations);
+					blockList.set(newChannel.blockedUsers);
+					isAdmin = false;
+					if (newChannel.administrators) {
+						newChannel.administrators.forEach((admin: { id: number; login: string }) => {
+							if (admin.login === login && admin.id === userID) {
+								isAdmin = true;
+								return;
+							}
+						});
+					}
 				}
-			}
 		} catch (err) {
 			if (err instanceof Error) {
 				alert(err.message);
@@ -963,9 +964,9 @@
 					loginUserToExecute: inviteUser
 				})
 			});
-			const newProfile = await response.json();
-			closeInvitationModal();
-			alert(newProfile.message);
+				const newProfile = await response.json();
+				closeInvitationModal();
+				alert(newProfile.message);
 		} catch (err) {
 			if (err instanceof Error) alert(err.message);
 		}
@@ -1006,14 +1007,14 @@
 				loginUserToBlock: loginUserToExecute
 			})
 		});
-		const newProfile = await response.json();
-		if (newProfile.message) {
+			const newProfile = await response.json();
+			if (newProfile.message) {
 			alert(newProfile.message);
 			return;
 		}
-		blockList.set(newProfile.blockedUser.blockedUsers);
-		alert('User unblocked');
-	}
+			blockList.set(newProfile.blockedUser.blockedUsers);
+			alert('User unblocked');
+		}
 
 	async function blockUser() {
 		try {
@@ -1028,13 +1029,13 @@
 					loginUserToBlock: loginUserToExecute
 				})
 			});
-			const newProfile = await response.json();
-			if (newProfile.message) {
+				const newProfile = await response.json();
+				if (newProfile.message) {
 				alert(newProfile.message);
 				return;
 			}
-			blockList.set(newProfile.blockedUsers);
-			alert('User blocked');
+				blockList.set(newProfile.blockedUsers);
+				alert('User blocked');
 		} catch (err) {
 			if (err instanceof Error) alert(err.message);
 		}
@@ -1057,37 +1058,37 @@
 				}
 			}
 		);
-		const data = await response.json();
-		if (data && data.messages) {
-			if (data.message) {
+			const data = await response.json();
+			if (data && data.messages) {
+				if (data.message) {
 				alert(data.message);
 				return;
 			}
-			privateId = data.id;
-			socket.emit('joinRoom', { roomName: privateId });
-			userList.set(data.users);
-			const messagesRecus = data.messages;
-			messages.length = 0;
-			for (const msg of messagesRecus) {
-				if (msg && msg.content && msg.sender && msg.sender.login) {
-					if (msg.sender.login == login) {
-						const message = {
-							content: msg.content,
-							username: msg.sender.login,
-							user: false
-						};
-						messages.push(message);
-					} else {
-						const message = {
-							content: msg.content,
-							username: msg.sender.login,
-							user: true
-						};
-						messages.push(message);
+				privateId = data.id;
+				socket.emit('joinRoom', { roomName: privateId });
+				userList.set(data.users);
+				const messagesRecus = data.messages;
+				messages.length = 0;
+				for (const msg of messagesRecus) {
+					if (msg && msg.content && msg.sender && msg.sender.login) {
+						if (msg.sender.login == login) {
+							const message = {
+								content: msg.content,
+								username: msg.sender.login,
+								user: false
+							};
+							messages.push(message);
+						} else {
+							const message = {
+								content: msg.content,
+								username: msg.sender.login,
+								user: true
+							};
+							messages.push(message);
+						}
 					}
 				}
 			}
-		}
 	}
 
 	async function leaveRoom() {
@@ -1105,16 +1106,16 @@
 					roomName: selectedChannel
 				})
 			});
-			const newProfile = await response.json();
-			if (newProfile.message) {
+				const newProfile = await response.json();
+				if (newProfile.message) {
 				alert(newProfile.message);
 				return;
 			}
-			socket.emit('leaveRoom', { roomName: selectedChannel, userList: users });
-			channelList.update((channelList) =>
-				channelList.filter((channel) => channel.name !== selectedChannel)
-			);
-			refreshList();
+				socket.emit('leaveRoom', { roomName: selectedChannel, userList: users });
+				channelList.update((channelList) =>
+					channelList.filter((channel) => channel.name !== selectedChannel)
+				);
+				refreshList();
 		} catch (err) {
 			if (err instanceof Error) alert(err.message);
 		}
@@ -1447,7 +1448,52 @@
 			{#if channelList !== null}
 				{#each $channelList as channel}
 					<button
-						id="leftButtons"
+						on:mouseover={() => handleHover(channel.name, true)}
+						on:focus={() => handleHover(channel.name, true)}
+						on:mouseout={() => handleHover(channel.name, false)}
+						on:blur={() => handleHover(channel.name, false)}
+						style="
+							color: white;
+							margin: 10px;
+							padding: 5px 5px;
+							text-align: center;
+							transition: 0.5s;
+							background-size: 200% auto;
+							border-radius: 10px;
+							display: block;
+							cursor: pointer;
+							width: 140px;
+							height: 50px;
+							font-size: 1em;
+							font-weight: bold;
+							{channel.type === 'public'
+							? 'background-image: linear-gradient(to right, #00bf8f 0%, #001510 51%, #00bf8f 100%);'
+							: ''}
+							{channel.type === 'protected'
+							? 'background-image: linear-gradient(to right, #1A2980 0%, #26D0CE 51%, #1A2980 100%);'
+							: ''}
+							{channel.type === 'private'
+							? 'background-image: linear-gradient(to right, #ff0084 0%, #33001b 51%, #ff0084 100%);'
+							: ''}
+							{isHovered[channel.name] === true
+							? 'background-position: right center;'
+							: 'background-position: left center;'}
+							"
+						on:click={() => getChannel(channel.name)}
+					>
+						{channel.name}
+					</button>
+				{/each}
+			{/if}
+
+			<br />
+			{#if privateList !== null}
+				{#each $privateList as privateChannel}
+					<button
+						on:mouseover={() => handleHover(privateChannel.login, true)}
+						on:focus={() => handleHover(privateChannel.login, true)}
+						on:mouseout={() => handleHover(privateChannel.login, false)}
+						on:blur={() => handleHover(privateChannel.login, false)}
 						style="
 						color: white;
 						margin: 10px;
@@ -1462,29 +1508,11 @@
 						height: 50px;
 						font-size: 1em;
 						font-weight: bold;
-						{channel.type === 'public'
-							? 'background-image: linear-gradient(to right, #00bf8f 0%, #001510 51%, #00bf8f 100%);'
-							: ''}
-						{channel.type === 'protected'
-							? 'background-image: linear-gradient(to right, #1A2980 0%, #26D0CE 51%, #1A2980 100%);'
-							: ''}
-						{channel.type === 'private'
-							? 'background-image: linear-gradient(to right, #ff0084 0%, #33001b 51%, #ff0084 100%);'
-							: ''}
-					"
-						on:click={() => getChannel(channel.name)}
-					>
-						{channel.name}
-					</button>
-				{/each}
-			{/if}
-
-			<br />
-			{#if privateList !== null}
-				{#each $privateList as privateChannel}
-					<button
-						id="leftButtons"
-						class="btn-grad-blue"
+						background-image: linear-gradient(to right, #1A2980 0%, #26D0CE 51%, #1A2980 100%);
+						{isHovered[privateChannel.login] === true
+							? 'background-position: right center;'
+							: 'background-position: left center;'}
+						"
 						on:click={() => getPrivateChannel(privateChannel.login)}
 					>
 						{privateChannel.login}
