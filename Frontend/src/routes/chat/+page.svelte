@@ -1759,12 +1759,10 @@
 	}
 
 	.sidebar {
-		/* width: 150px; */
 		padding: 10px;
 		height: 100%;
 		max-height: 100vh;
 		min-width: 150px;
-		/* border-right: 1px solid #ccc;  */
 		padding-right: 10px; /* Ajout des marges intérieures */
 		overflow-y: auto;
 	}
@@ -1815,9 +1813,7 @@
 		display: flex;
 		flex-direction: column;
 		border-radius: 10px;
-		/* overflow: auto; */
 		max-height: 200px;
-		/* min-width: 200px; */
 		background-color: white; /* Couleur de fond de la bulle de message */
 	}
 
@@ -1830,14 +1826,8 @@
 		display: flex;
 		justify-content: space-between;
 		padding: 10px;
-		/* border-top: 1px solid #ccc; */
-		/* border-bottom: 1px solid #ccc; */
 	}
 	#input-text {
-		/* display: flex; */
-		/* color: #333333; */
-		/* margin-left: auto; */
-		/* margin-right: 60px; */
 		border-radius: 10px;
 		width: 500px;
 		height: 50px;
@@ -1846,7 +1836,7 @@
 
 	}
 	#send-picture {
-		margin-left: -40px;
+		margin-right: 0px;
 		width: 50px;
 	}
 
@@ -1889,14 +1879,13 @@
 	.user-list {
 		width: 200px;
 		padding: 10px;
-		height: 100vh;
+		height: 100%;
 		max-height: 100%;
-		/* border-left: 1px solid #ccc; */
 		padding-left: 10px; /* Ajout des marges intérieures */
 	}
 
 	.message-container-user {
-		max-width: 60%; /* Limiter la largeur du message */
+		max-width: 50%; /* Limiter la largeur du message */
 		margin: 1px; /* Ajouter de l'espace autour du message */
 		padding: 1px; /* Ajouter de l'espace à l'intérieur du message */
 		border-radius: 20px; /* Arrondir les coins */
@@ -1908,7 +1897,7 @@
 	}
 
 	.message-container-other {
-		max-width: 60%; /* Limiter la largeur du message */
+		max-width: 50%; /* Limiter la largeur du message */
 		margin: 1px; /* Ajouter de l'espace autour du message */
 		padding: 1px; /* Ajouter de l'espace à l'intérieur du message */
 		border-radius: 20px; /* Arrondir les coins */
