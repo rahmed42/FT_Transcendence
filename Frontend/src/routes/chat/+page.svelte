@@ -885,7 +885,7 @@
 		let contentMessage = messageContent;
 		closePrivateMessageModal();
 		// await new Promise(r => setTimeout(r, 1000));
-		const response = await fetch('http://localhost:3333/chat/createPrivateRoom', {
+		const response = await fetch('http://' + serverIP + ':3333/chat/createPrivateRoom', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
