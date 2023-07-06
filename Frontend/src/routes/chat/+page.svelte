@@ -729,7 +729,7 @@
 	function isValidChannelName(name: string) {
 		for (let i = 0; i < name.length; i++) {
 			const charCode = name.charCodeAt(i);
-			if (charCode < 32 || charCode > 126) {
+			if (charCode < 48 || charCode > 122) {
 				return false;
 			}
 		}
@@ -1520,7 +1520,7 @@
 					on:keydown={handleKeyPress}
 				/>
 				<img id="send-picture" src={send} alt="send-icon" on:click={sendMessage} on:keydown />
-			</div>
+				</div>
 		</div>
 		<div class="user-list">
 			<h3 class="user-list-title">Users</h3>
