@@ -5,7 +5,6 @@
 	import { writable } from 'svelte/store';
 	import io from 'socket.io-client';
 	import { goto } from '$app/navigation';
-	import { Data } from 'phaser';
 
 	let send: string = 'src/lib/images/send1.svg';
 	const serverIP = import.meta.env.VITE_SERVER_IP;
@@ -302,6 +301,11 @@
 		if (response2.ok) {
 			const data = await response2.json();
 			if (data && data[0]) {
+				if (data.message)
+				{
+					alert(data.message);
+					return ;
+				}
 				privateList.update((currentPrivateList) => [
 					...currentPrivateList,
 					{ login: data[0].users[0].login }
