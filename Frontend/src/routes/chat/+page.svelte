@@ -1525,11 +1525,9 @@
 							{#if isAdmin}
 								<button id="leftButtons" class="btn-grad-blue" on:click={setup}>Admin</button>
 							{/if}
-							{#if selectedChannel}
-								<button id="leftButtons" class="btn-grad-red" on:click={() => leaveRoom()}>
-									Leave Channel
-								</button>
-							{/if}
+							<button id="leftButtons" class="btn-grad-red" on:click={() => leaveRoom()}>
+								Leave Channel
+							</button>
 							<br />
 						</div>
 					{:else}
@@ -1719,7 +1717,9 @@
 						type="text"
 						placeholder="Username"
 						name="recipientName"
-					/> <br /><br />
+					/>
+					<br />
+					<br />
 					<textarea bind:value={messageContent} placeholder="Message" name="messageContent" />
 					{#if privateMessageError !== ''}
 						<p class="error-message">{privateMessageError}</p>
@@ -1727,7 +1727,7 @@
 					{#if !recipientName || !messageContent}
 						<p class="error-message">Please enter a username and a message.</p>
 					{/if}
-					<button
+					<br /><button
 						class="greenButton"
 						on:click={sendPrivateMessage}
 						disabled={!recipientName || !messageContent || privateMessageError !== ''}
@@ -1750,7 +1750,6 @@
 	}
 
 	#rightButtons {
-		font-size: 0.8em;
 		cursor: pointer;
 		width: 170px;
 		height: 50px;
@@ -1784,45 +1783,9 @@
 		overflow-y: auto;
 	}
 
-	.channel-private-button {
-		display: block;
-		width: 100%;
-		padding: 10px;
-		margin-bottom: 10px;
-		border: none;
-		cursor: pointer;
-		text-align: left;
-		border-radius: 10px;
-		color: red;
-	}
-
-	.channel-button,
-	.user-button,
-	.button-admin {
-		display: block;
-		width: 100%;
-		padding: 10px;
-		margin-bottom: 10px;
-		border: none;
-		cursor: pointer;
-		text-align: left;
-		border-radius: 10px;
-	}
-
 	.channel-header {
 		text-align: center;
 		font-weight: bold;
-	}
-
-	.create-channel {
-		display: block;
-		width: 100%;
-		padding: 10px;
-		margin-bottom: 10px;
-		border: none;
-		cursor: pointer;
-		text-align: left;
-		border-radius: 10px;
 	}
 
 	.chat-area {
@@ -1830,7 +1793,8 @@
 		display: flex;
 		flex-direction: column;
 		border-radius: 10px;
-		max-height: 200px;
+		max-height: 400px;
+		min-height: 300px;
 		background-color: white; /* Couleur de fond de la bulle de message */
 	}
 
@@ -1938,15 +1902,6 @@
 
 	.user-list-title {
 		text-align: center;
-	}
-
-	.p-anim {
-		transition: color 2s;
-		color: #6e98b8;
-	}
-
-	.p-anim:hover {
-		color: #eda11a;
 	}
 
 	#gameRequest {

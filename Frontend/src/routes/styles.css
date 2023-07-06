@@ -263,9 +263,6 @@ button:focus:not(:focus-visible) {
 	opacity: .5;
 }
 
-
-
-
 .btn-grad-grey {
 	background-image: linear-gradient(to right, #bdc3c7 0%, #2c3e50 51%, #bdc3c7 100%);
 	margin: 10px;
