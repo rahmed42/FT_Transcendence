@@ -59,7 +59,7 @@
 		</tr>
 		<tr>
 			<th>
-				<select bind:value={selectedBoard}>
+				<select  name=selectedBoard bind:value={selectedBoard}>
 					<option value="src/lib/assets/boards/boardDefault.png">Default</option>
 					<option value="src/lib/assets/boards/boardDefaultGrey.png">Default Grey</option>
 					<option value="src/lib/assets/boards/boardModern.png">Modern</option>
@@ -67,7 +67,7 @@
 				</select>
 			</th>
 			<th>
-				<select bind:value={selectedMyPaddle}>
+				<select name=selectedMyPaddle bind:value={selectedMyPaddle}>
 					<option value="src/lib/assets/paddles/defaultPaddle/defaultPaddleWhite.png"
 						>Original Paddle White</option
 					>
@@ -135,7 +135,7 @@
 				</select>
 			</th>
 			<th>
-				<select bind:value={selectedOpponentPaddle}>
+				<select name=selectedOpponentPaddle bind:value={selectedOpponentPaddle}>
 					<option value="src/lib/assets/paddles/defaultPaddle/defaultPaddleWhite.png"
 						>Original Paddle White</option
 					>
@@ -205,7 +205,7 @@
 				</select>
 			</th>
 			<th>
-				<select bind:value={selectedBall}>
+				<select name=selectedBall bind:value={selectedBall}>
 					<option value="src/lib/assets/balls/ballWhite.png">White</option>
 					<option value="src/lib/assets/balls/ballBlack.png">Black</option>
 					<option value="src/lib/assets/balls/ballBlue.png">Blue</option>
