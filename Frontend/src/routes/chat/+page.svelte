@@ -149,15 +149,13 @@
 			if (data.roomName == selectedChannel) userList.set(data.userList);
 		});
 
-		socket.on(
-			'sayLeave',
-			(data: { roomName: string; login: string; userList: { login: string }[] }) => {
+		socket.on('sayLeave', (data: { roomName: string; login: string; userList: { login: string }[] }) => {
 				if (data.login == login) {
 					socket.emit('leaveRoom', { roomName: data.roomName, userList: data.userList });
 					channelList.update((channelList) => {
 						return channelList.filter((channel) => channel.name !== data.roomName);
-					});
-					if (selectedChannel == data.roomName) selectedChannel = '';
+				});
+				if (selectedChannel == data.roomName) selectedChannel = '';
 					refreshList();
 				}
 			}

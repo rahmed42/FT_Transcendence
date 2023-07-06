@@ -1,31 +1,52 @@
 <script lang="ts">
 	import backgroundHome from '$lib/images/backgroundHome.png';
+	import { onMount } from 'svelte';
+	import { goto } from '$app/navigation';
+
+	let myCookie : any = '';
+	let code : any = null;
+	onMount(async () => {
+		function getCookie(name: string) {
+			const value = `; ${document.cookie}`;
+			const parts = value.split(`; ${name}=`);
+			if (parts.length === 2) {
+				return parts.pop()?.split(';').shift();
+			}
+		}
+		myCookie = getCookie('jwt');
+		code = new URLSearchParams(window.location.search).get('code');
+		if (!myCookie && !code)
+		{
+			goto('/');
+		}
+	});
 </script>
 
 <svelte:head>
 	<title>Home</title>
 	<meta name="description" content="Svelte pong app" />
 </svelte:head>
-
-<ul class="background">
-	<picture>
-		<img src={backgroundHome} alt="backgroundHome" />
-	</picture>
-	<footer>
-		<pre>
-    :::      ::::::::   :::::::::   ::::::::  ::::    :::  ::::::::
-   :+:      :+:    :+:  :+:    :+: :+:    :+: :+:+:   :+: :+:    :+:
-  +:+ +:+         +:+   +:+    +:+ +:+    +:+ :+:+:+  +:+ +:+
- +#+  +:+       +#+     +#++:++#+  +#+    +:+ +#+ +:+ +#+ :#:
-+#+#+#+#+#+   +#+       +#+        +#+    +#+ +#+  +#+#+# +#+   +#+#
-      #+#    #+#        #+#        #+#    #+# #+#   #+#+# #+#    #+#
-      ###   ##########  ###         ########  ###    ####  ########
-		</pre>
-		<center>
-			Made By <strong> ☁️ anggonza 🌟 ddupont 🌟 mmatthie 🌟 rahmed 🌟 tbrandt ☁️ </strong>
-		</center>
-	</footer>
-</ul>
+{#if code}
+	<ul class="background">
+		<picture>
+			<img src={backgroundHome} alt="backgroundHome" />
+		</picture>
+		<footer>
+			<pre>
+		:::      ::::::::   :::::::::   ::::::::  ::::    :::  ::::::::
+	:+:      :+:    :+:  :+:    :+: :+:    :+: :+:+:   :+: :+:    :+:
+	+:+ +:+         +:+   +:+    +:+ +:+    +:+ :+:+:+  +:+ +:+
+	+#+  +:+       +#+     +#++:++#+  +#+    +:+ +#+ +:+ +#+ :#:
+	+#+#+#+#+#+   +#+       +#+        +#+    +#+ +#+  +#+#+# +#+   +#+#
+		#+#    #+#        #+#        #+#    #+# #+#   #+#+# #+#    #+#
+		###   ##########  ###         ########  ###    ####  ########
+			</pre>
+			<center>
+				Made By <strong> ☁️ anggonza 🌟 ddupont 🌟 mmatthie 🌟 rahmed 🌟 tbrandt ☁️ </strong>
+			</center>
+		</footer>
+	</ul>
+{/if}
 
 <style>
 	img {
