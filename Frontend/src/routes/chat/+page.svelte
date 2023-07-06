@@ -324,7 +324,7 @@
 			newPassword = '';
 			muteDuration = 0;
 		}
-	}	
+	}
 
 	async function createGameRequest() {
 		try {
@@ -483,6 +483,11 @@
 				})
 			});
 			const data = await response.json();
+			if (data.message)
+			{
+				alert(data.message);
+				return;
+			}
 			let userL = get(userList);
 			userL = userL.filter((user) => user.login != login);
 			socket.emit('eventLeave', { roomName: selectedChannel, login: login, userList: userL });
@@ -510,6 +515,11 @@
 				})
 			});
 			const data = await response.json();
+			if (data.message)
+			{
+				alert(data.message);
+				return ;
+			}
 			let userL = get(userList);
 			userL = userL.filter((user) => user.login != login);
 			socket.emit('eventLeave', { roomName: selectedChannel, login: login, userList: userL });
@@ -534,6 +544,12 @@
 					loginUserToExecute: selectedUserparam
 				})
 			});
+			const data = await response.json();
+			if (data.message)
+			{
+				alert(data.message);
+				return ;
+			}
 			muteList.update((currentMutes) => {
 				return currentMutes.filter((mute) => mute.login != login);
 			});
@@ -560,6 +576,11 @@
 			});
 
 			const data = await response.json();
+			if (data.message)
+			{
+				alert(data.message);
+				return ;
+			}
 			adminList.update((currentAdmins) => {
 				return currentAdmins.filter((admin) => admin.login !== login);
 			});
@@ -587,6 +608,11 @@
 				})
 			});
 			const data = await response.json();
+			if (data.message)
+			{
+				alert(data.message);
+				return ;
+			}
 			banList.update((currentBanList) => {
 				return currentBanList.filter((user) => user.login !== login);
 			});
@@ -1121,7 +1147,7 @@
 				alert(newProfile.message);
 				return;
 			}
-				socket.emit('leaveRoom', { roomName: selectedChannel, userList: users });
+				socket.emit('eventLeave', { roomName: selectedChannel, login:login, userList: users });
 				channelList.update((channelList) =>
 					channelList.filter((channel) => channel.name !== selectedChannel)
 				);
@@ -1732,7 +1758,6 @@
 		max-height: 100vh;
 		min-width: 150px;
 		padding-right: 10px; /* Ajout des marges intérieures */
-		overflow-y: auto;
 	}
 
 	.channel-header {
