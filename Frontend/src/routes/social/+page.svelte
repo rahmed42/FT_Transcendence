@@ -30,6 +30,8 @@
 		myCookie = getCookie('jwt');
 		if (!myCookie)
 			goto('/')
+		else
+		{
 		socket = io('http://' + serverIP + ':3333', {
 			transports: ['websocket'],
 			auth: {
@@ -48,6 +50,7 @@
 			if (data.login == $user.login || data.login == "")
 				refreshData();
 		});
+	}
 	});
 
 	// Reactive statement that triggers when $user.login changes

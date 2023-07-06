@@ -31,8 +31,8 @@
 		myCookie = getCookie('jwt')
 		if (!myCookie)
 			goto('/')
-
-
+		else
+		{
         const friend_username = new URLSearchParams(window.location.search).get('login');
 
 		async function getUserInfo() {
@@ -83,12 +83,15 @@
 			}
 		}
 		getUserInfo();
+	}
 	});
 	function calculateLadderLevel(wins: number, losses: number) {
-		const winLossRatio = losses ? wins / losses : wins;
-		if (wins >= 10 && losses === 0) return 'Gold';
-		if (wins >= 5 && losses === 0) return 'Silver';
-		if (wins < 5 && losses === 0) return 'Bronze';
+		if (losses === 0) {
+			if (wins >= 10) return 'Gold';
+			if (wins >= 5) return 'Silver';
+			return 'Bronze';
+		}
+		const winLossRatio = wins / losses;
 		if (winLossRatio > 3) return 'Gold';
 		if (winLossRatio > 2) return 'Silver';
 		return 'Bronze';

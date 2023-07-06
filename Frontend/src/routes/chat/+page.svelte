@@ -1,6 +1,5 @@
 <script lang="ts">
-	import { user } from '../../stores/user';
-	import { onDestroy, onMount } from 'svelte';
+	import { onMount } from 'svelte';
 	import { get } from 'svelte/store';
 	import { writable } from 'svelte/store';
 	import io from 'socket.io-client';
@@ -31,11 +30,6 @@
 	//admin modal
 	let isUserModalOpen = false;
 	let openAdminModal = false;
-	let changePassword = false;
-	let banUser = false;
-	let muteUser = false;
-	let grantAdmin = false;
-	let expulUser = false;
 	let selectedUserparam = '';
 	let newPassword = '';
 	let muteDuration = 0;
@@ -76,7 +70,6 @@
 	let error: string = '';
 	let selectedChannel = '';
 	let selectedPrivateChannel = '';
-	let selectedUser = '';
 	let selectedSection = '';
 	let login: string = '';
 	let socket: any;
@@ -96,30 +89,15 @@
 		if (!myCookie) {
 			goto('/');
 		}
+		else
+		{
 		socket = io('http://' + serverIP + ':3333', {
 			transports: ['websocket'],
 			auth: {
 				token: myCookie
 			}
 		});
-		/*const resp = await fetch('http://' + serverIP + ':3333/chat/blockedUsers', {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: 'Bearer ' + myCookie,
-      },
-      credentials: 'include',
-    });
-    if (resp.ok)
-    {
-      const data = await resp.json();
-      if (data && data[0]) {
-        blockList.set(data.blockedUsers.blockedUsers);
-        console.log("Creating blockList : " + blockList);
-      }
-      else
-        blockList.set([])
-    }*/
+
 		socket.on('connect', () => {});
 
 		socket.on('disconnect', () => {});
@@ -254,17 +232,12 @@
 					},
 					credentials: 'include'
 				});
-
-				if (response.ok) {
-					const data = await response.json();
-					if (data) {
-						userID = data.id;
-						login = data.login;
-						token = data.jwtToken;
-						blockList.set(data.blockedUsers);
-					}
-				} else {
-					console.error('Failed to fetch user info', response.statusText);
+				const data = await response.json();
+				if (data) {
+					userID = data.id;
+					login = data.login;
+					token = data.jwtToken;
+					blockList.set(data.blockedUsers);
 				}
 			} catch (error) {
 				console.error('An error occurred while fetching user info:', error);
@@ -284,16 +257,15 @@
 			credentials: 'include'
 		});
 
-		if (response.ok) {
-			const data = await response.json();
-			if (data && data.rooms) {
-				channelList.set(data.rooms);
+		const data = await response.json();
+		if (data && data.rooms) {
+			if (data.message)
+			{
+				alert(data.message);
+				return ;
 			}
-		} else {
-			const data = await response.json();
-			alert(data.message);
+			channelList.set(data.rooms);
 		}
-
 		// Fetch all the private rooms
 		const response2 = await fetch('http://' + serverIP + ':3333/chat/privateRooms', {
 			method: 'GET',
@@ -307,6 +279,11 @@
 		if (response2.ok) {
 			const data = await response2.json();
 			if (data && data[0]) {
+				if (data.message)
+				{
+					alert(data.message);
+					return ;
+				}
 				privateList.update((currentPrivateList) => [
 					...currentPrivateList,
 					{ login: data[0].users[0].login }
@@ -316,6 +293,7 @@
 			const data = await response2.json();
 			alert(data.message);
 		}
+	}
 	});
 
 	function handleKeyPress(event: KeyboardEvent) {
@@ -332,14 +310,13 @@
 				Authorization: 'Bearer ' + myCookie
 			}
 		});
-		if (!reponse.ok) {
-			const data = await reponse.json();
-			alert(data.message);
-		} else {
-			const newChannel = await reponse.json();
-			if (newChannel.users != null) return newChannel.users;
-			else return [];
+		const newChannel = await reponse.json();
+		if (newChannel.message) {
+			alert(newChannel.message);
+			return;
 		}
+		if (newChannel.users != null) return newChannel.users;
+		else return [];
 	}
 
 	function checkForEnter(event: KeyboardEvent) {
@@ -386,13 +363,8 @@
 					myLogin: login
 				})
 			});
-			if (!response.ok) {
-				const data = await response.json();
-				alert(data.message);
-			} else {
-				gameRequest.login = 'undefined';
-				gameRequest.type = 'undefined';
-			}
+			gameRequest.login = 'undefined';
+			gameRequest.type = 'undefined';
 		} catch (err) {
 			if (err instanceof Error) alert(err.message);
 		}
@@ -458,13 +430,8 @@
 					password: newPassword
 				})
 			});
-			if (!response.ok) {
-				const data = await response.json();
-				alert(data.message);
-			} else {
-				const data = await response.json();
-				alert(data.message);
-			}
+			const data = await response.json();
+			alert(data.message);
 		} catch (err) {
 			if (err instanceof Error) alert(err.message);
 		}
@@ -487,14 +454,9 @@
 					loginUserToExecute: selectedUserparam
 				})
 			});
-			if (!response.ok) {
-				const data = await response.json();
-				alert(data.message);
-			} else {
-				const data = await response.json();
-				adminList.set(data.administrator.administrators);
-				socket.emit('adminEvent', { roomName: channelName, login: login, id: id, isAdmin: true });
-			}
+			const data = await response.json();
+			adminList.set(data.administrator.administrators);
+			socket.emit('adminEvent', { roomName: channelName, login: login, id: id, isAdmin: true });
 		} catch (err) {
 			if (err instanceof Error) alert(err.message);
 		}
@@ -515,17 +477,11 @@
 					loginUserToExecute: selectedUserparam
 				})
 			});
-
 			const data = await response.json();
-
-			if (!response.ok) {
-				alert(data.message);
-			} else {
-				let userL = get(userList);
-				userL = userL.filter((user) => user.login != login);
-				socket.emit('eventLeave', { roomName: selectedChannel, login: login, userList: userL });
-				alert('User successfully kicked out of the channel.');
-			}
+			let userL = get(userList);
+			userL = userL.filter((user) => user.login != login);
+			socket.emit('eventLeave', { roomName: selectedChannel, login: login, userList: userL });
+			alert('User successfully kicked out of the channel.');
 		} catch (err) {
 			if (err instanceof Error) {
 				alert(err.message);
@@ -548,16 +504,11 @@
 					loginUserToExecute: selectedUserparam
 				})
 			});
-			if (!response.ok) {
-				const data = await response.json();
-				alert(data.message);
-			} else {
-				const data = await response.json();
-				let userL = get(userList);
-				userL = userL.filter((user) => user.login != login);
-				socket.emit('eventLeave', { roomName: selectedChannel, login: login, userList: userL });
-				banList.update((banList) => [...banList, { login: login }]);
-			}
+			const data = await response.json();
+			let userL = get(userList);
+			userL = userL.filter((user) => user.login != login);
+			socket.emit('eventLeave', { roomName: selectedChannel, login: login, userList: userL });
+			banList.update((banList) => [...banList, { login: login }]);
 		} catch (err) {
 			if (err instanceof Error) alert(err.message);
 		}
@@ -578,14 +529,9 @@
 					loginUserToExecute: selectedUserparam
 				})
 			});
-			if (!response.ok) {
-				const data = await response.json();
-				alert(data.message);
-			} else {
-				muteList.update((currentMutes) => {
-					return currentMutes.filter((mute) => mute.login != login);
-				});
-			}
+			muteList.update((currentMutes) => {
+				return currentMutes.filter((mute) => mute.login != login);
+			});
 		} catch (err) {
 			if (err instanceof Error) alert(err.message);
 		}
@@ -609,15 +555,10 @@
 			});
 
 			const data = await response.json();
-
-			if (!response.ok) {
-				alert(data.message);
-			} else {
-				adminList.update((currentAdmins) => {
-					return currentAdmins.filter((admin) => admin.login !== login);
-				});
-				socket.emit('adminEvent', { roomName: channelName, login: login, isAdmin: false });
-			}
+			adminList.update((currentAdmins) => {
+				return currentAdmins.filter((admin) => admin.login !== login);
+			});
+		socket.emit('adminEvent', { roomName: channelName, login: login, isAdmin: false });
 		} catch (err) {
 			if (err instanceof Error) {
 				alert(err.message);
@@ -640,15 +581,10 @@
 					loginUserToExecute: selectedUserparam
 				})
 			});
-			if (!response.ok) {
-				const data = await response.json();
-				alert(data.message);
-			} else {
-				const data = await response.json();
-				banList.update((currentBanList) => {
-					return currentBanList.filter((user) => user.login !== login);
-				});
-			}
+			const data = await response.json();
+			banList.update((currentBanList) => {
+				return currentBanList.filter((user) => user.login !== login);
+			});
 		} catch (err) {
 			if (err instanceof Error) {
 				alert(err.message);
@@ -671,13 +607,9 @@
 					type: newChannelType
 				})
 			});
-			if (!response.ok) {
-				const data = await response.json();
+			const data = await response.json();
+			if (data.message)
 				alert(data.message);
-			} else {
-				const data = await response.json();
-				alert(data.message);
-			}
 		} catch (err) {
 			if (err instanceof Error) alert(err.message);
 		}
@@ -699,17 +631,12 @@
 					muteDuration: muteDuration
 				})
 			});
-			if (!response.ok) {
-				const data = await response.json();
-				alert(data.message);
-			} else {
-				const newMuteList = await response.json();
-				muteList.set(newMuteList.mutedUsers.mutedUsers);
-				socket.emit('eventMute', {
-					roomName: chan,
-					login: newMuteList.mutedUsers.mutedUsers.login
-				});
-			}
+			const newMuteList = await response.json();
+			muteList.set(newMuteList.mutedUsers.mutedUsers);
+			socket.emit('eventMute', {
+				roomName: chan,
+				login: newMuteList.mutedUsers.mutedUsers.login
+			});
 			muteDuration = 0;
 		} catch (err) {
 			if (err instanceof Error) alert(err.message);
@@ -718,11 +645,6 @@
 
 	function closeSetupModal() {
 		openAdminModal = false;
-		changePassword = false;
-		banUser = false;
-		muteUser = false;
-		grantAdmin = false;
-		expulUser = false;
 		selectedUserparam = '';
 		newPassword = '';
 		selectedSection = '';
@@ -785,21 +707,19 @@
 							password: newChannelPassword
 						})
 					});
-					if (!response.ok) {
-						const data = await response.json();
-						alert(data.message);
-					} else {
-						const newChannel = await response.json();
-						channelList.update((channelList) => [
-							...channelList,
-							{ name: newChannel.room.name, type: newChannel.room.type }
-						]);
-						socket.emit('joinRoom', newChannel.room.name);
-						closeModal();
+					const newChannel = await response.json();
+					if (newChannel.message)
+					{
+						alert(newChannel.message);
+						return ;
 					}
+					channelList.update((channelList) => [
+						...channelList,
+						{ name: newChannel.room.name, type: newChannel.room.type }
+					]);
+					socket.emit('joinRoom', newChannel.room.name);
+					closeModal();
 				}
-			} else {
-				isInvalidName = true;
 			}
 		} catch (err) {
 			if (err instanceof Error) alert(err.message);
@@ -857,19 +777,18 @@
 						password: joinChannelPassword
 					})
 				});
-				if (!response.ok) {
-					const data = await response.json();
-					closeJoinModal();
-					alert(data.message);
-				} else if (response.ok) {
-					const newChannel = await response.json();
-					channelList.update((channelList) => [
-						...channelList,
-						{ name: newChannel.room.name, type: newChannel.room.type }
-					]);
-					let userl = await refreshUserList(token, newChannel.room.name);
-					socket.emit('joinRoom', { roomName: joinChannelName, userList: userl });
+				const newChannel = await response.json();
+				if (newChannel.message)
+				{
+					alert(newChannel.message);
+					return ;
 				}
+				channelList.update((channelList) => [
+					...channelList,
+					{ name: newChannel.room.name, type: newChannel.room.type }
+				]);
+				let userl = await refreshUserList(token, newChannel.room.name);
+				socket.emit('joinRoom', { roomName: joinChannelName, userList: userl });
 				closeJoinModal();
 			} else {
 				isJoinInvalidName = true;
@@ -896,26 +815,25 @@
 				loginReceiver: loginToSend
 			})
 		});
-		if (!response.ok) {
-			const data = await response.json();
-			console.log(data);
-			alert(data.message);
-		} else if (response.ok) {
-			const newChannel = await response.json();
-			socket.emit('joinRoom', { roomName: newChannel.id.id });
-			socket.emit('newPrivateRoom', { login: login, loginReceiver: loginToSend });
-			socket.emit('newMessage', {
-				idSender: userID,
-				roomName: newChannel.id,
-				loginReceiver: loginToSend,
-				content: contentMessage,
-				type: 'private'
-			});
-			privateId = newChannel.id.id;
-			privateList.update((privateList) => [...privateList, { login: newChannel.login }]);
-			recipientName = '';
-			messageContent = '';
+		const newChannel = await response.json();
+		if (newChannel.message)
+		{
+			alert(newChannel.message);
+			return ;
 		}
+		socket.emit('joinRoom', { roomName: newChannel.id.id });
+		socket.emit('newPrivateRoom', { login: login, loginReceiver: loginToSend });
+		socket.emit('newMessage', {
+			idSender: userID,
+			roomName: newChannel.id,
+			loginReceiver: loginToSend,
+			content: contentMessage,
+			type: 'private'
+		});
+		privateId = newChannel.id.id;
+		privateList.update((privateList) => [...privateList, { login: newChannel.login }]);
+		recipientName = '';
+		messageContent = '';
 	}
 
 	async function sendMessage() {
@@ -996,37 +914,36 @@
 					Authorization: 'Bearer ' + token
 				}
 			});
-
-			if (!response.ok) {
-				const data = await response.json();
-				alert(data.message);
-			} else if (response.ok) {
-				const newChannel = await response.json();
-				if (newChannel) {
-					socket.emit('joinRoom', { roomName: selectedChannel });
-					userList.set(newChannel.users);
-					const messagesWithUsername = newChannel.messages.map((message: any) => {
-						return {
-							content: message.content,
-							user: !(message.senderLogin === login),
-							username: message.senderLogin
-						};
+			const newChannel = await response.json();
+			if (newChannel) {
+				if (newChannel.message)
+				{
+					alert(newChannel.message);
+					return ;
+				}
+				socket.emit('joinRoom', { roomName: selectedChannel });
+				userList.set(newChannel.users);
+				const messagesWithUsername = newChannel.messages.map((message: any) => {
+					return {
+						content: message.content,
+						user: !(message.senderLogin === login),
+						username: message.senderLogin
+					};
+				});
+				messages = messagesWithUsername;
+				banList.set(newChannel.bannedUsers);
+				muteList.set(newChannel.mutedUsers);
+				adminList.set(newChannel.administrators);
+				invitationList.set(newChannel.invitations);
+				blockList.set(newChannel.blockedUsers);
+				isAdmin = false;
+				if (newChannel.administrators) {
+					newChannel.administrators.forEach((admin: { id: number; login: string }) => {
+						if (admin.login === login && admin.id === userID) {
+							isAdmin = true;
+							return;
+						}
 					});
-					messages = messagesWithUsername;
-					banList.set(newChannel.bannedUsers);
-					muteList.set(newChannel.mutedUsers);
-					adminList.set(newChannel.administrators);
-					invitationList.set(newChannel.invitations);
-					blockList.set(newChannel.blockedUsers);
-					isAdmin = false;
-					if (newChannel.administrators) {
-						newChannel.administrators.forEach((admin: { id: number; login: string }) => {
-							if (admin.login === login && admin.id === userID) {
-								isAdmin = true;
-								return;
-							}
-						});
-					}
 				}
 			}
 		} catch (err) {
@@ -1055,14 +972,9 @@
 					loginUserToExecute: inviteUser
 				})
 			});
-			if (!response.ok) {
-				const data = await response.json();
-				alert(data.message);
-			} else if (response.ok) {
-				const newProfile = await response.json();
-				closeInvitationModal();
-				alert(newProfile.message);
-			}
+			const newProfile = await response.json();
+			closeInvitationModal();
+			alert(newProfile.message);
 		} catch (err) {
 			if (err instanceof Error) alert(err.message);
 		}
@@ -1103,14 +1015,13 @@
 				loginUserToBlock: loginUserToExecute
 			})
 		});
-		if (!response.ok) {
-			const data = await response.json();
-			alert(data.message);
-		} else {
-			const newProfile = await response.json();
-			blockList.set(newProfile.blockedUser.blockedUsers);
-			alert('User unblocked');
+		const newProfile = await response.json();
+		if (newProfile.message) {
+			alert(newProfile.message);
+			return;
 		}
+		blockList.set(newProfile.blockedUser.blockedUsers);
+		alert('User unblocked');
 	}
 
 	async function blockUser() {
@@ -1126,14 +1037,13 @@
 					loginUserToBlock: loginUserToExecute
 				})
 			});
-			if (!response.ok) {
-				const data = await response.json();
-				alert(data.message);
-			} else if (response.ok) {
-				const newProfile = await response.json();
-				blockList.set(newProfile.blockedUsers);
-				alert('User blocked');
+			const newProfile = await response.json();
+			if (newProfile.message) {
+				alert(newProfile.message);
+				return;
 			}
+			blockList.set(newProfile.blockedUsers);
+			alert('User blocked');
 		} catch (err) {
 			if (err instanceof Error) alert(err.message);
 		}
@@ -1156,37 +1066,36 @@
 				}
 			}
 		);
-		if (response.ok) {
-			const data = await response.json();
-			if (data && data.messages) {
-				privateId = data.id;
-				socket.emit('joinRoom', { roomName: privateId });
-				userList.set(data.users);
-				const messagesRecus = data.messages;
-				messages.length = 0;
-				for (const msg of messagesRecus) {
-					if (msg && msg.content && msg.sender && msg.sender.login) {
-						if (msg.sender.login == login) {
-							const message = {
-								content: msg.content,
-								username: msg.sender.login,
-								user: false
-							};
-							messages.push(message);
-						} else {
-							const message = {
-								content: msg.content,
-								username: msg.sender.login,
-								user: true
-							};
-							messages.push(message);
-						}
+		const data = await response.json();
+		if (data && data.messages) {
+			if (data.message){
+				alert(data.message);
+				return ;
+			}
+			privateId = data.id;
+			socket.emit('joinRoom', { roomName: privateId });
+			userList.set(data.users);
+			const messagesRecus = data.messages;
+			messages.length = 0;
+			for (const msg of messagesRecus) {
+				if (msg && msg.content && msg.sender && msg.sender.login) {
+					if (msg.sender.login == login) {
+						const message = {
+							content: msg.content,
+							username: msg.sender.login,
+							user: false
+						};
+						messages.push(message);
+					} else {
+						const message = {
+							content: msg.content,
+							username: msg.sender.login,
+							user: true
+						};
+						messages.push(message);
 					}
 				}
 			}
-		} else {
-			const data = await response.json();
-			alert(data.message);
 		}
 	}
 
@@ -1205,17 +1114,16 @@
 					roomName: selectedChannel
 				})
 			});
-			if (!response.ok) {
-				const data = await response.json();
-				alert(data.message);
-			} else {
-				const newProfile = await response.json();
-				socket.emit('leaveRoom', { roomName: selectedChannel, userList: users });
-				channelList.update((channelList) =>
-					channelList.filter((channel) => channel.name !== selectedChannel)
-				);
-				refreshList();
+			const newProfile = await response.json();
+			if (newProfile.message) {
+				alert(newProfile.message);
+				return;
 			}
+			socket.emit('leaveRoom', { roomName: selectedChannel, userList: users });
+			channelList.update((channelList) =>
+				channelList.filter((channel) => channel.name !== selectedChannel)
+			);
+			refreshList();
 		} catch (err) {
 			if (err instanceof Error) alert(err.message);
 		}
@@ -1611,7 +1519,7 @@
 					name="messageInput"
 					on:keydown={handleKeyPress}
 				/>
-				<img id="send-picture" src={send} alt="send-icon" on:click={sendMessage} />
+				<img id="send-picture" src={send} alt="send-icon" on:click={sendMessage} on:keydown />
 			</div>
 		</div>
 		<div class="user-list">
