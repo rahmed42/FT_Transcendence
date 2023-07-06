@@ -1546,30 +1546,33 @@
 			<br />
 
 			{#if channelList !== null}
-				{#each $channelList as channel}
-					{#if channel.type === 'public'}
-						<button
-							id="leftButtons"
-							class="btn-grad-green"
-							on:click={() => getChannel(channel.name)}
-						>
-							{channel.name}
-						</button>
-					{:else if channel.type === 'protected'}
-						<button
-							id="leftButtons"
-							class="btn-grad-blue"
-							on:click={() => getChannel(channel.name)}
-						>
-							{channel.name}
-						</button>
-					{:else}
-						<button id="leftButtons" class="btn-grad-red" on:click={() => getChannel(channel.name)}>
-							{channel.name}
-						</button>
-					{/if}
-				{/each}
-			{/if}
+			{#each $channelList as channel}
+				<button
+					id="leftButtons"
+					style="
+						color: white;
+						margin: 10px;
+						padding: 5px 5px;
+						text-align: center;
+						transition: 0.5s;
+						background-size: 200% auto;
+						border-radius: 10px;
+						display: block;
+						cursor: pointer;
+						width: 140px;
+						height: 50px;
+						font-size: 1em;
+						font-weight: bold;
+						{(channel.type === 'public') ? 'background-image: linear-gradient(to right, #00bf8f 0%, #001510 51%, #00bf8f 100%);' : ''}
+						{(channel.type === 'protected') ? 'background-image: linear-gradient(to right, #1A2980 0%, #26D0CE 51%, #1A2980 100%);' : ''}
+						{(channel.type === 'private') ? 'background-image: linear-gradient(to right, #ff0084 0%, #33001b 51%, #ff0084 100%);' : ''}
+					"
+					on:click={() => getChannel(channel.name)}>
+					{channel.name}
+				</button>
+			{/each}
+		{/if}
+
 			<br />
 			{#if privateList !== null}
 				{#each $privateList as privateChannel}
