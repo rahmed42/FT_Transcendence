@@ -1120,6 +1120,10 @@
 			if (err instanceof Error) alert(err.message);
 		}
 	}
+
+	function handleHover(channelName: string, value: boolean) {
+		isHovered = { ...isHovered, [channelName]: value };
+	}
 </script>
 
 <svelte:head>
