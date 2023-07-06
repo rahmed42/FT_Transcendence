@@ -1231,13 +1231,13 @@
 					type="Username ..."
 					placeholder="Enter username"
 					name="inviteUser"
-				/>
+				/><br>
 				{#if inviteUser && selectedChannel}
-					<button on:click={() => inviteUsr(inviteUser)}>Invite</button>
+				<br><button class="greenButton" on:click={() => inviteUsr(inviteUser)}>Invite</button>
 				{:else}
 					<p class="error-message">Need to be in a channel and add a username to invite</p>
 				{/if}
-				<button on:click={closeInvitationModal}>Close</button>
+				<button class="redButton" on:click={closeInvitationModal}>Close</button>
 			</div>
 		</div>
 	{/if}
@@ -1470,7 +1470,7 @@
 					<p class="error-message">Please select a channel type.</p>
 				{/if}
 				<div class="channel-type">
-					<span>Channel Type:</span>
+					<span>Channel Type:</span><br />
 					<label>
 						<input
 							type="radio"
@@ -1490,6 +1490,7 @@
 						/> Protected
 					</label>
 				</div>
+				<br />
 				{#if joinChannelType === 'protected'}
 					<input
 						bind:value={joinChannelPassword}
@@ -1501,8 +1502,8 @@
 						<p class="error-message">Please enter a password for the protected channel.</p>
 					{/if}
 				{/if}
-				<button on:click={joinChannel}>Join</button>
-				<button on:click={closeJoinModal}>Cancel</button>
+				<button class="greenButton" on:click={joinChannel}>Join</button>
+				<button class="redButton" on:click={closeJoinModal}>Cancel</button>
 			</div>
 		</div>
 	{/if}
@@ -1514,7 +1515,7 @@
 						<div class="channel-header">
 							<h3>{selectedChannel}</h3>
 							{#if isAdmin}
-								<button id="leftButtons" class="btn-grad-lightGreen" on:click={setup}>Admin</button>
+								<button id="leftButtons" class="btn-grad-blue" on:click={setup}>Admin</button>
 							{/if}
 							{#if selectedChannel}
 								<button id="leftButtons" class="btn-grad-pink" on:click={() => leaveRoom()}>
@@ -1541,20 +1542,20 @@
 				Join Channel
 			</button>
 			<br />
-			<button id="leftButtons" class="btn-grad-blue" on:click={() => openPrivateMessageModal()}>
-				Private Message
-			</button>
+
 			{#if channelList !== null}
 				{#each $channelList as channel}
-					<button class="channel-button p-anim" on:click={() => getChannel(channel.name)}>
+					<button id="leftButtons" class="btn-grad-green" on:click={() => getChannel(channel.name)}>
 						{channel.name}
 					</button>
 				{/each}
 			{/if}
+			<br />
 			{#if privateList !== null}
 				{#each $privateList as privateChannel}
 					<button
-						class="channel-private-button p-anim-private"
+						id="leftButtons"
+						class="btn-grad-blue"
 						on:click={() => getPrivateChannel(privateChannel.login)}
 					>
 						{privateChannel.login}
@@ -1591,15 +1592,23 @@
 			</div>
 		</div>
 		<div class="user-list">
-			<h3 class="user-list-title">All User</h3>
+			<h3 class="user-list-title">Users</h3>
+			<button
+				id="rightButtons"
+				class="btn-grad-lightGreen"
+				on:click={() => openPrivateMessageModal()}
+			>
+				Private Message
+			</button>
 			{#if selectedChannel}
-				<button class="user-button p-anim" on:click={() => openInvitationModal()}>
+				<button id="rightButtons" class="btn-grad-blue" on:click={() => openInvitationModal()}>
 					Invitation
 				</button>
 			{/if}
+			<br />
 			{#each $userList as user}
 				{#if user.login !== login}
-					<button class="user-button p-anim" on:click={() => selectUser(user.login)}>
+					<button id="rightButtons" class="btn-grad-blue" on:click={() => selectUser(user.login)}>
 						{user.login}
 					</button>
 				{/if}
@@ -1627,7 +1636,7 @@
 						type="text"
 						placeholder="Channel Name"
 						name="newChannelName"
-					/>
+					/><br />
 					{#if isInvalidName}
 						<p class="error-message">Invalid channel name. Please enter a valid name.</p>
 					{/if}
@@ -1635,7 +1644,7 @@
 						<p class="error-message">Please select a channel type.</p>
 					{/if}
 					<div class="channel-type">
-						<span>Channel Type:</span>
+						<span>Channel Type:</span><br />
 						<label>
 							<input
 								type="radio"
@@ -1672,8 +1681,9 @@
 							<p class="error-message">Please enter a password for the protected channel.</p>
 						{/if}
 					{/if}
-					<button on:click={createChannel}>Create</button>
-					<button on:click={closeModal}>Cancel</button>
+					<br />
+					<button class="greenButton" on:click={createChannel}>Create</button>
+					<button class="redButton" on:click={closeModal}>Cancel</button>
 				</div>
 			</div>
 		{/if}
@@ -1685,22 +1695,23 @@
 					<input
 						bind:value={recipientName}
 						type="text"
-						placeholder="Recipient Name"
+						placeholder="Username"
 						name="recipientName"
-					/>
+					/> <br /><br />
 					<textarea bind:value={messageContent} placeholder="Message" name="messageContent" />
 					{#if privateMessageError !== ''}
 						<p class="error-message">{privateMessageError}</p>
 					{/if}
 					{#if !recipientName || !messageContent}
-						<p class="error-message">Please enter a recipient and a message.</p>
+						<p class="error-message">Please enter a username and a message.</p>
 					{/if}
 					<button
+						class="greenButton"
 						on:click={sendPrivateMessage}
 						disabled={!recipientName || !messageContent || privateMessageError !== ''}
 						>Send Message</button
 					>
-					<button on:click={closePrivateMessageModal}>Cancel</button>
+					<button class="redButton" on:click={closePrivateMessageModal}>Cancel</button>
 				</div>
 			</div>
 		{/if}
@@ -1712,6 +1723,18 @@
 		font-size: 0.8em;
 		cursor: pointer;
 		width: 140px;
+		height: 40px;
+		font-size: 0.8em;
+		font-weight: bold;
+	}
+
+	#rightButtons {
+		font-size: 0.8em;
+		cursor: pointer;
+		width: 180px;
+		height: 40px;
+		font-size: 0.9em;
+		font-weight: bold;
 	}
 	.container {
 		display: flex;

@@ -100,6 +100,9 @@
             default: return bronzeIcon;
         }
     }
+	function goBack() {
+    history.back();
+  }
 </script>
 
 <svelte:head>
@@ -109,7 +112,7 @@
 
 {#if myCookie}
 	<div class="profile">
-		<a href={`/social`} class="button-styled">Back</a>
+		<button class="button-styled" on:click={goBack}>Back</button>
 		<h1 class="title">
 			<span class="username"><strong>{$friend.login}</strong></span>'s Profile Page
 		</h1>
