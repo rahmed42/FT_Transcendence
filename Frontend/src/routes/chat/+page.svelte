@@ -65,7 +65,7 @@
 	let joinChannelPassword = '';
 	let userID = 0;
 	let token = '';
-	let channelList = writable<{ name: string, type: string }[]>([]);
+	let channelList = writable<{ name: string; type: string }[]>([]);
 	let userList = writable<{ login: string }[]>([]);
 	let banList = writable<{ login: string }[]>([]);
 	let muteList = writable<{ login: string }[]>([]);
@@ -790,7 +790,10 @@
 						alert(data.message);
 					} else {
 						const newChannel = await response.json();
-						channelList.update((channelList) => [...channelList, { name: newChannel.room.name, type: newChannel.room.type }]);
+						channelList.update((channelList) => [
+							...channelList,
+							{ name: newChannel.room.name, type: newChannel.room.type }
+						]);
 						socket.emit('joinRoom', newChannel.room.name);
 						closeModal();
 					}
@@ -860,7 +863,10 @@
 					alert(data.message);
 				} else if (response.ok) {
 					const newChannel = await response.json();
-					channelList.update((channelList) => [...channelList, { name: newChannel.room.name, type: newChannel.room.type }]);
+					channelList.update((channelList) => [
+						...channelList,
+						{ name: newChannel.room.name, type: newChannel.room.type }
+					]);
 					let userl = await refreshUserList(token, newChannel.room.name);
 					socket.emit('joinRoom', { roomName: joinChannelName, userList: userl });
 				}
@@ -1251,7 +1257,6 @@
 					<button id="modalButtons" class="btn-grad-red" on:click={blockUser}>Block</button>
 					<button id="modalButtons" class="btn-grad-green" on:click={unblockUser}>Unblock</button>
 				</div>
-				<br />
 				<div>
 					<button id="modalButtons" class="btn-grad-lightGreen" on:click={createGameRequest}
 						>Invite Game</button
@@ -1272,9 +1277,9 @@
 						name="gameType"
 						bind:group={joinGameType}
 					/>
-					<label for="Modern">Modern</label>
+					<label for="Modern">Modern</label><br />
 				</div>
-				<br /><button id="modalButtons" class="redButton" on:click={closeUserModal}>Close</button>
+				<button id="modalButtons" class="redButton" on:click={closeUserModal}>Close</button>
 			</div>
 		</div>
 	{/if}
@@ -1550,11 +1555,19 @@
 			{#if channelList !== null}
 				{#each $channelList as channel}
 					{#if channel.type === 'public'}
-						<button id="leftButtons" class="btn-grad-green" on:click={() => getChannel(channel.name)}>
+						<button
+							id="leftButtons"
+							class="btn-grad-green"
+							on:click={() => getChannel(channel.name)}
+						>
 							{channel.name}
 						</button>
 					{:else if channel.type === 'protected'}
-						<button id="leftButtons" class="btn-grad-blue" on:click={() => getChannel(channel.name)}>
+						<button
+							id="leftButtons"
+							class="btn-grad-blue"
+							on:click={() => getChannel(channel.name)}
+						>
 							{channel.name}
 						</button>
 					{:else}
@@ -1752,7 +1765,8 @@
 	}
 
 	#modalButtons {
-		width: 90px;
+		display: inline-block;
+		padding : 15px;
 	}
 
 	#muteDuration {
@@ -1839,7 +1853,6 @@
 		height: 50px;
 		margin-left: 0;
 		margin-bottom: 0;
-
 	}
 	#send-picture {
 		margin-right: 0px;
