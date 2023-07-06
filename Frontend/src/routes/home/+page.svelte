@@ -3,8 +3,8 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 
-	let myCookie : any = '';
-	let code : any = null;
+	let myCookie: any = '';
+	let code: any = null;
 	onMount(async () => {
 		function getCookie(name: string) {
 			const value = `; ${document.cookie}`;
@@ -15,8 +15,7 @@
 		}
 		myCookie = getCookie('jwt');
 		code = new URLSearchParams(window.location.search).get('code');
-		if (!myCookie && !code)
-		{
+		if (!myCookie && !code) {
 			goto('/');
 		}
 	});
@@ -26,20 +25,20 @@
 	<title>Home</title>
 	<meta name="description" content="Svelte pong app" />
 </svelte:head>
-{#if code}
+{#if code || myCookie}
 	<ul class="background">
 		<picture>
 			<img src={backgroundHome} alt="backgroundHome" />
 		</picture>
 		<footer>
 			<pre>
-		:::      ::::::::   :::::::::   ::::::::  ::::    :::  ::::::::
-	:+:      :+:    :+:  :+:    :+: :+:    :+: :+:+:   :+: :+:    :+:
-	+:+ +:+         +:+   +:+    +:+ +:+    +:+ :+:+:+  +:+ +:+
-	+#+  +:+       +#+     +#++:++#+  +#+    +:+ +#+ +:+ +#+ :#:
-	+#+#+#+#+#+   +#+       +#+        +#+    +#+ +#+  +#+#+# +#+   +#+#
-		#+#    #+#        #+#        #+#    #+# #+#   #+#+# #+#    #+#
-		###   ##########  ###         ########  ###    ####  ########
+    :::      ::::::::   :::::::::   ::::::::  ::::    :::  ::::::::
+   :+:      :+:    :+:  :+:    :+: :+:    :+: :+:+:   :+: :+:    :+:
+  +:+ +:+         +:+   +:+    +:+ +:+    +:+ :+:+:+  +:+ +:+
+ +#+  +:+       +#+     +#++:++#+  +#+    +:+ +#+ +:+ +#+ :#:
++#+#+#+#+#+   +#+       +#+        +#+    +#+ +#+  +#+#+# +#+   +#+#
+      #+#    #+#        #+#        #+#    #+# #+#   #+#+# #+#    #+#
+      ###   ##########  ###         ########  ###    ####  ########
 			</pre>
 			<center>
 				Made By <strong> ☁️ anggonza 🌟 ddupont 🌟 mmatthie 🌟 rahmed 🌟 tbrandt ☁️ </strong>
