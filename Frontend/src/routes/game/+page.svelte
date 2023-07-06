@@ -19,20 +19,22 @@
 		myCookie = getCookie('jwt');
 		if (!myCookie) {
 			goto('/');
-		}
-		else
-		{
-		// SSR server side rendering
-		// https://vitejs.dev/guide/ssr.html
-		setTimeout(() => {
+		} else {
 			// SSR server side rendering
 			// https://vitejs.dev/guide/ssr.html
-			if (typeof window === 'undefined') return;
-			if (!game && window.location.pathname === '/game') createPhaserGame();
 			setTimeout(() => {
-				if (game && window.location.pathname !== '/game') game.destroy(true);
-			}, 250);
-		}, 400);
+				// SSR server side rendering
+				// https://vitejs.dev/guide/ssr.html
+				if (typeof window === 'undefined') return;
+				if (!game && window.location.pathname === '/game') createPhaserGame();
+				setTimeout(() => {
+					if (game && window.location.pathname !== '/game') game.destroy(true);
+				}, 250);
+			}, 400);
+			setTimeout(() => {
+				if (typeof window === 'undefined') return;
+				if (!game && window.location.pathname === '/game') createPhaserGame();
+			}, 1000);
 		}
 	});
 
