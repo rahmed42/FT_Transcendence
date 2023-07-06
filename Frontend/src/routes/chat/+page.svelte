@@ -1513,7 +1513,7 @@
 						<div class="channel-header">
 							<h3>{selectedChannel}</h3>
 							{#if isAdmin}
-								<button id="leftButtons" class="btn-grad-lightGreen" on:click={setup}>Admin</button>
+								<button id="leftButtons" class="btn-grad-blue" on:click={setup}>Admin</button>
 							{/if}
 							{#if selectedChannel}
 								<button id="leftButtons" class="btn-grad-pink" on:click={() => leaveRoom()}>
@@ -1540,12 +1540,10 @@
 				Join Channel
 			</button>
 			<br />
-			<button id="leftButtons" class="btn-grad-blue" on:click={() => openPrivateMessageModal()}>
-				Private Message
-			</button>
+
 			{#if channelList !== null}
 				{#each $channelList as channel}
-					<button class="channel-button p-anim" on:click={() => getChannel(channel.name)}>
+					<button  id="leftButtons" class="btn-grad-green"  on:click={() => getChannel(channel.name)}>
 						{channel.name}
 					</button>
 				{/each}
@@ -1590,15 +1588,19 @@
 			</div>
 		</div>
 		<div class="user-list">
-			<h3 class="user-list-title">All User</h3>
+			<h3 class="user-list-title">Users</h3>
+			<button id="rightButtons" class="btn-grad-blue" on:click={() => openPrivateMessageModal()}>
+				Private Message
+			</button>
 			{#if selectedChannel}
-				<button class="user-button p-anim" on:click={() => openInvitationModal()}>
-					Invitation
-				</button>
+			<button id="rightButtons" class="btn-grad-blue" on:click={() => openInvitationModal()}>
+				Invitation
+			</button>
 			{/if}
+			<br />
 			{#each $userList as user}
 				{#if user.login !== login}
-					<button class="user-button p-anim" on:click={() => selectUser(user.login)}>
+					<button id="rightButtons" class="btn-grad-blue" on:click={() => selectUser(user.login)}>
 						{user.login}
 					</button>
 				{/if}
@@ -1710,7 +1712,19 @@
 	#leftButtons {
 		font-size: 0.8em;
 		cursor: pointer;
-		width: 140px;
+		width: 145px;
+		height: 40px;
+		font-size: 0.85em;
+		font-weight: bold;
+	}
+
+	#rightButtons {
+		font-size: 0.8em;
+		cursor: pointer;
+		width: 180px;
+		height: 40px;
+		font-size: 1em;
+		font-weight: bold;
 	}
 	.container {
 		display: flex;
