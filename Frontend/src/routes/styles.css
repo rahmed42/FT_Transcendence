@@ -267,86 +267,87 @@ button:focus:not(:focus-visible) {
 
 
 .btn-grad-grey {
-		background-image: linear-gradient(to right, #bdc3c7 0%, #2c3e50  51%, #bdc3c7  100%);
-		margin: 10px;
-		padding: 5px 5px;
-		text-align: center;
-		text-transform: uppercase;
-		transition: 0.5s;
-		background-size: 200% auto;
-		color: white;
-		/* box-shadow: 0 0 20px #eee; */
-		border-radius: 10px;
-		display: block;
-  }
+	background-image: linear-gradient(to right, #bdc3c7 0%, #2c3e50 51%, #bdc3c7 100%);
+	margin: 10px;
+	padding: 5px 5px;
+	text-align: center;
+	/* text-transform: uppercase; */
+	transition: 0.5s;
+	background-size: 200% auto;
+	color: white;
+	/* box-shadow: 0 0 20px #eee; */
+	border-radius: 10px;
+	display: block;
+}
 
 .btn-grad-green {
-	background-image: linear-gradient(to right, #00bf8f 0%, #001510  51%, #00bf8f  100%);
+	background-image: linear-gradient(to right, #00bf8f 0%, #001510 51%, #00bf8f 100%);
 	margin: 10px;
 	padding: 5px 5px;
 	text-align: center;
-	text-transform: uppercase;
+	/* text-transform: uppercase; */
 	transition: 0.5s;
 	background-size: 200% auto;
 	color: white;
 	/* box-shadow: 0 0 20px #eee; */
 	border-radius: 10px;
 	display: block;
-  }
+}
 
 
-  .btn-grad-lightGreen {
-	background-image: linear-gradient(to right, #007991 0%, #78ffd6  51%, #007991  100%);
+.btn-grad-lightGreen {
+	background-image: linear-gradient(to right, #007991 0%, #78ffd6 51%, #007991 100%);
 	margin: 10px;
 	padding: 5px 5px;
 	text-align: center;
-	text-transform: uppercase;
+	/* text-transform: uppercase; */
 	transition: 0.5s;
 	background-size: 200% auto;
 	color: white;
 	/* box-shadow: 0 0 20px #eee; */
 	border-radius: 10px;
 	display: block;
-  }
+}
 
 
 .btn-grad-blue {
-	background-image: linear-gradient(to right, #1A2980 0%, #26D0CE  51%, #1A2980  100%);
+	background-image: linear-gradient(to right, #1A2980 0%, #26D0CE 51%, #1A2980 100%);
 	margin: 10px;
 	padding: 5px 5px;
 	text-align: center;
-	text-transform: uppercase;
+	/* text-transform: uppercase; */
 	transition: 0.5s;
 	background-size: 200% auto;
 	color: white;
 	/* box-shadow: 0 0 20px #eee; */
 	border-radius: 10px;
 	display: block;
-  }
+}
 
 
-  .btn-grad-red {
-	background-image: linear-gradient(to right, #ff0084 0%, #33001b  51%, #ff0084  100%);
+.btn-grad-red {
+	background-image: linear-gradient(to right, #ff0084 0%, #33001b 51%, #ff0084 100%);
 	margin: 10px;
 	padding: 5px 5px;
 	text-align: center;
-	text-transform: uppercase;
+	/* text-transform: uppercase; */
 	transition: 0.5s;
 	background-size: 200% auto;
 	color: white;
 	/* box-shadow: 0 0 20px #eee; */
 	border-radius: 10px;
 	display: block;
-  }
+}
 
 
 
-  .btn-grad-grey:hover,
-  .btn-grad-lightGreen:hover,
-  .btn-grad-red:hover,
-  .btn-grad-green:hover,
-  .btn-grad-blue:hover {
-	background-position: right center; /* change the direction of the change here */
+.btn-grad-grey:hover,
+.btn-grad-lightGreen:hover,
+.btn-grad-red:hover,
+.btn-grad-green:hover,
+.btn-grad-blue:hover {
+	background-position: right center;
+	/* change the direction of the change here */
 	color: #fff;
 	text-decoration: none;
-  }
+}

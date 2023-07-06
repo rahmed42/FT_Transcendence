@@ -1253,33 +1253,28 @@
 			<div class="modal-content">
 				<h3>User Options</h3>
 				<div>
-					<button id="modalButtons" class="btn-grad-blue" on:click={getProfile}>Profile</button>
 					<button id="modalButtons" class="btn-grad-red" on:click={blockUser}>Block</button>
 					<button id="modalButtons" class="btn-grad-green" on:click={unblockUser}>Unblock</button>
 				</div>
+				<button id="modalButtons" class="btn-grad-lightGreen" on:click={createGameRequest}
+					>Invite Game</button
+				>
+				<input
+					type="radio"
+					value="Original"
+					id="Original"
+					name="gameType"
+					bind:group={joinGameType}
+					checked
+				/>
+				<label for="Original">Original</label>
+				<input type="radio" value="Modern" id="Modern" name="gameType" bind:group={joinGameType} />
+				<label for="Modern">Modern</label><br />
+
 				<div>
-					<button id="modalButtons" class="btn-grad-lightGreen" on:click={createGameRequest}
-						>Invite Game</button
-					>
-					<input
-						type="radio"
-						value="Original"
-						id="Original"
-						name="gameType"
-						bind:group={joinGameType}
-						checked
-					/>
-					<label for="Original">Original</label>
-					<input
-						type="radio"
-						value="Modern"
-						id="Modern"
-						name="gameType"
-						bind:group={joinGameType}
-					/>
-					<label for="Modern">Modern</label><br />
+					<button id="modalButtons" class="btn-grad-blue" on:click={getProfile}>Profile</button>
 				</div>
-				<button id="modalButtons" class="redButton" on:click={closeUserModal}>Close</button>
+				<br /><button id="modalButtons" class="redButton" on:click={closeUserModal}>Close</button>
 			</div>
 		</div>
 	{/if}
@@ -1747,11 +1742,10 @@
 
 <style>
 	#leftButtons {
-		font-size: 0.8em;
 		cursor: pointer;
 		width: 140px;
-		height: 40px;
-		font-size: 0.8em;
+		height: 50px;
+		font-size: 1em;
 		font-weight: bold;
 	}
 
@@ -1759,14 +1753,17 @@
 		font-size: 0.8em;
 		cursor: pointer;
 		width: 170px;
-		height: 40px;
-		font-size: 0.9em;
+		height: 50px;
+		font-size: 1.1em;
 		font-weight: bold;
 	}
 
 	#modalButtons {
 		display: inline-block;
-		padding : 15px;
+		padding: 10px;
+		width: 120px;
+		font-size: 1em;
+		font-weight: bold;
 	}
 
 	#muteDuration {
