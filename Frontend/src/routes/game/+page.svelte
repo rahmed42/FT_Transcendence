@@ -27,13 +27,9 @@
 			// https://vitejs.dev/guide/ssr.html
 			if (typeof window === 'undefined') return;
 			if (!game && window.location.pathname === '/game') createPhaserGame();
-			if (game && window.location.pathname !== '/game') game.destroy(true);
-
-			// destroy the game when leaving the page when the game is loaded
 			setTimeout(() => {
-				if (typeof window === 'undefined') return;
 				if (game && window.location.pathname !== '/game') game.destroy(true);
-			}, 1000);
+			}, 250);
 		}, 400);
 	});
 
