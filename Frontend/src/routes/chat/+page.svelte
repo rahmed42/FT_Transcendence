@@ -6,6 +6,7 @@
 	import io from 'socket.io-client';
 	import { goto } from '$app/navigation';
 
+	let send: string = 'src/lib/images/send1.svg';
 	const serverIP = import.meta.env.VITE_SERVER_IP;
 
 	let messageInput = '';
@@ -1230,9 +1231,9 @@
 					type="Username ..."
 					placeholder="Enter username"
 					name="inviteUser"
-				/><br />
+				/><br>
 				{#if inviteUser && selectedChannel}
-					<br /><button class="greenButton" on:click={() => inviteUsr(inviteUser)}>Invite</button>
+				<br><button class="greenButton" on:click={() => inviteUsr(inviteUser)}>Invite</button>
 				{:else}
 					<p class="error-message">Need to be in a channel and add a username to invite</p>
 				{/if}
@@ -1246,15 +1247,13 @@
 			<div class="modal-content">
 				<h3>User Options</h3>
 				<div>
-					<button id="modalButtons" class="btn-grad-blue" on:click={getProfile}>Profile</button>
-					<button id="modalButtons" class="btn-grad-red" on:click={blockUser}>Block</button>
-					<button id="modalButtons" class="btn-grad-green" on:click={unblockUser}>Unblock</button>
+					<button on:click={getProfile}>Profile</button>
+					<button on:click={blockUser}>Block</button>
+					<button on:click={unblockUser}>Unblock</button>
+					<button on:click={closeUserModal}>Close</button>
 				</div>
-				<br />
 				<div>
-					<button id="modalButtons" class="btn-grad-lightGreen" on:click={createGameRequest}
-						>Invite Game</button
-					>
+					<button on:click={createGameRequest}>Invite Game</button>
 					<input
 						type="radio"
 						value="Original"
@@ -1273,7 +1272,6 @@
 					/>
 					<label for="Modern">Modern</label>
 				</div>
-				<br><button id="modalButtons" class="redButton" on:click={closeUserModal}>Close</button>
 			</div>
 		</div>
 	{/if}
@@ -1285,7 +1283,7 @@
 
 				{#if selectedSection === 'changeChannelType'}
 					<div class="selected-option">
-						<p>Change Type:
+						<p>Change Type:</p>
 						<label>
 							<input
 								type="radio"
@@ -1312,7 +1310,7 @@
 								name="channelType"
 								bind:group={newChannelType}
 							/> Protected
-						</label></p>
+						</label>
 
 						{#if newChannelType === 'protected'}
 							<input
@@ -1385,19 +1383,19 @@
 
 				{#if selectedSection === 'muteUser'}
 					<div class="selected-option">
-						<p>Mute User :</p>
+						<p>Mute User:</p>
 						<select name="selectedUser" bind:value={selectedUserparam}>
 							{#each $userList as user}
 								<option value={user.login}>{user.login}</option>
 							{/each}
 						</select>
-						<p><input id="muteDuration"
+						<input
 							bind:value={muteDuration}
 							type="number"
 							name="duration"
 							placeholder="Mute Duration (minutes)"
 							min="1"
-						/> Minutes</p>
+						/>
 					</div>
 				{/if}
 
@@ -1432,7 +1430,7 @@
 				{/if}
 
 				<div class="section-select">
-					<br><label for="sectionSelect">Select Section:</label>
+					<label for="sectionSelect">Select Section:</label>
 					<select bind:value={selectedSection} id="sectionSelect">
 						<option value="changeChannelType">Change Type</option>
 						<option value="changePassword">Change Password</option>
@@ -1447,8 +1445,8 @@
 				</div>
 
 				<div class="modal-actions">
-					<br><button class="greenButton" on:click={() => confirmSelection()}>Confirm</button>
-					<button  class="redButton" on:click={() => closeSetupModal()}>Cancel</button>
+					<button on:click={() => confirmSelection()}>Confirm</button>
+					<button on:click={() => closeSetupModal()}>Cancel</button>
 				</div>
 			</div>
 		</div>
@@ -1520,7 +1518,7 @@
 								<button id="leftButtons" class="btn-grad-blue" on:click={setup}>Admin</button>
 							{/if}
 							{#if selectedChannel}
-								<button id="leftButtons" class="btn-grad-red" on:click={() => leaveRoom()}>
+								<button id="leftButtons" class="btn-grad-pink" on:click={() => leaveRoom()}>
 									Leave Channel
 								</button>
 							{/if}
@@ -1565,7 +1563,7 @@
 				{/each}
 			{/if}
 		</div>
-		<div class="chat-area" style="max-height: 800px">
+		<div class="chat-area">
 			<div class="messages">
 				{#each messages as message}
 					{#if message.user}
@@ -1583,14 +1581,14 @@
 			</div>
 			<div class="input-area">
 				<input
+					type="text" 
 					bind:value={messageInput}
-					type="text"
 					placeholder="Type here..."
-					id="test"
+					id="input-text"
 					name="messageInput"
 					on:keydown={handleKeyPress}
 				/>
-				<button on:click={sendMessage}>Send</button>
+				<img id="send-picture" src={send} alt="send-icon" on:click={sendMessage}>
 			</div>
 		</div>
 		<div class="user-list">
@@ -1733,31 +1731,22 @@
 	#rightButtons {
 		font-size: 0.8em;
 		cursor: pointer;
-		width: 170px;
+		width: 180px;
 		height: 40px;
 		font-size: 0.9em;
 		font-weight: bold;
 	}
-
-	#modalButtons {
-		width: 90px;
-	}
-
-	#muteDuration {
-		width: 100px;
-	}
-
 	.container {
 		display: flex;
 		margin-top: 10px;
 	}
 
 	.sidebar {
-		/* width: 150px; */
+		width: 150px;
 		padding: 10px;
 		height: 100vh;
 		max-height: 100vh;
-		min-width: 150px;
+		min-width: 15vh;
 		border-right: 1px solid #ccc; /* Ajout de la bordure */
 		padding-right: 10px; /* Ajout des marges intérieures */
 		overflow-y: auto;
@@ -1808,9 +1797,8 @@
 		flex-grow: 1;
 		display: flex;
 		flex-direction: column;
-		overflow: auto;
-		max-height: 700px;
-		min-width: 200px;
+		/* overflow: auto; */
+		/* max-height: 700px; */
 	}
 
 	.messages {
@@ -1821,8 +1809,22 @@
 	.input-area {
 		display: flex;
 		justify-content: space-between;
-		padding: 10px;
-		border-top: 1px solid #ccc;
+		margin-top: 20px;
+		margin-left: 90px;
+		margin-right: auto;
+		padding: 5px;
+	}
+	#input-text {
+		display: flex;
+		color: #333333;
+		margin-left: auto;
+		margin-right: 60px;
+		border-radius: 10px;
+		width: 200px;
+	}
+	#send-picture {
+		margin-left: -40px;
+		width: 50px;
 	}
 
 	.modal {
@@ -1918,6 +1920,51 @@
 		color: #eda11a;
 	}
 
+	@media screen and (max-width: 600px) {
+		.container {
+			flex-direction: column;
+			margin: 10px;
+		}
+
+		.sidebar,
+		.chat-area,
+		.user-list {
+			max-height: 500px;
+			overflow-y: auto;
+			border-radius: 10px;
+			margin-bottom: 10px;
+		}
+		.channel-header {
+			text-align: center;
+			color: black;
+		}
+
+		.user-list-title {
+			text-align: center;
+			color: black;
+		}
+
+		.sidebar,
+		.chat-area {
+			width: 100%;
+		}
+
+		.user-list {
+			width: 100%;
+		}
+
+		.sidebar,
+		.chat-area,
+		.user-list {
+			background-color: #f5f5f5;
+		}
+
+		.message-container-user,
+		.message-container-other {
+			background-color: #9ab3f5;
+			font-family: Arial, sans-serif;
+		}
+	}
 	#gameRequest {
 		background: linear-gradient(to bottom, #4bc3ff, #2b0bbc);
 		padding: 0.5rem;
