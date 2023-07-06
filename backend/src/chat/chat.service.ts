@@ -467,6 +467,7 @@ export class ChatService {
                 rooms : {
                     select : {
                         name : true,
+						type: true,
                     },
                 },
             },

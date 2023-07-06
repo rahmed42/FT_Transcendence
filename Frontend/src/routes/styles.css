@@ -325,7 +325,7 @@ button:focus:not(:focus-visible) {
   }
 
 
-  .btn-grad-pink {
+  .btn-grad-red {
 	background-image: linear-gradient(to right, #ff0084 0%, #33001b  51%, #ff0084  100%);
 	margin: 10px;
 	padding: 5px 5px;
@@ -343,7 +343,7 @@ button:focus:not(:focus-visible) {
 
   .btn-grad-grey:hover,
   .btn-grad-lightGreen:hover,
-  .btn-grad-pink:hover,
+  .btn-grad-red:hover,
   .btn-grad-green:hover,
   .btn-grad-blue:hover {
 	background-position: right center; /* change the direction of the change here */
