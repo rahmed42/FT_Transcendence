@@ -316,12 +316,15 @@
 		else return [];
 	}
 
-	function checkForEnter(event: KeyboardEvent) {
-		// KeyCode 13 correspond à la touche "Entrée"
-		if (event.key === 'Enter') {
-			sendMessage();
+	$: {
+		if (selectedSection)
+		{
+			newChannelType = '';
+			selectedUserparam = '';
+			newPassword = '';
+			muteDuration = 0;
 		}
-	}
+	}	
 
 	async function createGameRequest() {
 		try {
@@ -452,7 +455,12 @@
 				})
 			});
 			const data = await response.json();
-			adminList.set(data.administrator.administrators);
+			if (data.message)
+			{
+				alert(data.message);
+				return;
+			}
+			adminList.update(items => [...items, { login: login }]);
 			socket.emit('adminEvent', { roomName: channelName, login: login, id: id, isAdmin: true });
 		} catch (err) {
 			if (err instanceof Error) alert(err.message);
@@ -614,6 +622,7 @@
 	async function muteSelectedUser(muteDuration: number) {
 		try {
 			let chan = selectedChannel;
+			let login = selectedUserparam;
 			const response = await fetch('http://' + serverIP + ':3333/chat/muteUser', {
 				method: 'POST',
 				headers: {
@@ -628,7 +637,11 @@
 				})
 			});
 				const newMuteList = await response.json();
-				muteList.set(newMuteList.mutedUsers.mutedUsers);
+				if (newMuteList.message) {
+					alert(newMuteList.message);
+					return;
+				}
+				muteList.update((muteList) => [...muteList, { login: login }]);
 				socket.emit('eventMute', {
 					roomName: chan,
 					login: newMuteList.mutedUsers.mutedUsers.login
@@ -644,6 +657,7 @@
 		selectedUserparam = '';
 		newPassword = '';
 		selectedSection = '';
+		newChannelType = '';
 	}
 
 	function openModal() {
@@ -884,10 +898,6 @@
 		}
 		closeSetupModal();
 	}
-
-	async function declineInvitation(selectedInvitation: string) {}
-
-	async function acceptInvitation(selectedInvitation: string) {}
 
 	function closePrivateMessageModal() {
 		isPrivateMessageModalOpen = false;
@@ -1220,7 +1230,6 @@
 								/> Protected
 							</label>
 						</p>
-
 						{#if newChannelType === 'protected'}
 							<input
 								bind:value={newPassword}
@@ -1357,7 +1366,9 @@
 				</div>
 
 				<div class="modal-actions">
-					<br /><button class="greenButton" on:click={() => confirmSelection()}>Confirm</button>
+					{#if newChannelType != '' || selectedUserparam != '' || muteDuration != 0 || newPassword != ''}
+							<br /><button class="greenButton" on:click={() => confirmSelection()}>Confirm</button>
+					{/if}
 					<button class="redButton" on:click={() => closeSetupModal()}>Cancel</button>
 				</div>
 			</div>
