@@ -850,6 +850,8 @@ export class ChatService {
         if (!admin) {
             return({ message :  'Admin does not exist' });
         }
+		if (user.id == admin.id)
+			return({ message :  'Can\'t remove admin by yourself' });
         const room = await this.prisma.room.findFirst({
             where: {
                 name: body.roomName,
@@ -1881,7 +1883,7 @@ export class ChatService {
 			body.password = '';
 		}
 		if (room.type == body.type)
-			return('Room is already ' + body.type);
+			return({ message :'Room is already ' + body.type });
 		else if (body.type == "protected" && (body.password == null || body.password == ''))
 			return({ message :  'Password cannot be empty' });
 		const hash = await argon.hash(body.password);
