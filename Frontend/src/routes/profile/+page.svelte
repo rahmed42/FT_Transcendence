@@ -141,6 +141,11 @@
 	}
 
 	async function update_username(username: string) {
+		if (!username)
+		{
+			alert('Username cannot be empty');
+			return;
+		}
 		let value = username.trim();
 		if (value.length > 10) {
 			alert('Username should not exceed 10 characters');
