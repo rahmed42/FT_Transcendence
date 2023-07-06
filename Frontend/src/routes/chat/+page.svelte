@@ -6,6 +6,7 @@
 	import io from 'socket.io-client';
 	import { goto } from '$app/navigation';
 
+	let send: string = 'src/lib/images/send1.svg';
 	const serverIP = import.meta.env.VITE_SERVER_IP;
 
 	let messageInput = '';
@@ -1561,7 +1562,7 @@
 				{/each}
 			{/if}
 		</div>
-		<div class="chat-area" style="max-height: 800px">
+		<div class="chat-area">
 			<div class="messages">
 				{#each messages as message}
 					{#if message.user}
@@ -1579,14 +1580,14 @@
 			</div>
 			<div class="input-area">
 				<input
+					type="text" 
 					bind:value={messageInput}
-					type="text"
 					placeholder="Type here..."
-					id="test"
+					id="input-text"
 					name="messageInput"
 					on:keydown={handleKeyPress}
 				/>
-				<button on:click={sendMessage}>Send</button>
+				<img id="send-picture" src={send} alt="send-icon" on:click={sendMessage}>
 			</div>
 		</div>
 		<div class="user-list">
@@ -1773,8 +1774,8 @@
 		flex-grow: 1;
 		display: flex;
 		flex-direction: column;
-		overflow: auto;
-		max-height: 700px;
+		/* overflow: auto; */
+		/* max-height: 700px; */
 	}
 
 	.messages {
@@ -1785,8 +1786,22 @@
 	.input-area {
 		display: flex;
 		justify-content: space-between;
-		padding: 10px;
-		border-top: 1px solid #ccc;
+		margin-top: 20px;
+		margin-left: 90px;
+		margin-right: auto;
+		padding: 5px;
+	}
+	#input-text {
+		display: flex;
+		color: #333333;
+		margin-left: auto;
+		margin-right: 60px;
+		border-radius: 10px;
+		width: 200px;
+	}
+	#send-picture {
+		margin-left: -40px;
+		width: 50px;
 	}
 
 	.modal {

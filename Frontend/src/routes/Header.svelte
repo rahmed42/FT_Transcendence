@@ -238,13 +238,13 @@
 							<img
 								src={currentUser.avatar}
 								alt={`Picture of ${currentUser.login}`}
-								style="max-height: 2em; width: auto; margin-left:0.5em"
+								style="max-height: 2em; width: 50px; margin-left:0.5em"
 							/>
 						{:else}
 							<img
 								src={currentUser.small_pic}
 								alt={`Picture of ${currentUser.login}`}
-								style="max-height: 2em; width: auto; margin-left:0.5em"
+								style="max-height: 2em; width: 50px; margin-left:0.5em"
 							/>
 						{/if}
 					</a>
@@ -258,13 +258,13 @@
 							<img
 								src={currentUser.avatar}
 								alt={`Picture of ${currentUser.login}`}
-								style="max-height: 2em; width: auto; margin-left:0.5em"
+								style="max-height: 2em; width: 50px; margin-left:0.5em"
 							/>
 						{:else}
 							<img
 								src={currentUser.small_pic}
 								alt={`Picture of ${currentUser.login}`}
-								style="max-height: 2em; width: auto; margin-left:0.5em"
+								style="max-height: 2em; width: 50px; margin-left:0.5em"
 							/>
 						{/if}
 					</a>
