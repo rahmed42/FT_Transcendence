@@ -1,0 +1,55 @@
+version: '3'
+services:
+  backend:
+    build:
+      context: ./
+      dockerfile: backend/Dockerfile
+    container_name: backend
+    env_file:
+      - ./backend/.env
+    ports:
+      - '3333:3333'
+    depends_on:
+      - db
+    networks:
+      - backend-network
+
+  db:
+    image: postgres
+    restart: always
+    container_name: db
+    ports:
+      - '5434:5432'
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123
+      POSTGRES_DB: nest
+    volumes:
+      - ./db-data:/var/lib/postgresql/data
+    networks :
+      - backend-network
+
+  front:
+    build:
+      context: ./
+      dockerfile: Frontend/Dockerfile
+    container_name: front
+    ports:
+      - '5173:5173'
+    env_file:
+      - ./Frontend/.env
+    networks:
+      - backend-network
+  game:
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
+    container_name: game
+    ports:
+      - '2567:2567'
+    networks:
+      - backend-network
+
+networks:
+  backend-network:
+    driver: bridge
