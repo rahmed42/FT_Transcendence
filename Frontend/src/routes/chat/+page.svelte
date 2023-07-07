@@ -649,6 +649,8 @@
 		try {
 			let chan = selectedChannel;
 			let login = selectedUserparam;
+			if (!login)
+				return;
 			const response = await fetch('http://' + serverIP + ':3333/chat/muteUser', {
 				method: 'POST',
 				headers: {
