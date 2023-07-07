@@ -5,6 +5,7 @@
 	const serverIP = import.meta.env.VITE_SERVER_IP;
 	let game: any | undefined = undefined;
 	let myCookie: String | undefined = '';
+	let myGameCheck: any;
 
 	function getCookie(name: string) {
 		const value = `; ${document.cookie}`;
@@ -13,31 +14,36 @@
 			return parts.pop()?.split(';').shift();
 		}
 	}
-	// Fonction afterUpdate - appelée après la mise à jour du composant
-	onMount(() => {
-		if (game)
+
+	function deleteGame() {
+		if (game) {
 			game.destroy(true);
+			game = undefined;
+		}
+	}
 
-		myCookie = getCookie('jwt');
-
-		if (!myCookie) {
-			goto('/');
-		} else {
+	function startGameTimeout() {
+		clearTimeout(myGameCheck);
+		myGameCheck = setTimeout(() => {
 			// SSR server side rendering
 			// https://vitejs.dev/guide/ssr.html
-			setTimeout(() => {
-				// SSR server side rendering
-				// https://vitejs.dev/guide/ssr.html
-				if (typeof window === 'undefined') return;
-				if (!game && window.location.pathname === '/game')
-					createPhaserGame();
+			if (typeof window === 'undefined') return;
+			if (window.location.pathname !== '/game') deleteGame();
 
-				setTimeout(() => {
-					if (game && window.location.pathname !== '/game')
-						game.destroy(true);
-				}, 400);
-			}, 500);
-		}
+			if (!game && window.location.pathname === '/game') {
+				clearTimeout(myGameCheck);
+				createPhaserGame();
+				return;
+			}
+		}, 500);
+	}
+	// Fonction afterUpdate - appelée après la mise à jour du composant
+	onMount(() => {
+		deleteGame();
+		myCookie = getCookie('jwt');
+
+		if (!myCookie) goto('/');
+		else startGameTimeout();
 	});
 
 	async function createPhaserGame() {
@@ -48,38 +54,44 @@
 		const { Part3Scene } = await import('./scenes/Part3Scene');
 		const { Part4Scene } = await import('./scenes/Part4Scene');
 
-		game = new Phaser.Game({
-			// CANVAS Rendering to be faster
-			type: Phaser.CANVAS,
-			// Set the fps
-			fps: {
-				target: 60,
-				forceSetTimeOut: true,
-				smoothStep: true
-			},
-			backgroundColor: '#000000',
-			physics: {
-				default: 'arcade'
-			},
-			pixelArt: false,
-			// Set the size of the game
-			width: 800,
-			height: 600,
-			// Set parent id of the div where the game will be
-			parent: 'game-container',
-			// Set the scenes of the game
-			scene: [GameSelector, Part1Scene, Part2Scene, Part3Scene, Part4Scene]
-		});
-
-		// check if invited to a game
-		checkInvite();
+		deleteGame();
+		setTimeout(() => {
+			game = new Phaser.Game({
+				// CANVAS Rendering to be faster
+				type: Phaser.CANVAS,
+				// Set the fps
+				fps: {
+					target: 60,
+					forceSetTimeOut: true,
+					smoothStep: true
+				},
+				backgroundColor: '#000000',
+				physics: {
+					default: 'arcade'
+				},
+				pixelArt: false,
+				// Set the size of the game
+				width: 800,
+				height: 600,
+				// Set parent id of the div where the game will be
+				parent: 'game-container',
+				// Set the scenes of the game
+				scene: [GameSelector, Part1Scene, Part2Scene, Part3Scene, Part4Scene]
+			});
+			// check if invited to a game
+			checkInvite();
+		}, 50);
 	}
 
 	// Fonction onDestroy - appelée lorsque le composant est détruit
 	onDestroy(() => {
-		if (game) {
-			game.destroy(true);
-		}
+		clearTimeout(myGameCheck);
+		deleteGame();
+
+		//for lower pc at school send a second delete request
+		setTimeout(() => {
+			deleteGame();
+		}, 300);
 	});
 
 	async function checkInvite() {

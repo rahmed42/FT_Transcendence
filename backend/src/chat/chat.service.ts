@@ -428,6 +428,9 @@ export class ChatService {
 						senderLogin : true,
                         content: true,
                     },
+					orderBy : {
+						id : 'asc',
+					},
                 },
                 mutedUsers: {
                     select: {
@@ -1542,6 +1545,9 @@ export class ChatService {
 									login: true,
 								},
 							},
+						},
+						orderBy: {
+							id: 'asc',
 						},
 					},
 			},
