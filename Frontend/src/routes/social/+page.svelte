@@ -11,8 +11,8 @@
 	const apiUrl = import.meta.env.VITE_API_URL;
 	const serverIP = import.meta.env.VITE_SERVER_IP;
 
-	let pendingRequests = [];
-	let friends = [];
+	let pendingRequests : any = [];
+	let friends : any = [];
 	let requesteeLogin: string;
 	let friendRequestModalOpen = false;
 	let requesteeLoginModal = '';
@@ -97,7 +97,7 @@
 		}
 	}
 
-	async function acceptFriendRequest(id) {
+	async function acceptFriendRequest(id : any) {
 		try {
 			const res = await fetch(`${apiUrl}/social/friend-request/${id}/accept`, {
 				method: 'PATCH',
@@ -127,7 +127,7 @@
 		}
 	}
 
-	async function rejectFriendRequest(id) {
+	async function rejectFriendRequest(id : any) {
 		try {
 			const res = await fetch(`${apiUrl}/social/friend/${id}`, {
 				method: 'DELETE',
@@ -227,7 +227,7 @@
 		}
 	}
 
-	async function deleteFriend(id) {
+	async function deleteFriend(id : any) {
 		try {
 			const res = await fetch(`${apiUrl}/social/friend/${id}`, {
 				method: 'DELETE',

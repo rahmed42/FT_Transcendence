@@ -89,7 +89,6 @@ export class Part4Room extends Room<Part4State> {
 		this.onMessage("localPowerupTaken", (client, info) => {
 			const powerup = this.state.powerups.get(client.sessionId);
 
-			// console.log("localPowerupTaken", position.localPowerupTaken);
 			powerup.localPowerupTaken = info.localPowerupTaken;
 			powerup.powerType = info.powerType;
 
@@ -102,7 +101,6 @@ export class Part4Room extends Room<Part4State> {
 		this.onMessage("remotePowerupTaken", (client, info) => {
 			const powerup = this.state.powerups.get(client.sessionId);
 
-			// console.log("remotePowerupTaken", position.remotePowerupTaken);
 			powerup.remotePowerupTaken = info.remotePowerupTaken;
 			powerup.powerType = info.powerType;
 

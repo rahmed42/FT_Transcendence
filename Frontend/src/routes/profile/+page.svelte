@@ -25,7 +25,7 @@
 	const serverIP = import.meta.env.VITE_SERVER_IP;
 	let myCookie: String | undefined = '';
 
-	function formatDate(isoDateString) {
+	function formatDate(isoDateString : any) {
 		const date = new Date(isoDateString);
 		return `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
 	}
