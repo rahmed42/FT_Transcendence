@@ -316,10 +316,13 @@
 		else return [];
 	}
 
-	function checkForEnter(event: KeyboardEvent) {
-		// KeyCode 13 correspond à la touche "Entrée"
-		if (event.key === 'Enter') {
-			sendMessage();
+	$: {
+		if (selectedSection)
+		{
+			newChannelType = '';
+			selectedUserparam = '';
+			newPassword = '';
+			muteDuration = 0;
 		}
 	}
 
@@ -452,7 +455,12 @@
 				})
 			});
 			const data = await response.json();
-			adminList.set(data.administrator.administrators);
+			if (data.message)
+			{
+				alert(data.message);
+				return;
+			}
+			adminList.update(items => [...items, { login: login }]);
 			socket.emit('adminEvent', { roomName: channelName, login: login, id: id, isAdmin: true });
 		} catch (err) {
 			if (err instanceof Error) alert(err.message);
@@ -475,6 +483,11 @@
 				})
 			});
 			const data = await response.json();
+			if (data.message)
+			{
+				alert(data.message);
+				return;
+			}
 			let userL = get(userList);
 			userL = userL.filter((user) => user.login != login);
 			socket.emit('eventLeave', { roomName: selectedChannel, login: login, userList: userL });
@@ -502,6 +515,11 @@
 				})
 			});
 			const data = await response.json();
+			if (data.message)
+			{
+				alert(data.message);
+				return ;
+			}
 			let userL = get(userList);
 			userL = userL.filter((user) => user.login != login);
 			socket.emit('eventLeave', { roomName: selectedChannel, login: login, userList: userL });
@@ -526,6 +544,12 @@
 					loginUserToExecute: selectedUserparam
 				})
 			});
+			const data = await response.json();
+			if (data.message)
+			{
+				alert(data.message);
+				return ;
+			}
 			muteList.update((currentMutes) => {
 				return currentMutes.filter((mute) => mute.login != login);
 			});
@@ -552,6 +576,11 @@
 			});
 
 			const data = await response.json();
+			if (data.message)
+			{
+				alert(data.message);
+				return ;
+			}
 			adminList.update((currentAdmins) => {
 				return currentAdmins.filter((admin) => admin.login !== login);
 			});
@@ -579,6 +608,11 @@
 				})
 			});
 			const data = await response.json();
+			if (data.message)
+			{
+				alert(data.message);
+				return ;
+			}
 			banList.update((currentBanList) => {
 				return currentBanList.filter((user) => user.login !== login);
 			});
@@ -614,6 +648,9 @@
 	async function muteSelectedUser(muteDuration: number) {
 		try {
 			let chan = selectedChannel;
+			let login = selectedUserparam;
+			if (!login)
+				return;
 			const response = await fetch('http://' + serverIP + ':3333/chat/muteUser', {
 				method: 'POST',
 				headers: {
@@ -628,7 +665,11 @@
 				})
 			});
 				const newMuteList = await response.json();
-				muteList.set(newMuteList.mutedUsers.mutedUsers);
+				if (newMuteList.message) {
+					alert(newMuteList.message);
+					return;
+				}
+				muteList.update((muteList) => [...muteList, { login: login }]);
 				socket.emit('eventMute', {
 					roomName: chan,
 					login: newMuteList.mutedUsers.mutedUsers.login
@@ -644,6 +685,7 @@
 		selectedUserparam = '';
 		newPassword = '';
 		selectedSection = '';
+		newChannelType = '';
 	}
 
 	function openModal() {
@@ -724,7 +766,7 @@
 	function isValidChannelName(name: string) {
 		for (let i = 0; i < name.length; i++) {
 			const charCode = name.charCodeAt(i);
-			if (charCode < 32 || charCode > 126) {
+			if (charCode < 48 || charCode > 122) {
 				return false;
 			}
 		}
@@ -884,10 +926,6 @@
 		}
 		closeSetupModal();
 	}
-
-	async function declineInvitation(selectedInvitation: string) {}
-
-	async function acceptInvitation(selectedInvitation: string) {}
 
 	function closePrivateMessageModal() {
 		isPrivateMessageModalOpen = false;
@@ -1111,7 +1149,7 @@
 				alert(newProfile.message);
 				return;
 			}
-				socket.emit('leaveRoom', { roomName: selectedChannel, userList: users });
+				socket.emit('eventLeave', { roomName: selectedChannel, login:login, userList: users });
 				channelList.update((channelList) =>
 					channelList.filter((channel) => channel.name !== selectedChannel)
 				);
@@ -1220,7 +1258,6 @@
 								/> Protected
 							</label>
 						</p>
-
 						{#if newChannelType === 'protected'}
 							<input
 								bind:value={newPassword}
@@ -1357,7 +1394,9 @@
 				</div>
 
 				<div class="modal-actions">
-					<br /><button class="greenButton" on:click={() => confirmSelection()}>Confirm</button>
+					{#if newChannelType != '' || selectedUserparam != '' || muteDuration != 0 || newPassword != ''}
+							<br /><button class="greenButton" on:click={() => confirmSelection()}>Confirm</button>
+					{/if}
 					<button class="redButton" on:click={() => closeSetupModal()}>Cancel</button>
 				</div>
 			</div>
@@ -1550,7 +1589,7 @@
 					on:keydown={handleKeyPress}
 				/>
 				<img id="send-picture" src={send} alt="send-icon" on:click={sendMessage} on:keydown />
-			</div>
+				</div>
 		</div>
 		<div class="user-list">
 			<h3 class="user-list-title">Users</h3>
@@ -1720,8 +1759,9 @@
 		height: 100%;
 		max-height: 100vh;
 		min-width: 150px;
-		padding-right: 10px; /* Ajout des marges intérieures */
 		overflow-y: auto;
+		max-width: 60%;
+		padding-right: 10px; /* Ajout des marges intérieures */
 	}
 
 	.channel-header {
@@ -1734,6 +1774,7 @@
 		display: flex;
 		flex-direction: column;
 		border-radius: 10px;
+		max-width: 60%;
 		max-height: 400px;
 		min-height: 300px;
 		background-color: white; /* Couleur de fond de la bulle de message */

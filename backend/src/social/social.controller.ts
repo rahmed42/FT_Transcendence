@@ -1,8 +1,10 @@
-import { Controller, Post, Body, Param, Patch, Get, Delete } from '@nestjs/common';
+import { Controller, Post, Body, Param, Patch, Get, Delete, UseGuards } from '@nestjs/common';
 import { SocialService } from './social.service';
 import { FriendRequestDto } from './dto/friend-request.dto';
 import { ParseIntPipe } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 
+@UseGuards(AuthGuard('jwt'))
 @Controller('social')
 export class SocialController {
   constructor(private readonly socialService: SocialService) {}

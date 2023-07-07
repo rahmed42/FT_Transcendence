@@ -74,7 +74,12 @@
 
 	async function getFriendRequests(userLogin: string) {
 		try {
-			const res = await fetch(`${apiUrl}/social/friend-requests/${userLogin}`);
+			const res = await fetch(`${apiUrl}/social/friend-requests/${userLogin}`, {
+				headers: {
+					'Content-Type': 'application/json',
+					Authorization: 'Bearer ' + myCookie,
+				},
+			});
 			const result = await res.json();
 
 			if (result.status === 'error') {
@@ -94,7 +99,11 @@
 	async function acceptFriendRequest(id : any) {
 		try {
 			const res = await fetch(`${apiUrl}/social/friend-request/${id}/accept`, {
-				method: 'PATCH'
+				method: 'PATCH',
+				headers: {
+					'Content-Type': 'application/json',
+					Authorization: 'Bearer ' + myCookie,
+				},
 			});
 			const result = await res.json();
 
@@ -120,7 +129,11 @@
 	async function rejectFriendRequest(id : any) {
 		try {
 			const res = await fetch(`${apiUrl}/social/friend/${id}`, {
-				method: 'DELETE'
+				method: 'DELETE',
+				headers: {
+					'Content-Type': 'application/json',
+					Authorization: 'Bearer ' + myCookie,
+				},
 			});
 			const result = await res.json();
 
@@ -145,7 +158,12 @@
 
 	async function getFriendList(userLogin: string) {
 		try {
-			const res = await fetch(`${apiUrl}/social/friend-list/${userLogin}`);
+			const res = await fetch(`${apiUrl}/social/friend-list/${userLogin}`, {
+				headers: {
+					'Content-Type': 'application/json',
+					Authorization: 'Bearer ' + myCookie,
+				},
+			});
 			const result = await res.json();
 
 			if (result.status === 'error') {
@@ -167,7 +185,8 @@
 			const res = await fetch(`${apiUrl}/social/friend-request`, {
 				method: 'POST',
 				headers: {
-					'Content-Type': 'application/json'
+					'Content-Type': 'application/json',
+					Authorization: 'Bearer ' + myCookie,
 				},
 				body: JSON.stringify({
 					requesterLogin: $user.login,
@@ -210,7 +229,11 @@
 	async function deleteFriend(id : any) {
 		try {
 			const res = await fetch(`${apiUrl}/social/friend/${id}`, {
-				method: 'DELETE'
+				method: 'DELETE',
+				headers: {
+					'Content-Type': 'application/json',
+					Authorization: 'Bearer ' + myCookie,
+				},
 			});
 			const result = await res.json();
 
@@ -243,9 +266,9 @@
 	}
 
 	async function sendFriendRequestModal() {
-		if (!requesteeLoginModal) {
+		if (!requesteeLoginModal || requesteeLoginModal.trim() === '') {
 			notification.set({
-				message: 'Please type in a user login',
+				message: 'Please type in a valid user login',
 				error: true
 			});
 			setTimeout(() => {
