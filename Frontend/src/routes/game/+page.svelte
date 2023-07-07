@@ -29,10 +29,13 @@
 				// SSR server side rendering
 				// https://vitejs.dev/guide/ssr.html
 				if (typeof window === 'undefined') return;
-				if (!game && window.location.pathname === '/game') createPhaserGame();
+				if (!game && window.location.pathname === '/game')
+					createPhaserGame();
+
 				setTimeout(() => {
-					if (game && window.location.pathname !== '/game') game.destroy(true);
-				}, 300);
+					if (game && window.location.pathname !== '/game')
+						game.destroy(true);
+				}, 400);
 			}, 500);
 		}
 	});

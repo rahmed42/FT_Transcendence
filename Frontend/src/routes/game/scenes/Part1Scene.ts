@@ -157,8 +157,6 @@ export class Part1Scene extends Phaser.Scene {
 
 	async preload() {
 		//Loading style
-		if (skins === undefined)
-			await load_skins();
 		for (const skin of skins)
 			this.load.image(skin.name, skin.src);
 	}

@@ -38,6 +38,7 @@
 				ball: selectedBall
 			})
 		});
+		goto('/game');
 	}
 </script>
 
