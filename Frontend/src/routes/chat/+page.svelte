@@ -1759,6 +1759,8 @@
 		height: 100%;
 		max-height: 100vh;
 		min-width: 150px;
+		overflow-y: auto;
+		max-width: 60%;
 		padding-right: 10px; /* Ajout des marges intérieures */
 	}
 
