@@ -3,166 +3,188 @@ import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class SocialService {
-	constructor(private readonly prisma: PrismaService) { }
-	async sendFriendRequest(requesterLogin: string, requesteeLogin: string): Promise<any> {
+  constructor(private readonly prisma: PrismaService) {}
+    async sendFriendRequest(requesterLogin: string, requesteeLogin: string): Promise<any> {
 
-		if (requesterLogin === requesteeLogin) {
-			return { status: 'error', message: 'Error: Cannot send friend request to yourself' };
-		}
+      if(requesterLogin === requesteeLogin){
+        return { status: 'error', message: 'Error: Cannot send friend request to yourself' };
+      }
 
-		if (!requesterLogin || !requesteeLogin) {
-			return { status: 'error', message: 'Error: Invalid user login' };
-		}
+      if(!requesterLogin || !requesteeLogin){
+        return { status: 'error', message: 'Error: Invalid user login' };
+      }
 
-		const requester = await this.prisma.user.findUnique({ where: { login: requesterLogin } });
-		const requestee = await this.prisma.user.findUnique({ where: { login: requesteeLogin } });
-		if (!requester || !requestee) {
-			return { status: 'error', message: 'Error: User not found' };
-		}
+      const requester = await this.prisma.user.findUnique({ where: { login: requesterLogin }});
+      const requestee = await this.prisma.user.findUnique({ where: { login: requesteeLogin }});
+      if(!requester || !requestee){
+        return { status: 'error', message: 'Error: User not found' };
+      }
 
-		const existingRequest = await this.prisma.friend.findFirst({
-			where: {
-				OR: [
-					{ requesterId: requester.id, requesteeId: requestee.id },
-					{ requesterId: requestee.id, requesteeId: requester.id },
-				],
-			},
-		});
+      const existingRequest = await this.prisma.friend.findFirst({
+        where: {
+          OR: [
+            { requesterId: requester.id, requesteeId: requestee.id },
+            { requesterId: requestee.id, requesteeId: requester.id },
+          ],
+        },
+      });
 
-		if (existingRequest) {
-			return { status: 'error', message: 'Error: Friend request already exists' };
-		}
+      if (existingRequest) {
+        return { status: 'error', message: 'Error: Friend request already exists' };
+      }
 
-		const friendRequest = await this.prisma.friend.create({
-			data: {
-				requesterId: requester.id,
-				requesteeId: requestee.id,
-				status: 'pending',
-			},
-		});
+      const friendRequest = await this.prisma.friend.create({
+        data: {
+          requesterId: requester.id,
+          requesteeId: requestee.id,
+          status: 'pending',
+        },
+      });
+      const friendData = await this.prisma.friend.findFirst({
+        where: {
+            requesteeId : requestee.id,
+            requesterId : requester.id,
+        },
+        select : {
+          requesterId: true,
+          requesteeId: true,
+          id: true,
+          status: true,
+        }
+    })
+      return { status: 'success', data: friendRequest };
+    }
 
-		return { status: 'success', data: friendRequest };
-	}
+    async getFriendRequests(userLogin: string): Promise<any> {
+      if (userLogin == undefined)
+        return
+      const user = await this.prisma.user.findUnique({ where: { login: userLogin } });
+      if(!user){
+        return { status: 'error', message: '' };
+      }
+      const friendRequests = await this.prisma.friend.findMany({
+        where: {
+          requesteeId: user.id,
+          status: 'pending',
+        },
+        include: {
+          requester: true,  // include the requester object
+          requestee: true,  // include the requestee object
+        },
+      });
 
-	async getFriendRequests(userLogin: string): Promise<any> {
+      return friendRequests;
+    }
 
-		const user = await this.prisma.user.findUnique({ where: { login: userLogin } });
-		if (!user) {
-			return { status: 'error', message: 'Error: User not found' };
-		}
+    async acceptFriendRequest(id: number): Promise<any> {
 
-		const friendRequests = await this.prisma.friend.findMany({
-			where: {
-				requesteeId: user.id,
-				status: 'pending',
-			},
-			include: {
-				requester: true,  // include the requester object
-				requestee: true,  // include the requestee object
-			},
-		});
+      const friendRequest = await this.prisma.friend.findUnique({ where: { id } });
+      if(!friendRequest){
+        return { status: 'error', message: 'Error: Friend request not found' };
+      }
 
-		return friendRequests;
-	}
+      const updatedFriendRequest = await this.prisma.friend.update({
+        where: { id },
+        data: { status: 'accepted' },
+      });
 
-	async acceptFriendRequest(id: number): Promise<any> {
+      return updatedFriendRequest;
+    }
 
-		const friendRequest = await this.prisma.friend.findUnique({ where: { id } });
-		if (!friendRequest) {
-			return { status: 'error', message: 'Error: Friend request not found' };
-		}
+    async rejectFriendRequest(id: number): Promise<any> {
 
-		const updatedFriendRequest = await this.prisma.friend.update({
-			where: { id },
-			data: { status: 'accepted' },
-		});
+      const friendRequest = await this.prisma.friend.findUnique({ where: { id } });
+      if(!friendRequest){
+        return { status: 'error', message: 'Error: Friend request not found' };
+      }
 
-		return updatedFriendRequest;
-	}
+      const updatedFriendRequest = await this.prisma.friend.update({
+        where: { id },
+        data: { status: 'rejected' },
+      });
 
-	async rejectFriendRequest(id: number): Promise<any> {
+      return updatedFriendRequest;
+    }
 
-		const friendRequest = await this.prisma.friend.findUnique({ where: { id } });
-		if (!friendRequest) {
-			return { status: 'error', message: 'Error: Friend request not found' };
-		}
+    async getFriendList(userLogin: string): Promise<any> {
 
-		const updatedFriendRequest = await this.prisma.friend.update({
-			where: { id },
-			data: { status: 'rejected' },
-		});
+      if (userLogin == undefined)
+        return ;
+      const user = await this.prisma.user.findUnique({ where: { login: userLogin }});
+      if(!user){
+        return { status: 'error', message: '' };
+      }
 
-		return updatedFriendRequest;
-	}
+      const friendList = await this.prisma.friend.findMany({
+        where: {
+          OR: [
+            { requesterId: user.id, status: 'accepted' },
+            { requesteeId: user.id, status: 'accepted' },
+          ],
+        },
+        include: {
+          requester: {
+            select: { login: true, small_pic: true, status: true, avatar: true }
+          },
+          requestee: {
+            select: { login: true, small_pic: true, status: true, avatar: true }
+          },
+        },
+      });
 
-	async getFriendList(userLogin: string): Promise<any> {
+      return friendList.map((friend) => ({
+        id: friend.id,
+        friend: friend.requesterId === user.id ? friend.requestee : friend.requester,
+      }));
+    }
 
-		const user = await this.prisma.user.findUnique({ where: { login: userLogin } });
-		if (!user) {
-			return { status: 'error', message: 'Error: User not found' };
-		}
+    async deleteFriend(id: number): Promise<any> {
 
-		const friendList = await this.prisma.friend.findMany({
-			where: {
-				OR: [
-					{ requesterId: user.id, status: 'accepted' },
-					{ requesteeId: user.id, status: 'accepted' },
-				],
-			},
-			include: {
-				requester: {
-					select: { login: true, small_pic: true, status: true, avatar: true }
-				},
-				requestee: {
-					select: { login: true, small_pic: true, status: true, avatar: true }
-				},
-			},
-		});
+      const friend = await this.prisma.friend.findUnique({ where: { id } });
+      if(!friend){
+        return { status: 'error', message: 'Error: Friend not found' };
+      }
 
-		return friendList.map((friend) => ({
-			id: friend.id,
-			friend: friend.requesterId === user.id ? friend.requestee : friend.requester,
-		}));
-	}
+      const deletedFriend = await this.prisma.friend.delete({
+        where: { id },
+      });
 
-	async deleteFriend(id: number): Promise<any> {
+      return deletedFriend;
+    }
 
-		const friend = await this.prisma.friend.findUnique({ where: { id } });
-		if (!friend) {
-			return { status: 'error', message: 'Error: Friend not found' };
-		}
+    async getUserStats(userLogin: string): Promise<any> {
 
-		const deletedFriend = await this.prisma.friend.delete({
-			where: { id },
-		});
+      const user = await this.prisma.user.findUnique({ where: { login: userLogin } });
+      // if(!user){
+      //   return { status: 'error', message: 'Error: User not found' };
+      // }
 
-		return deletedFriend;
-	}
+      const userStats = await this.prisma.stats.findUnique({ where: { userId: user.id } });
+      if (!userStats) {
+        return { status: 'error', message: 'Error: No stats available for this user' };
+      }
 
-	async getUserStats(userLogin: string): Promise<any> {
+      return userStats;
+    }
 
-		const user = await this.prisma.user.findUnique({ where: { login: userLogin } });
-		if (!user) {
-			return { status: 'error', message: 'Error: User not found' };
-		}
+    async getUserMatchHistory(userLogin: string): Promise<any> {
 
-		const userStats = await this.prisma.stats.findUnique({ where: { userId: user.id } });
-		if (!userStats) {
-			return { status: 'error', message: 'Error: No stats available for this user' };
-		}
+      const user = await this.prisma.user.findUnique({ where: { login: userLogin } });
+      // if(!user){
+      //   return { status: 'error', message: 'Error: User not found' };
+      // }
 
-		return userStats;
-	}
+      const matchHistory = await this.prisma.matchHistory.findMany({ where: { userId: user.id } });
 
-	async getUserMatchHistory(userLogin: string): Promise<any> {
-
-		const user = await this.prisma.user.findUnique({ where: { login: userLogin } });
-		if (!user) {
-			return { status: 'error', message: 'Error: User not found' };
-		}
-
-		const matchHistory = await this.prisma.matchHistory.findMany({ where: { userId: user.id }, orderBy: { timestamp: 'desc' } });
-
-		return matchHistory || [];
-	}
-}
+      return matchHistory || [];
+    }
+    async getFriend(id_d : number)
+    {
+      const friend = await this.prisma.friend.findUnique({ where: { id: id_d }, select : {requesterId : true, requesteeId: true}});
+      if (!id_d)
+        return { status: 'error', message: 'Error: Id not found' };
+      if (!friend)
+        return { status: 'error', message: 'Error: Friend not found' };
+      return friend;
+    }
+  }

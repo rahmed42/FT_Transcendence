@@ -39,6 +39,12 @@ export class SocialController {
     return this.socialService.deleteFriend(id);
   }
 
+  @Get('friend/:id')
+  async getFriend(@Param('id', ParseIntPipe) id: number)
+  {
+    return this.socialService.getFriend(id)
+  }
+
   @Get('stats/:userLogin')
   async getUserStats(@Param('userLogin') userLogin: string): Promise<any> {
     return this.socialService.getUserStats(userLogin);
