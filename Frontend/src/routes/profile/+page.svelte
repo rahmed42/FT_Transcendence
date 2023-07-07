@@ -59,15 +59,24 @@
 				myUser = get(user);
 			}
 			const userLogin = myUser.login;
-			const statsResponse = await fetch('http://' + serverIP + ':3333/social/stats/' + userLogin);
+			const statsResponse = await fetch('http://' + serverIP + ':3333/social/stats/' + userLogin, {
+				headers: {
+					'Content-Type': 'application/json',
+					Authorization: 'Bearer ' + myCookie,
+				},
+			});
 			if (statsResponse.ok) {
 				stats = await statsResponse.json();
 				stats.ladderLevel = calculateLadderLevel(stats.wins, stats.losses);
 				ladderIcon = getladderIcon(stats.ladderLevel);
 			}
 			const matchHistoryResponse = await fetch(
-				'http://' + serverIP + ':3333/social/match-history/' + userLogin
-			);
+				'http://' + serverIP + ':3333/social/match-history/' + userLogin, {
+					headers: {
+						'Content-Type': 'application/json',
+						Authorization: 'Bearer ' + myCookie,
+					},
+				});
 			if (matchHistoryResponse.ok) {
 				matchHistory = await matchHistoryResponse.json();
 			}

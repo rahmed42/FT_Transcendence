@@ -17,7 +17,7 @@
 	let friendRequestModalOpen = false;
 	let requesteeLoginModal = '';
 	let socket: any;
-	let myCookie: any;
+	let myCookie: String | undefined = '';
 
 	onMount(async () => {
 		function getCookie(name: string) {
@@ -32,33 +32,33 @@
 			goto('/')
 		else
 		{
-		socket = io('http://' + serverIP + ':3333', {
-			transports: ['websocket'],
-			auth: {
-				token: myCookie
-			}
-		});
-		socket.on('connect', () => {
-			console.log('connected');
-		});
-		socket.on('disconnect', () => {
-			console.log('disconnected');
-		});
-		socket.on('friend-request', (data: {
-			login: string
-		}) => {
-			if (data.login == $user.login || data.login == "")
+			socket = io('http://' + serverIP + ':3333', {
+				transports: ['websocket'],
+				auth: {
+					token: myCookie
+				}
+			});
+			socket.on('connect', () => {
+				console.log('connected');
+			});
+			socket.on('disconnect', () => {
+				console.log('disconnected');
+			});
+			socket.on('friend-request', (data: {
+				login: string
+			}) => {
+				if (data.login == $user.login || data.login == "")
+					refreshData();
+			});
+			if ($user.login) {
 				refreshData();
-		});
-	}
+			}
+		}
 	});
 
 	// Reactive statement that triggers when $user.login changes
-	$: {
-		if ($user.login) {
-			refreshData();
-		}
-	}
+	// $: {
+	// }
 
 	async function refreshData() {
 		try {
@@ -74,6 +74,7 @@
 
 	async function getFriendRequests(userLogin: string) {
 		try {
+			console.log(myCookie);
 			const res = await fetch(`${apiUrl}/social/friend-requests/${userLogin}`, {
 				headers: {
 					'Content-Type': 'application/json',

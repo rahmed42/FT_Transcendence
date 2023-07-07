@@ -25,6 +25,15 @@
 				await getToken(code);
 			}
 		}
+
+		function getCookie(name: string) {
+			const value = `; ${document.cookie}`;
+			const parts = value.split(`; ${name}=`);
+			if (parts.length === 2) {
+				return parts.pop()?.split(';').shift();
+			}
+		}
+
 		if (checkJwtCookie()) {
 			myCookie = getCookie('jwt');
 		}
@@ -32,6 +41,9 @@
 		async function check_2fa_user(): Promise<Boolean> {
 			const response = await fetch('http://' + serverIP + ':3333/auth/2fa_info', {
 				method: 'GET',
+				headers: {
+					'Content-Type': 'application/json',
+				},
 				credentials: 'include'
 			});
 			const contentType = response.headers.get('Content-Type');
@@ -83,18 +95,13 @@
 		};
 	});
 
-	function getCookie(name: string) {
-		const value = `; ${document.cookie}`;
-		const parts = value.split(`; ${name}=`);
-		if (parts.length === 2) {
-			return parts.pop()?.split(';').shift();
-		}
-	}
-
 	async function getToken(code: string) {
 		// Fetch token from the server
 		const response = await fetch('http://' + serverIP + ':3333/auth/userInfo?code=' + code, {
 			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
 			credentials: 'include'
 		});
 		const contentType = response.headers.get('Content-Type');
