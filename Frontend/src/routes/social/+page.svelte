@@ -243,9 +243,9 @@
 	}
 
 	async function sendFriendRequestModal() {
-		if (!requesteeLoginModal) {
+		if (!requesteeLoginModal || requesteeLoginModal.trim() === '') {
 			notification.set({
-				message: 'Please type in a user login',
+				message: 'Please type in a valid user login',
 				error: true
 			});
 			setTimeout(() => {
