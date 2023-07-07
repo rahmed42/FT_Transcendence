@@ -186,10 +186,11 @@ export class Gateway implements OnModuleInit {
 		})
 	}
 	@SubscribeMessage("newFriendRequest")
-	handleNewFriendRequest(@MessageBody() body: {login: string})
+	handleNewFriendRequest(@MessageBody() body: {login: number, other: number})
 	{
 		this.server.emit("friend-request", {
 			login: body.login,
+			other: body.other
 		})
 	}
 	@SubscribeMessage("eventLeave")

@@ -18,6 +18,9 @@
 	let requesteeLoginModal = '';
 	let socket: any;
 	let myCookie: String | undefined = '';
+	let login: string;
+	let requesteeId : number;
+	let id_user : number; 
 
 	onMount(async () => {
 		function getCookie(name: string) {
@@ -32,6 +35,26 @@
 			goto('/')
 		else
 		{
+			async function getUserinfo() {
+				try {
+					const response = await fetch('http://' + serverIP + ':3333/profil/me', {
+						method: 'GET',
+						headers: {
+							'Content-Type': 'application/json',
+							Authorization: 'Bearer ' + myCookie
+						},
+						credentials: 'include'
+					});
+					const data = await response.json();
+					if (data) {
+						login = data.login;
+						id_user = data.id
+					}
+				} catch (error) {
+					console.error('An error occurred while fetching user info:', error);
+				}
+			}
+			await getUserinfo()
 			socket = io('http://' + serverIP + ':3333', {
 				transports: ['websocket'],
 				auth: {
@@ -45,25 +68,49 @@
 				console.log('disconnected');
 			});
 			socket.on('friend-request', (data: {
-				login: string
+				login: number, other: number
 			}) => {
-				if (data.login == $user.login || data.login == "")
+				console.log(data.login)
+				console.log(data.other)
+				if (data.login == id_user || data.other == id_user)
 					refreshData();
 			});
-			if ($user.login) {
-				refreshData();
-			}
 		}
+		await refreshData()
 	});
 
-	// Reactive statement that triggers when $user.login changes
-	// $: {
-	// }
+	async function getId(id_friend : number)
+	{
+		try 
+		{
+		const res = await fetch(`${apiUrl}/social/friend/${id_friend}`, {
+				method: 'GET',
+				headers: {
+					'Content-Type': 'application/json',
+					Authorization: 'Bearer ' + myCookie,
+				},
+			});
+			const result = await res.json();
+			return { requesterId: result.requesterId, requesteeId: result.requesteeId }
+		if (result.status === 'error') {
+				notification.set({
+					message: result.message,
+					error: true
+				});
+		}
+		}
+		catch(error) {
+			console.log(error)
+		}
+		
+	}
 
 	async function refreshData() {
 		try {
-			pendingRequests = await getFriendRequests($user.login);
-			friends = await getFriendList($user.login);
+			if (!login)
+				return;
+			pendingRequests = await getFriendRequests(login);
+			friends = await getFriendList(login);
 		} catch (error) {
 			notification.set({
 				message: 'An error occurred while fetching data',
@@ -114,9 +161,12 @@
 					error: true
 				});
 			} else {
+				let data = await getId(id)
 				socket.emit("newFriendRequest", {
-					login: ""
+					login: data.requesteeId,
+					other: data.requesterId,
 				});
+				await refreshData()
 			}
 
 		} catch (error) {
@@ -144,9 +194,7 @@
 					error: true
 				});
 			} else {
-				socket.emit("newFriendRequest", {
-					login: ""
-				});
+				await refreshData()
 			}
 
 		} catch (error) {
@@ -159,7 +207,7 @@
 
 	async function getFriendList(userLogin: string) {
 		try {
-			const res = await fetch(`${apiUrl}/social/friend-list/${userLogin}`, {
+			const res = await fetch(`${apiUrl}/social/friend-list/${login}`, {
 				headers: {
 					'Content-Type': 'application/json',
 					Authorization: 'Bearer ' + myCookie,
@@ -190,13 +238,12 @@
 					Authorization: 'Bearer ' + myCookie,
 				},
 				body: JSON.stringify({
-					requesterLogin: $user.login,
+					requesterLogin: login,
 					requesteeLogin
 				})
 			});
 
 			const result = await res.json();
-
 			if (result.status === 'error') {
 				notification.set({
 					message: result.message,
@@ -207,12 +254,15 @@
 					message: 'Friend request sent successfully!',
 					error: false
 				});
+				
 				socket.emit("newFriendRequest", {
-					login: ""
+					login: result.data.requesteeId
 				})
+				await refreshData()
 			}
 
 		} catch (error) {
+			console.log(error)
 			notification.set({
 				message: 'An error occurred while sending the friend request',
 				error: true
@@ -228,6 +278,7 @@
 	}
 
 	async function deleteFriend(id : any) {
+		let data = await getId(id);
 		try {
 			const res = await fetch(`${apiUrl}/social/friend/${id}`, {
 				method: 'DELETE',
@@ -245,8 +296,10 @@
 				});
 			} else {
 				socket.emit("newFriendRequest", {
-					login: ""
+					login: data.requesteeId,
+					other : data.requesterId,
 				});
+				await refreshData();
 			}
 
 		} catch (error) {

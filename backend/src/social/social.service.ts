@@ -40,17 +40,28 @@ export class SocialService {
           status: 'pending',
         },
       });
-    
+      const friendData = await this.prisma.friend.findFirst({
+        where: {
+            requesteeId : requestee.id,
+            requesterId : requester.id,
+        },
+        select : {
+          requesterId: true,
+          requesteeId: true,
+          id: true,
+          status: true,
+        }
+    })
       return { status: 'success', data: friendRequest };
     }
 
     async getFriendRequests(userLogin: string): Promise<any> {
-  
-      const user = await this.prisma.user.findUnique({ where: { login: userLogin } });
+      if (userLogin == undefined)
+        return 
+      const user = await this.prisma.user.findUnique({ where: { login: userLogin } }); 
       if(!user){
-        return { status: 'error', message: 'Error: User not found' };
+        return { status: 'error', message: '' };
       }
-  
       const friendRequests = await this.prisma.friend.findMany({
         where: {
           requesteeId: user.id,
@@ -97,9 +108,11 @@ export class SocialService {
 
     async getFriendList(userLogin: string): Promise<any> {
 
+      if (userLogin == undefined)
+        return ;
       const user = await this.prisma.user.findUnique({ where: { login: userLogin }});
       if(!user){
-        return { status: 'error', message: 'Error: User not found' };
+        return { status: 'error', message: '' };
       }
 
       const friendList = await this.prisma.friend.findMany({
@@ -142,9 +155,9 @@ export class SocialService {
     async getUserStats(userLogin: string): Promise<any> {
 
       const user = await this.prisma.user.findUnique({ where: { login: userLogin } });
-      if(!user){
-        return { status: 'error', message: 'Error: User not found' };
-      }
+      // if(!user){
+      //   return { status: 'error', message: 'Error: User not found' };
+      // }
 
       const userStats = await this.prisma.stats.findUnique({ where: { userId: user.id } });
       if (!userStats) {
@@ -157,12 +170,21 @@ export class SocialService {
     async getUserMatchHistory(userLogin: string): Promise<any> {
       
       const user = await this.prisma.user.findUnique({ where: { login: userLogin } });
-      if(!user){
-        return { status: 'error', message: 'Error: User not found' };
-      }
+      // if(!user){
+      //   return { status: 'error', message: 'Error: User not found' };
+      // }
       
       const matchHistory = await this.prisma.matchHistory.findMany({ where: { userId: user.id } });
 
       return matchHistory || [];
+    }
+    async getFriend(id_d : number)
+    {
+      const friend = await this.prisma.friend.findUnique({ where: { id: id_d }, select : {requesterId : true, requesteeId: true}});
+      if (!id_d)
+        return { status: 'error', message: 'Error: Id not found' };
+      if (!friend)
+        return { status: 'error', message: 'Error: Friend not found' };
+      return friend;
     }
   }
