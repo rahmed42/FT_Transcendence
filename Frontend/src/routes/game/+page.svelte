@@ -35,7 +35,7 @@
 				createPhaserGame();
 				return;
 			}
-		}, 500);
+		}, 400);
 	}
 	// Fonction afterUpdate - appelée après la mise à jour du composant
 	onMount(() => {
@@ -79,8 +79,10 @@
 				scene: [GameSelector, Part1Scene, Part2Scene, Part3Scene, Part4Scene]
 			});
 			// check if invited to a game
-			checkInvite();
-		}, 50);
+			setTimeout(() => {
+				checkInvite();
+			}, 250);
+		}, 100);
 	}
 
 	// Fonction onDestroy - appelée lorsque le composant est détruit

@@ -282,11 +282,11 @@
 						return;
 					}
 					for (let i = 0; i < data.length; i++) {
-					privateList.update((currentPrivateList) => [
-						...currentPrivateList,
-						{ login: data[i].users[0].login }
-					]);
-				}
+						privateList.update((currentPrivateList) => [
+							...currentPrivateList,
+							{ login: data[i].users[0].login }
+						]);
+					}
 				}
 			} else {
 				const data = await response2.json();
@@ -319,8 +319,7 @@
 	}
 
 	$: {
-		if (selectedSection)
-		{
+		if (selectedSection) {
 			newChannelType = '';
 			selectedUserparam = '';
 			newPassword = '';
@@ -457,12 +456,11 @@
 				})
 			});
 			const data = await response.json();
-			if (data.message)
-			{
+			if (data.message) {
 				alert(data.message);
 				return;
 			}
-			adminList.update(items => [...items, { login: login }]);
+			adminList.update((items) => [...items, { login: login }]);
 			socket.emit('adminEvent', { roomName: channelName, login: login, id: id, isAdmin: true });
 		} catch (err) {
 			if (err instanceof Error) alert(err.message);
@@ -485,8 +483,7 @@
 				})
 			});
 			const data = await response.json();
-			if (data.message)
-			{
+			if (data.message) {
 				alert(data.message);
 				return;
 			}
@@ -517,10 +514,9 @@
 				})
 			});
 			const data = await response.json();
-			if (data.message)
-			{
+			if (data.message) {
 				alert(data.message);
-				return ;
+				return;
 			}
 			let userL = get(userList);
 			userL = userL.filter((user) => user.login != login);
@@ -547,10 +543,9 @@
 				})
 			});
 			const data = await response.json();
-			if (data.message)
-			{
+			if (data.message) {
 				alert(data.message);
-				return ;
+				return;
 			}
 			muteList.update((currentMutes) => {
 				return currentMutes.filter((mute) => mute.login != login);
@@ -578,10 +573,9 @@
 			});
 
 			const data = await response.json();
-			if (data.message)
-			{
+			if (data.message) {
 				alert(data.message);
-				return ;
+				return;
 			}
 			adminList.update((currentAdmins) => {
 				return currentAdmins.filter((admin) => admin.login !== login);
@@ -610,10 +604,9 @@
 				})
 			});
 			const data = await response.json();
-			if (data.message)
-			{
+			if (data.message) {
 				alert(data.message);
-				return ;
+				return;
 			}
 			banList.update((currentBanList) => {
 				return currentBanList.filter((user) => user.login !== login);
@@ -651,8 +644,7 @@
 		try {
 			let chan = selectedChannel;
 			let login = selectedUserparam;
-			if (!login)
-				return;
+			if (!login) return;
 			const response = await fetch('http://' + serverIP + ':3333/chat/muteUser', {
 				method: 'POST',
 				headers: {
@@ -666,16 +658,16 @@
 					muteDuration: muteDuration
 				})
 			});
-				const newMuteList = await response.json();
-				if (newMuteList.message) {
-					alert(newMuteList.message);
-					return;
-				}
-				muteList.update((muteList) => [...muteList, { login: login }]);
-				socket.emit('eventMute', {
-					roomName: chan,
-					login: newMuteList.mutedUsers.mutedUsers.login
-				});
+			const newMuteList = await response.json();
+			if (newMuteList.message) {
+				alert(newMuteList.message);
+				return;
+			}
+			muteList.update((muteList) => [...muteList, { login: login }]);
+			socket.emit('eventMute', {
+				roomName: chan,
+				login: newMuteList.mutedUsers.mutedUsers.login
+			});
 			muteDuration = 0;
 		} catch (err) {
 			if (err instanceof Error) alert(err.message);
@@ -747,19 +739,19 @@
 							password: newChannelPassword
 						})
 					});
-						const newChannel = await response.json();
-						if (newChannel.message) {
+					const newChannel = await response.json();
+					if (newChannel.message) {
 						alert(newChannel.message);
 						return;
 					}
-						channelList.update((channelList) => [
-							...channelList,
-							{ name: newChannel.room.name, type: newChannel.room.type }
-						]);
-						socket.emit('joinRoom', newChannel.room.name);
-						closeModal();
-					}
+					channelList.update((channelList) => [
+						...channelList,
+						{ name: newChannel.room.name, type: newChannel.room.type }
+					]);
+					socket.emit('joinRoom', newChannel.room.name);
+					closeModal();
 				}
+			}
 		} catch (err) {
 			if (err instanceof Error) alert(err.message);
 		}
@@ -816,17 +808,17 @@
 						password: joinChannelPassword
 					})
 				});
-					const newChannel = await response.json();
-					if (newChannel.message) {
+				const newChannel = await response.json();
+				if (newChannel.message) {
 					alert(newChannel.message);
 					return;
 				}
-					channelList.update((channelList) => [
-						...channelList,
-						{ name: newChannel.room.name, type: newChannel.room.type }
-					]);
-					let userl = await refreshUserList(token, newChannel.room.name);
-					socket.emit('joinRoom', { roomName: joinChannelName, userList: userl });
+				channelList.update((channelList) => [
+					...channelList,
+					{ name: newChannel.room.name, type: newChannel.room.type }
+				]);
+				let userl = await refreshUserList(token, newChannel.room.name);
+				socket.emit('joinRoom', { roomName: joinChannelName, userList: userl });
 				closeJoinModal();
 			} else {
 				isJoinInvalidName = true;
@@ -853,25 +845,25 @@
 				loginReceiver: loginToSend
 			})
 		});
-			const newChannel = await response.json();
-			if (newChannel.message) {
+		const newChannel = await response.json();
+		if (newChannel.message) {
 			alert(newChannel.message);
 			return;
 		}
-			socket.emit('joinRoom', { roomName: newChannel.id.id });
-			socket.emit('newPrivateRoom', { login: login, loginReceiver: loginToSend });
-			socket.emit('newMessage', {
-				idSender: userID,
-				roomName: newChannel.id,
-				loginReceiver: loginToSend,
-				content: contentMessage,
-				type: 'private'
-			});
-			privateId = newChannel.id.id;
-			privateList.update((privateList) => [...privateList, { login: newChannel.login }]);
-			recipientName = '';
-			messageContent = '';
-		}
+		socket.emit('joinRoom', { roomName: newChannel.id.id });
+		socket.emit('newPrivateRoom', { login: login, loginReceiver: loginToSend });
+		socket.emit('newMessage', {
+			idSender: userID,
+			roomName: newChannel.id,
+			loginReceiver: loginToSend,
+			content: contentMessage,
+			type: 'private'
+		});
+		privateId = newChannel.id.id;
+		privateList.update((privateList) => [...privateList, { login: newChannel.login }]);
+		recipientName = '';
+		messageContent = '';
+	}
 
 	async function sendMessage() {
 		if (selectedChannel === '' && selectedPrivateChannel === '') {
@@ -947,37 +939,37 @@
 					Authorization: 'Bearer ' + token
 				}
 			});
-				const newChannel = await response.json();
-				if (newChannel) {
-					if (newChannel.message) {
+			const newChannel = await response.json();
+			if (newChannel) {
+				if (newChannel.message) {
 					alert(newChannel.message);
 					return;
 				}
-					socket.emit('joinRoom', { roomName: selectedChannel });
-					userList.set(newChannel.users);
-					const messagesWithUsername = newChannel.messages.map((message: any) => {
-						return {
-							content: message.content,
-							user: !(message.senderLogin === login),
-							username: message.senderLogin
-						};
+				socket.emit('joinRoom', { roomName: selectedChannel });
+				userList.set(newChannel.users);
+				const messagesWithUsername = newChannel.messages.map((message: any) => {
+					return {
+						content: message.content,
+						user: !(message.senderLogin === login),
+						username: message.senderLogin
+					};
+				});
+				messages = messagesWithUsername;
+				banList.set(newChannel.bannedUsers);
+				muteList.set(newChannel.mutedUsers);
+				adminList.set(newChannel.administrators);
+				invitationList.set(newChannel.invitations);
+				blockList.set(newChannel.blockedUsers);
+				isAdmin = false;
+				if (newChannel.administrators) {
+					newChannel.administrators.forEach((admin: { id: number; login: string }) => {
+						if (admin.login === login && admin.id === userID) {
+							isAdmin = true;
+							return;
+						}
 					});
-					messages = messagesWithUsername;
-					banList.set(newChannel.bannedUsers);
-					muteList.set(newChannel.mutedUsers);
-					adminList.set(newChannel.administrators);
-					invitationList.set(newChannel.invitations);
-					blockList.set(newChannel.blockedUsers);
-					isAdmin = false;
-					if (newChannel.administrators) {
-						newChannel.administrators.forEach((admin: { id: number; login: string }) => {
-							if (admin.login === login && admin.id === userID) {
-								isAdmin = true;
-								return;
-							}
-						});
-					}
 				}
+			}
 		} catch (err) {
 			if (err instanceof Error) {
 				alert(err.message);
@@ -1004,9 +996,9 @@
 					loginUserToExecute: inviteUser
 				})
 			});
-				const newProfile = await response.json();
-				closeInvitationModal();
-				alert(newProfile.message);
+			const newProfile = await response.json();
+			closeInvitationModal();
+			alert(newProfile.message);
 		} catch (err) {
 			if (err instanceof Error) alert(err.message);
 		}
@@ -1047,14 +1039,14 @@
 				loginUserToBlock: loginUserToExecute
 			})
 		});
-			const newProfile = await response.json();
-			if (newProfile.message) {
+		const newProfile = await response.json();
+		if (newProfile.message) {
 			alert(newProfile.message);
 			return;
 		}
-			blockList.set(newProfile.blockedUser.blockedUsers);
-			alert('User unblocked');
-		}
+		blockList.set(newProfile.blockedUser.blockedUsers);
+		alert('User unblocked');
+	}
 
 	async function blockUser() {
 		try {
@@ -1069,13 +1061,13 @@
 					loginUserToBlock: loginUserToExecute
 				})
 			});
-				const newProfile = await response.json();
-				if (newProfile.message) {
+			const newProfile = await response.json();
+			if (newProfile.message) {
 				alert(newProfile.message);
 				return;
 			}
-				blockList.set(newProfile.blockedUsers);
-				alert('User blocked');
+			blockList.set(newProfile.blockedUsers);
+			alert('User blocked');
 		} catch (err) {
 			if (err instanceof Error) alert(err.message);
 		}
@@ -1098,37 +1090,37 @@
 				}
 			}
 		);
-			const data = await response.json();
-			if (data && data.messages) {
-				if (data.message) {
+		const data = await response.json();
+		if (data && data.messages) {
+			if (data.message) {
 				alert(data.message);
 				return;
 			}
-				privateId = data.id;
-				socket.emit('joinRoom', { roomName: privateId });
-				userList.set(data.users);
-				const messagesRecus = data.messages;
-				messages.length = 0;
-				for (const msg of messagesRecus) {
-					if (msg && msg.content && msg.sender && msg.sender.login) {
-						if (msg.sender.login == login) {
-							const message = {
-								content: msg.content,
-								username: msg.sender.login,
-								user: false
-							};
-							messages.push(message);
-						} else {
-							const message = {
-								content: msg.content,
-								username: msg.sender.login,
-								user: true
-							};
-							messages.push(message);
-						}
+			privateId = data.id;
+			socket.emit('joinRoom', { roomName: privateId });
+			userList.set(data.users);
+			const messagesRecus = data.messages;
+			messages.length = 0;
+			for (const msg of messagesRecus) {
+				if (msg && msg.content && msg.sender && msg.sender.login) {
+					if (msg.sender.login == login) {
+						const message = {
+							content: msg.content,
+							username: msg.sender.login,
+							user: false
+						};
+						messages.push(message);
+					} else {
+						const message = {
+							content: msg.content,
+							username: msg.sender.login,
+							user: true
+						};
+						messages.push(message);
 					}
 				}
 			}
+		}
 	}
 
 	async function leaveRoom() {
@@ -1146,16 +1138,16 @@
 					roomName: selectedChannel
 				})
 			});
-				const newProfile = await response.json();
-				if (newProfile.message) {
+			const newProfile = await response.json();
+			if (newProfile.message) {
 				alert(newProfile.message);
 				return;
 			}
-				socket.emit('eventLeave', { roomName: selectedChannel, login:login, userList: users });
-				channelList.update((channelList) =>
-					channelList.filter((channel) => channel.name !== selectedChannel)
-				);
-				refreshList();
+			socket.emit('eventLeave', { roomName: selectedChannel, login: login, userList: users });
+			channelList.update((channelList) =>
+				channelList.filter((channel) => channel.name !== selectedChannel)
+			);
+			refreshList();
 		} catch (err) {
 			if (err instanceof Error) alert(err.message);
 		}
@@ -1397,7 +1389,7 @@
 
 				<div class="modal-actions">
 					{#if newChannelType != '' || selectedUserparam != '' || muteDuration != 0 || newPassword != ''}
-							<br /><button class="greenButton" on:click={() => confirmSelection()}>Confirm</button>
+						<br /><button class="greenButton" on:click={() => confirmSelection()}>Confirm</button>
 					{/if}
 					<button class="redButton" on:click={() => closeSetupModal()}>Cancel</button>
 				</div>
@@ -1533,7 +1525,7 @@
 
 			<br />
 			{#if privateList !== null}
-			{#each $privateList as privateChannel}
+				{#each $privateList as privateChannel}
 					<button
 						on:mouseover={() => handleHover(privateChannel.login, true)}
 						on:focus={() => handleHover(privateChannel.login, true)}
@@ -1591,7 +1583,7 @@
 					on:keydown={handleKeyPress}
 				/>
 				<img id="send-picture" src={send} alt="send-icon" on:click={sendMessage} on:keydown />
-				</div>
+			</div>
 		</div>
 		<div class="user-list">
 			<h3 class="user-list-title">Users</h3>
@@ -1784,7 +1776,9 @@
 
 	.messages {
 		flex-grow: 1;
-		overflow-y: auto;
+		overflow-y: scroll;
+		scroll-behavior: smooth;
+		scroll-padding-bottom: 0;
 	}
 
 	.input-area {
