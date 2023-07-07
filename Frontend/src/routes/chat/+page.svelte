@@ -1770,6 +1770,7 @@
 		display: flex;
 		flex-direction: column;
 		border-radius: 10px;
+		max-width: 60%;
 		max-height: 400px;
 		min-height: 300px;
 		background-color: white; /* Couleur de fond de la bulle de message */
