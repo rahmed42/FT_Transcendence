@@ -274,7 +274,6 @@ export class ChatService {
         return { success: "User successfully invited" }
     }
     async kickUser(body: ChatDtoAdminOperation) {
-		console.log(body);
         const room = await this.prisma.room.findFirst({
             where: {
                 name: body.roomName,

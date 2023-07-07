@@ -98,7 +98,7 @@ export class GameSelector extends Phaser.Scene {
 	// create game parts list
 	create() {
 		// Define camera size
-		this.cameras.main = this.cameras.add(0, 0, this.game.config.width, this.game.config.height, true, 'menu');
+		this.cameras.main = this.cameras.add(0, 0, this.game.config.width as number, this.game.config.height as number, true, 'menu');
 
 		//Background
 		const background = this.add.image(0, 0, 'backgroundMenu');

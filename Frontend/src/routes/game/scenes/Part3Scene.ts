@@ -361,7 +361,7 @@ export class Part3Scene extends Phaser.Scene {
 		if (!this.room) { return; }
 
 		// Listen for new players
-		this.room.state.players.onAdd((player, sessionId) => {
+		this.room.state.players.onAdd((player : any, sessionId : any) => {
 			if (this.room && this.room.state.players.size <= 2) {
 				//Setup my Paddle
 				if (this.localPaddle === undefined) {
@@ -447,7 +447,7 @@ export class Part3Scene extends Phaser.Scene {
 		});
 
 		// Listen for removed players
-		this.room.state.players.onRemove((player, sessionId) => {
+		this.room.state.players.onRemove((player : any, sessionId : any) => {
 			// delete Paddles if exists
 			if (this.localPaddle) {
 				this.localPaddle.destroy();

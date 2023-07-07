@@ -9,13 +9,13 @@
     import silverIcon from '../../../lib/images/silver.png';
     import goldIcon from '../../../lib/images/gold.png';
 
-	const friend = writable({}); // Local state for friend
-	let stats = null;
-	let matchHistory = [];
-	let ladderIcon = bronzeIcon;
+	const friend : any= writable({}); // Local state for friend
+	let stats : any = null;
+	let matchHistory : any = [];
+	let ladderIcon : any = bronzeIcon;
 	const serverIP = import.meta.env.VITE_SERVER_IP;
 
-	function formatDate(isoDateString) {
+	function formatDate(isoDateString : any) {
 		const date = new Date(isoDateString);
 		return `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
 	}
@@ -36,7 +36,6 @@
         const friend_username = new URLSearchParams(window.location.search).get('login');
 
 		async function getUserInfo() {
-			// console.log(myCookie)
 			const response = await fetch(
 				'http://' + serverIP + ':3333/profil/friends?login=' + friend_username,
 				{
@@ -253,9 +252,5 @@
 		text-align: center;
 		background-color: rgba(0, 0, 0, 0.8);
 		color: #fff;
-	}
-
-	a {
-		width: 100px
 	}
 </style>
