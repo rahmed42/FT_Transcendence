@@ -56,6 +56,3 @@ export function resetUser() {
 export function setUser(value: User) {
 	user.set(value);
 }
-
-const link = '';
-export const actualPage = writable(link);
