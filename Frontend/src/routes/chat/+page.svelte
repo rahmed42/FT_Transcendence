@@ -281,10 +281,12 @@
 						alert(data.message);
 						return;
 					}
+					for (let i = 0; i < data.length; i++) {
 					privateList.update((currentPrivateList) => [
 						...currentPrivateList,
-						{ login: data[0].users[0].login }
+						{ login: data[i].users[0].login }
 					]);
+				}
 				}
 			} else {
 				const data = await response2.json();
@@ -1531,7 +1533,7 @@
 
 			<br />
 			{#if privateList !== null}
-				{#each $privateList as privateChannel}
+			{#each $privateList as privateChannel}
 					<button
 						on:mouseover={() => handleHover(privateChannel.login, true)}
 						on:focus={() => handleHover(privateChannel.login, true)}

@@ -6,17 +6,20 @@
 	let game: any | undefined = undefined;
 	let myCookie: String | undefined = '';
 
+	function getCookie(name: string) {
+		const value = `; ${document.cookie}`;
+		const parts = value.split(`; ${name}=`);
+		if (parts.length === 2) {
+			return parts.pop()?.split(';').shift();
+		}
+	}
 	// Fonction afterUpdate - appelée après la mise à jour du composant
 	onMount(() => {
-		function getCookie(name: string) {
-			const value = `; ${document.cookie}`;
-			const parts = value.split(`; ${name}=`);
-			if (parts.length === 2) {
-				return parts.pop()?.split(';').shift();
-			}
-		}
+		if (game)
+			game.destroy(true);
 
 		myCookie = getCookie('jwt');
+
 		if (!myCookie) {
 			goto('/');
 		} else {
@@ -29,12 +32,8 @@
 				if (!game && window.location.pathname === '/game') createPhaserGame();
 				setTimeout(() => {
 					if (game && window.location.pathname !== '/game') game.destroy(true);
-				}, 250);
-			}, 400);
-			setTimeout(() => {
-				if (typeof window === 'undefined') return;
-				if (!game && window.location.pathname === '/game') createPhaserGame();
-			}, 1000);
+				}, 300);
+			}, 500);
 		}
 	});
 
