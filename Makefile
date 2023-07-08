@@ -6,7 +6,7 @@
 #    By: rahmed <rahmed@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/05/09 12:57:06 by rahmed            #+#    #+#              #
-#    Updated: 2023/07/08 11:25:57 by rahmed           ###   ########.fr        #
+#    Updated: 2023/07/08 11:28:36 by rahmed           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -22,6 +22,7 @@ db = ./db-data
 all	: project
 
 clean	:	down
+	@rm -rf $(db)
 	@printf "Removing unused ${name} images...\n"
 	@docker system prune -a
 	@rm -rf ./backend/dist
