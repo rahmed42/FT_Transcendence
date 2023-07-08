@@ -70,8 +70,8 @@
 			socket.on('friend-request', (data: {
 				login: number, other: number
 			}) => {
-				console.log(data.login)
-				console.log(data.other)
+				// console.log(data.login)
+				// console.log(data.other)
 				if (data.login == id_user || data.other == id_user)
 					refreshData();
 			});
@@ -121,7 +121,7 @@
 
 	async function getFriendRequests(userLogin: string) {
 		try {
-			console.log(myCookie);
+			// console.log(myCookie);
 			const res = await fetch(`${apiUrl}/social/friend-requests/${userLogin}`, {
 				headers: {
 					'Content-Type': 'application/json',

@@ -187,4 +187,9 @@ export class SocialService {
         return { status: 'error', message: 'Error: Friend not found' };
       return friend;
     }
+
+    async usernameExists(username: string): Promise<boolean> {
+      const user = await this.prisma.user.findUnique({ where: { login: username } });
+      return !!user;
+    }
   }

@@ -169,6 +169,23 @@
 			alert('Username should not only contain whitespace');
 			return;
 		}
+
+		const checkResponse = await fetch('http://' + serverIP + ':3333/social/username', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				Authorization: 'Bearer ' + myCookie,
+			},
+			body: JSON.stringify({ data: value })
+		});
+		if (checkResponse.ok) {
+			const exists = await checkResponse.json();
+			if (exists.exists) {
+				alert('Username already exists');
+				return;
+			}
+		}
+
 		const response = await fetch('http://' + serverIP + ':3333/profil/username', {
 			method: 'POST',
 			credentials: 'include',

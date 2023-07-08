@@ -54,4 +54,11 @@ export class SocialController {
   async getUserMatchHistory(@Param('userLogin') userLogin: string): Promise<any> {
     return this.socialService.getUserMatchHistory(userLogin);
   }
+
+  @Post('username')
+  async checkUsernameExists(@Body() body: { data: string }): Promise<{ exists: boolean }> {
+    const { data } = body;
+    const exists = await this.socialService.usernameExists(data);
+    return { exists };
+  }
 }
