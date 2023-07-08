@@ -6,50 +6,54 @@
 #    By: rahmed <rahmed@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/05/09 12:57:06 by rahmed            #+#    #+#              #
-#    Updated: 2023/06/29 17:33:58 by rahmed           ###   ########.fr        #
+#    Updated: 2023/07/08 11:25:57 by rahmed           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 name = FT_Transcendance
 
-# data = ~/data
-# db = ~/data/postgreSQL
-
-# $(data)	:
-# 	@echo "Folder $(data) does not exist, creating..."
-# 	mkdir -p $@
+db = ./db-data
 
 # $(db)	:
 # 	@echo "Folder $(db) does not exist, creating..."
 # 	mkdir -p $@
 
-# | $(data) $(db)
-all	: back db bgame front
-	@open http://localhost:2567/colyseus/
+#################### PROJECT Makers ####################
+all	: project
 
 clean	:	down
 	@printf "Removing unused ${name} images...\n"
 	@docker system prune -a
-	@sudo rm -rf ./backend/dist
-	@sudo rm -rf ./Frontend/dist ./Frontend/.parcel-cache
+	@rm -rf ./backend/dist
+	@rm -rf ./Frontend/dist ./Frontend/.parcel-cache
 
 fclean	:
+	@rm -rf ./backend/dist ./backend/node_modules
+	@rm -rf ./Frontend/dist ./Frontend/node_modules ./Frontend/.parcel-cache
+	@rm -rf $(db)
 	@printf "Deep clean of docker\n"
 	@make stop
 	@docker system prune --all --force --volumes
 	@docker network prune --force
 	@docker volume prune --force
-	@sudo rm -rf ./backend/dist ./backend/node_modules
-	@sudo rm -rf ./Frontend/dist ./Frontend/node_modules ./Frontend/.parcel-cache
-#	@sudo rm -rf $(db)
 
-# re	: | $(data) $(db)
-# 	@printf "docker-compose up -d --build : Building ${name}'s Configuration...\n"
-# 	@docker-compose -f backend/docker-compose.yml --env-file backend/.env up -d --build
-# 	@make list
+re	:
+	@printf "Deep clean of docker\n"
+	@make stop
+	@printf "docker-compose up -d --build : Building ${name}'s Configuration...\n"
+	@make project
 
-# build	:	re
+#################### PROJECT LAUNCH ####################
+project : check_docker_desktop
+	@echo "${TXT_YELLOW}"
+	@echo "~~~~~~~~~~ STARTING PROJECT ~~~~~~~~~~"
+	@echo "${TXT_GREEN}"
+	@printf "docker-compose up --build : Starting $(USER) project ${name}...\n"
+	@echo "${FANCY_RESET}"
+	@docker-compose up --build
+	@make list
 
+#################### PROJECT Updater ####################
 update :
 	@echo "${TXT_YELLOW}"
 	@echo "~~~~~~~~~~ UPDATING ~~~~~~~~~~"
@@ -62,35 +66,68 @@ update :
 	@echo "${FANCY_RESET}"
 	cd backend && npm update && npm audit fix
 
-#################### PROJECT LAUNCH ####################
-back :
-	@echo "${TXT_YELLOW}"
-	@echo "~~~~~~~~~~ BACKEND ~~~~~~~~~~"
-	@echo "${TXT_GREEN}"
-	@printf "Launching ${name} BACKEND...\n"
-	@echo "${FANCY_RESET}"
-	@make up
-ifeq ($(USER),bryan) #FOR TIM
-	cd backend && npm install && sudo npx prisma generate && npm run start:dev
-else
-	cd backend && npm install && npx prisma generate && npm run start:dev
-endif
+######################## DOCKER COMPOSE ########################
+check_docker_desktop:
+	@docker info > /dev/null 2>&1 || (echo "Docker Desktop is not running. Please start Docker Desktop." && ./init_docker.sh && exit 1)
 
-front :
-	@echo "${TXT_YELLOW}"
-	@echo "~~~~~~~~~~ FRONTEND ~~~~~~~~~~"
-	@echo "${TXT_GREEN}"
-	@printf "Launching ${name} Front...\n"
-	@echo "${FANCY_RESET}"
-	cd Frontend && npm install && npm run dev -- --open  --host
+up	: check_docker_desktop
+	@printf "docker-compose up -d : Starting $(USER) project ${name}...\n"
+	@docker-compose up -d
+	@make list
 
-bgame :
-	@echo "${TXT_YELLOW}"
-	@echo "~~~~~~~~~~ GAME BACKEND ~~~~~~~~~~"
-	@echo "${TXT_GREEN}"
-	@printf "Launching ${name} Game back...\n"
-	@echo "${FANCY_RESET}"
-	cd backend && npm run startgame
+down	:
+	@printf "docker-compose down : Shutdown project ${name}...\n"
+	@docker-compose down
+
+list 	:
+	@printf "Listing containers :\n"
+	docker-compose ps
+
+logs	:
+	@printf "Checking LOGs :\n"
+	docker-compose logs
+
+pause	:
+	docker-compose pause
+
+unpause	:
+	docker-compose unpause
+
+stop	:
+	docker-compose stop
+
+start	:
+	docker-compose start
+
+######################## DOCKER COMPOSE / local tests ########################
+# back :
+# 	@echo "${TXT_YELLOW}"
+# 	@echo "~~~~~~~~~~ BACKEND ~~~~~~~~~~"
+# 	@echo "${TXT_GREEN}"
+# 	@printf "Launching ${name} BACKEND...\n"
+# 	@echo "${FANCY_RESET}"
+# 	@make up
+# ifeq ($(USER),bryan) #FOR TIM
+# 	cd backend && npm install && sudo npx prisma generate && npm run start:dev
+# else
+# 	cd backend && npm install && npx prisma generate && npm run start:dev
+# endif
+
+# front :
+# 	@echo "${TXT_YELLOW}"
+# 	@echo "~~~~~~~~~~ FRONTEND ~~~~~~~~~~"
+# 	@echo "${TXT_GREEN}"
+# 	@printf "Launching ${name} Front...\n"
+# 	@echo "${FANCY_RESET}"
+# 	cd Frontend && npm install && npm run dev -- --open  --host
+
+# bgame :
+# 	@echo "${TXT_YELLOW}"
+# 	@echo "~~~~~~~~~~ GAME BACKEND ~~~~~~~~~~"
+# 	@echo "${TXT_GREEN}"
+# 	@printf "Launching ${name} Game back...\n"
+# 	@echo "${FANCY_RESET}"
+# 	cd backend && npm run startgame
 
 # fgame :
 # 	@echo "${TXT_YELLOW}"
@@ -100,41 +137,40 @@ bgame :
 # 	@echo "${FANCY_RESET}"
 # 	cd Frontend && npm run startgame
 
-db	:
-	cd backend && npx prisma migrate dev && npx prisma studio
+# db	:
+# 	cd backend && npx prisma migrate dev && npx prisma studio
 
-######################## DOCKER COMPOSE ########################
-check_docker_desktop:
-	@docker info > /dev/null 2>&1 || (echo "Docker Desktop is not running. Please start Docker Desktop." && exit 1)
+# check_docker_desktop:
+# 	@docker info > /dev/null 2>&1 || (echo "Docker Desktop is not running. Please start Docker Desktop." && exit 1)
 
-up	: check_docker_desktop
-	@printf "docker-compose up -d : Starting $(USER) project ${name}...\n"
-	@docker-compose -f backend/docker-compose.yml --env-file backend/.env up -d
-	@make list
+# up	: check_docker_desktop
+# 	@printf "docker-compose up -d : Starting $(USER) project ${name}...\n"
+# 	@docker-compose -f backend/docker-compose.yml --env-file backend/.env up -d
+# 	@make list
 
-down	:
-	@printf "docker-compose down : Shutdown project ${name}...\n"
-	@docker-compose -f backend/docker-compose.yml --env-file backend/.env down
+# down	:
+# 	@printf "docker-compose down : Shutdown project ${name}...\n"
+# 	@docker-compose -f backend/docker-compose.yml --env-file backend/.env down
 
-list 	:
-	@printf "Listing containers :\n"
-	docker-compose -f backend/docker-compose.yml --env-file backend/.env ps
+# list 	:
+# 	@printf "Listing containers :\n"
+# 	docker-compose -f backend/docker-compose.yml --env-file backend/.env ps
 
-logs	:
-	@printf "Checking LOGs :\n"
-	docker-compose -f backend/docker-compose.yml --env-file backend/.env logs
+# logs	:
+# 	@printf "Checking LOGs :\n"
+# 	docker-compose -f backend/docker-compose.yml --env-file backend/.env logs
 
-pause	:
-	docker-compose -f backend/docker-compose.yml --env-file backend/.env pause
+# pause	:
+# 	docker-compose -f backend/docker-compose.yml --env-file backend/.env pause
 
-unpause	:
-	docker-compose -f backend/docker-compose.yml --env-file backend/.env unpause
+# unpause	:
+# 	docker-compose -f backend/docker-compose.yml --env-file backend/.env unpause
 
-stop	:
-	docker-compose -f backend/docker-compose.yml --env-file backend/.env stop
+# stop	:
+# 	docker-compose -f backend/docker-compose.yml --env-file backend/.env stop
 
-start	:
-	docker-compose -f backend/docker-compose.yml --env-file backend/.env start
+# start	:
+# 	docker-compose -f backend/docker-compose.yml --env-file backend/.env start
 
 ################################################################
 #UTILS	:
@@ -146,7 +182,7 @@ start	:
 # 	docker exec -it postgres db -u root -p
 # 	docker exec -it postgres db -u rahmed -p
 # 	docker exec -it postgres ls
-
+################################################################
 # Set COLORS
 TXT_RED		=	\033[1;31m
 TXT_GREEN	=	\033[1;32m
