@@ -6,6 +6,7 @@
 	import { setUser, user, resetUser } from '../stores/user';
 	import type { User } from '../stores/user';
 	import io from 'socket.io-client';
+	import { goto } from '$app/navigation';
 
 	let currentUser: User;
 	let myCookie: String | undefined = '';
@@ -70,7 +71,8 @@
 				if (contentType && contentType.includes('application/json')) {
 					const data = await response.json();
 					if (data.status === 'logout')
-						if (window.location.pathname !== '/2_fa') window.location.href = '/2_fa';
+						if (window.location.pathname !== '/2_fa')
+							goto('/2_fa');
 				}
 				const res = await fetch('http://' + serverIP + ':3333/profil/me', {
 					method: 'GET',

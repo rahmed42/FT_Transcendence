@@ -13,4 +13,4 @@ node_modules/
 dist/
 .parcel-cache/
 .svelte-kit/
-
+db-data/

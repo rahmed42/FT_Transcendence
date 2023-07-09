@@ -12,7 +12,7 @@ services:
     depends_on:
       - db
     networks:
-      - project-network
+      - backend-network
 
   db:
     image: postgres
@@ -26,8 +26,8 @@ services:
       POSTGRES_DB: nest
     volumes:
       - ./db-data:/var/lib/postgresql/data
-    networks:
-      - project-network
+    networks :
+      - backend-network
 
   front:
     build:
@@ -39,7 +39,7 @@ services:
     env_file:
       - ./Frontend/.env
     networks:
-      - project-network
+      - backend-network
   game:
     build:
       context: ./
@@ -48,8 +48,8 @@ services:
     ports:
       - '2567:2567'
     networks:
-      - project-network
+      - backend-network
 
 networks:
-  project-network:
+  backend-network:
     driver: bridge

@@ -55,6 +55,8 @@
 		const { Part4Scene } = await import('./scenes/Part4Scene');
 
 		deleteGame();
+		if (window.location.pathname !== '/game')
+			return;
 		setTimeout(() => {
 			game = new Phaser.Game({
 				// CANVAS Rendering to be faster

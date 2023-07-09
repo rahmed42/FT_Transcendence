@@ -6,7 +6,7 @@
 #    By: rahmed <rahmed@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/05/09 12:57:06 by rahmed            #+#    #+#              #
-#    Updated: 2023/07/08 11:28:36 by rahmed           ###   ########.fr        #
+#    Updated: 2023/07/09 16:45:31 by rahmed           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -101,45 +101,45 @@ start	:
 	docker-compose start
 
 ######################## DOCKER COMPOSE / local tests ########################
-# back :
-# 	@echo "${TXT_YELLOW}"
-# 	@echo "~~~~~~~~~~ BACKEND ~~~~~~~~~~"
-# 	@echo "${TXT_GREEN}"
-# 	@printf "Launching ${name} BACKEND...\n"
-# 	@echo "${FANCY_RESET}"
-# 	@make up
-# ifeq ($(USER),bryan) #FOR TIM
-# 	cd backend && npm install && sudo npx prisma generate && npm run start:dev
-# else
-# 	cd backend && npm install && npx prisma generate && npm run start:dev
-# endif
+back :
+	@echo "${TXT_YELLOW}"
+	@echo "~~~~~~~~~~ BACKEND ~~~~~~~~~~"
+	@echo "${TXT_GREEN}"
+	@printf "Launching ${name} BACKEND...\n"
+	@echo "${FANCY_RESET}"
+	@make up
+ifeq ($(USER),bryan) #FOR TIM
+	cd backend && npm install && sudo npx prisma generate && npm run start:dev
+else
+	cd backend && npm install && npx prisma generate && npm run start:dev
+endif
 
-# front :
-# 	@echo "${TXT_YELLOW}"
-# 	@echo "~~~~~~~~~~ FRONTEND ~~~~~~~~~~"
-# 	@echo "${TXT_GREEN}"
-# 	@printf "Launching ${name} Front...\n"
-# 	@echo "${FANCY_RESET}"
-# 	cd Frontend && npm install && npm run dev -- --open  --host
+front :
+	@echo "${TXT_YELLOW}"
+	@echo "~~~~~~~~~~ FRONTEND ~~~~~~~~~~"
+	@echo "${TXT_GREEN}"
+	@printf "Launching ${name} Front...\n"
+	@echo "${FANCY_RESET}"
+	cd Frontend && npm install && npm run dev -- --open  --host
 
-# bgame :
-# 	@echo "${TXT_YELLOW}"
-# 	@echo "~~~~~~~~~~ GAME BACKEND ~~~~~~~~~~"
-# 	@echo "${TXT_GREEN}"
-# 	@printf "Launching ${name} Game back...\n"
-# 	@echo "${FANCY_RESET}"
-# 	cd backend && npm run startgame
+bgame :
+	@echo "${TXT_YELLOW}"
+	@echo "~~~~~~~~~~ GAME BACKEND ~~~~~~~~~~"
+	@echo "${TXT_GREEN}"
+	@printf "Launching ${name} Game back...\n"
+	@echo "${FANCY_RESET}"
+	cd backend && npm run startgame
 
-# fgame :
-# 	@echo "${TXT_YELLOW}"
-# 	@echo "~~~~~~~~~~ GAME FRONTEND ~~~~~~~~~~"
-# 	@echo "${TXT_GREEN}"
-# 	@printf "Launching ${name} Game front...\n"
-# 	@echo "${FANCY_RESET}"
-# 	cd Frontend && npm run startgame
+fgame :
+	@echo "${TXT_YELLOW}"
+	@echo "~~~~~~~~~~ GAME FRONTEND ~~~~~~~~~~"
+	@echo "${TXT_GREEN}"
+	@printf "Launching ${name} Game front...\n"
+	@echo "${FANCY_RESET}"
+	cd Frontend && npm run startgame
 
-# db	:
-# 	cd backend && npx prisma migrate dev && npx prisma studio
+db	:
+	cd backend && npx prisma migrate dev && npx prisma studio
 
 # check_docker_desktop:
 # 	@docker info > /dev/null 2>&1 || (echo "Docker Desktop is not running. Please start Docker Desktop." && exit 1)
