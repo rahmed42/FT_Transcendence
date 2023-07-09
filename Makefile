@@ -6,7 +6,7 @@
 #    By: rahmed <rahmed@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/05/09 12:57:06 by rahmed            #+#    #+#              #
-#    Updated: 2023/07/09 17:56:11 by rahmed           ###   ########.fr        #
+#    Updated: 2023/07/09 23:16:09 by rahmed           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -46,7 +46,6 @@ project : check_docker_desktop
 	@printf "docker-compose up --build : Starting $(USER) project ${name}...\n"
 	@echo "${FANCY_RESET}"
 	@docker-compose up --build
-	@make list
 
 #################### PROJECT Updater ####################
 update :
@@ -63,11 +62,16 @@ update :
 
 ######################## DOCKER COMPOSE ########################
 check_docker_desktop:
-	@docker info > /dev/null 2>&1 || (echo "Docker Desktop is not running. Please start Docker Desktop." && ./init_docker.sh && exit 1)
+	@docker info > /dev/null 2>&1 || (echo "Docker Desktop is not running. Please start Docker Desktop." && exit 1)
 
 up	: check_docker_desktop
 	@printf "docker-compose up -d : Starting $(USER) project ${name}...\n"
 	@docker-compose up -d
+	@make list
+
+up-Back	: check_docker_desktop
+	@printf "docker-compose up -d : Starting $(USER) project ${name}...\n"
+	@docker-compose -f backend/docker-compose.yml --env-file backend/.env up -d
 	@make list
 
 down	:
@@ -101,7 +105,7 @@ back :
 	@echo "${TXT_GREEN}"
 	@printf "Launching ${name} BACKEND...\n"
 	@echo "${FANCY_RESET}"
-	@make up
+	@make up-Back
 ifeq ($(USER),bryan) #FOR TIM
 	cd backend && npm install && sudo npx prisma generate && npm run start:dev
 else
