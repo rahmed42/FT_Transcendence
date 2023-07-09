@@ -47,18 +47,17 @@
 	});
 
 	async function createPhaserGame() {
-		const [Phaser, { GameSelector }, { Part1Scene }, { Part2Scene }, { Part3Scene }, { Part4Scene }] = await Promise.all([
-			import('phaser'),
-			import('./scenes/SceneSelector'),
-			import('./scenes/Part1Scene'),
-			import('./scenes/Part2Scene'),
-			import('./scenes/Part3Scene'),
-			import('./scenes/Part4Scene')
-		]);
+		const Phaser = await import('phaser');
+		const { GameSelector } = await import('./scenes/SceneSelector');
+		const { Part1Scene } = await import('./scenes/Part1Scene');
+		const { Part2Scene } = await import('./scenes/Part2Scene');
+		const { Part3Scene } = await import('./scenes/Part3Scene');
+		const { Part4Scene } = await import('./scenes/Part4Scene');
 
 		deleteGame();
 		if (window.location.pathname !== '/game')
 			return;
+
 		setTimeout(() => {
 			game = new Phaser.Game({
 				// CANVAS Rendering to be faster
