@@ -6,37 +6,31 @@
 #    By: rahmed <rahmed@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/05/09 12:57:06 by rahmed            #+#    #+#              #
-#    Updated: 2023/07/09 16:45:31 by rahmed           ###   ########.fr        #
+#    Updated: 2023/07/09 17:56:11 by rahmed           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 name = FT_Transcendance
-
 db = ./db-data
-
-# $(db)	:
-# 	@echo "Folder $(db) does not exist, creating..."
-# 	mkdir -p $@
 
 #################### PROJECT Makers ####################
 all	: project
 
 clean	:	down
-	@rm -rf $(db)
 	@printf "Removing unused ${name} images...\n"
 	@docker system prune -a
 	@rm -rf ./backend/dist
 	@rm -rf ./Frontend/dist ./Frontend/.parcel-cache
 
 fclean	:
-	@rm -rf ./backend/dist ./backend/node_modules
-	@rm -rf ./Frontend/dist ./Frontend/node_modules ./Frontend/.parcel-cache
-	@rm -rf $(db)
 	@printf "Deep clean of docker\n"
 	@make stop
 	@docker system prune --all --force --volumes
 	@docker network prune --force
 	@docker volume prune --force
+	@rm -rf ./backend/dist ./backend/node_modules
+	@rm -rf ./Frontend/dist ./Frontend/node_modules ./Frontend/.parcel-cache
+	@rm -rf $(db)
 
 re	:
 	@printf "Deep clean of docker\n"
@@ -140,38 +134,6 @@ fgame :
 
 db	:
 	cd backend && npx prisma migrate dev && npx prisma studio
-
-# check_docker_desktop:
-# 	@docker info > /dev/null 2>&1 || (echo "Docker Desktop is not running. Please start Docker Desktop." && exit 1)
-
-# up	: check_docker_desktop
-# 	@printf "docker-compose up -d : Starting $(USER) project ${name}...\n"
-# 	@docker-compose -f backend/docker-compose.yml --env-file backend/.env up -d
-# 	@make list
-
-# down	:
-# 	@printf "docker-compose down : Shutdown project ${name}...\n"
-# 	@docker-compose -f backend/docker-compose.yml --env-file backend/.env down
-
-# list 	:
-# 	@printf "Listing containers :\n"
-# 	docker-compose -f backend/docker-compose.yml --env-file backend/.env ps
-
-# logs	:
-# 	@printf "Checking LOGs :\n"
-# 	docker-compose -f backend/docker-compose.yml --env-file backend/.env logs
-
-# pause	:
-# 	docker-compose -f backend/docker-compose.yml --env-file backend/.env pause
-
-# unpause	:
-# 	docker-compose -f backend/docker-compose.yml --env-file backend/.env unpause
-
-# stop	:
-# 	docker-compose -f backend/docker-compose.yml --env-file backend/.env stop
-
-# start	:
-# 	docker-compose -f backend/docker-compose.yml --env-file backend/.env start
 
 ################################################################
 #UTILS	:
