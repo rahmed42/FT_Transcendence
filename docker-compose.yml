@@ -5,6 +5,7 @@ services:
       context: ./
       dockerfile: backend/Dockerfile
     container_name: backend
+    restart: always
     env_file:
       - ./backend/.env
     ports:
