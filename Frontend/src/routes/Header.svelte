@@ -14,7 +14,6 @@
 
 	// onMount is called when the component is mounted in the DOM
 	onMount(async () => {
-
 		// Subscribe to the user store
 		const unsubscribe = user.subscribe((value) => {
 			currentUser = value;

@@ -85,7 +85,7 @@
 			setTimeout(() => {
 				checkInvite();
 			}, 250);
-		}, 100);
+		}, 300);
 	}
 
 	// Fonction onDestroy - appelée lorsque le composant est détruit
