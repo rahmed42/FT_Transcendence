@@ -214,4 +214,32 @@ export class AuthService {
                 return user.two_fa;
         }
     }
+    async get_2fa_once(tokenObject: {jwt : string}) {
+        const decode = await this.jwt.decode(tokenObject.jwt);
+        if (typeof decode === 'object' && decode.id !== null)
+        {
+            const result = await this.prisma.user.findUnique({
+                where: {
+                    id: decode.id,
+                },
+            })
+            if (result.two_fa_once)
+                return (true);
+        }
+        return (false);
+    }
+    async post_2fa_true(tokenObject: {jwt : string}) {
+        const decode = await this.jwt.decode(tokenObject.jwt);
+        if (typeof decode === 'object' && decode.id !== null)
+        {
+            await this.prisma.user.update({
+                where: {
+                    id: decode.id,
+                },
+                data : {
+                    two_fa_once: true,
+                }
+            })
+        }
+    }
 }

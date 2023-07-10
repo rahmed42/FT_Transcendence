@@ -38,8 +38,8 @@ export class AuthController {
 			const token = request.cookies;
 			let otpUrl;
 			let qrcode;
-			const secret = await this.authService.check_secret(token);
-			if (!secret) {
+			let result = await this.authService.get_2fa_once(token);
+			if (!result) {
 				otpUrl = await this.authService.generate_secret(token);
 				qrcode = await this.authService.generate_qrCode(otpUrl);
 			}
@@ -57,5 +57,10 @@ export class AuthController {
 			const token = request.cookies;
 			const info = await this.authService.get_2fa_info(token);
 			return { info }
+		}
+	@Post('2fa_once')
+		async coche_2fa_once(@Req() request : Request) {
+			const token = request.cookies
+			return await this.authService.post_2fa_true(token);
 		}
 }

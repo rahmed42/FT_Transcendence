@@ -46,6 +46,10 @@
             const data = await response.json();
             if (data.valide)
             {
+                await fetch('http://' + serverIP + ':3333/auth/2fa_once', {
+                    method: 'POST',
+                    credentials: 'include',
+                })
                 await loginUser();
                 window.location.href = '/home';
                 return;
